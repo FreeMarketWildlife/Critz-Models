@@ -3,10 +3,11 @@ import { createRenderer } from './RendererFactory.js';
 import { ResourceLoader } from './ResourceLoader.js';
 
 const RARITY_GLOWS = {
-  common: 0x5a6270,
-  rare: 0x4c8bff,
-  epic: 0xb56dff,
-  legendary: 0xf3c969,
+  common: 0x7b7fc8,
+  rare: 0x86d3ff,
+  epic: 0xd7a7ff,
+  legendary: 0xffd8a8,
+  mythic: 0xffaee0,
 };
 
 export class SceneManager {
@@ -71,11 +72,11 @@ export class SceneManager {
   }
 
   setupLights() {
-    const ambient = new THREE.AmbientLight(0xbec9ff, 0.35);
-    const rimLight = new THREE.DirectionalLight(0xc5a4ff, 1.2);
+    const ambient = new THREE.AmbientLight(0xffe5ff, 0.42);
+    const rimLight = new THREE.DirectionalLight(0xffb0f5, 1.1);
     rimLight.position.set(-3, 4, 2);
-    const fillLight = new THREE.SpotLight(0xffd7a0, 1.1, 20, Math.PI / 4, 0.8, 2);
-    fillLight.position.set(2.5, 3.5, 1.2);
+    const fillLight = new THREE.SpotLight(0x9ef2ff, 1.05, 20, Math.PI / 4.3, 0.85, 2);
+    fillLight.position.set(2.4, 3.6, 1.2);
 
     this.scene.add(ambient, rimLight, fillLight);
   }
@@ -83,10 +84,10 @@ export class SceneManager {
   setupEnvironment() {
     const platformGeometry = new THREE.CylinderGeometry(1.5, 1.5, 0.15, 32, 1, true);
     const platformMaterial = new THREE.MeshStandardMaterial({
-      color: 0x151026,
-      emissive: 0x08030f,
-      metalness: 0.45,
-      roughness: 0.85,
+      color: 0x26124a,
+      emissive: 0x120426,
+      metalness: 0.4,
+      roughness: 0.82,
       transparent: true,
       opacity: 0.92,
     });
@@ -97,9 +98,9 @@ export class SceneManager {
 
     const ringGeometry = new THREE.TorusGeometry(1.6, 0.03, 16, 100);
     const ringMaterial = new THREE.MeshBasicMaterial({
-      color: 0x7050b8,
+      color: 0xffb4f4,
       transparent: true,
-      opacity: 0.55,
+      opacity: 0.6,
     });
     this.glowRing = new THREE.Mesh(ringGeometry, ringMaterial);
     this.glowRing.rotation.x = Math.PI / 2;
@@ -168,10 +169,10 @@ export class SceneManager {
   createPlaceholderModel() {
     const geometry = new THREE.TorusKnotGeometry(0.65, 0.18, 128, 16);
     const material = new THREE.MeshStandardMaterial({
-      color: 0x8e6dff,
-      emissive: 0x1d0d33,
-      metalness: 0.35,
-      roughness: 0.32,
+      color: 0xffb4f4,
+      emissive: 0x271049,
+      metalness: 0.32,
+      roughness: 0.28,
     });
     const mesh = new THREE.Mesh(geometry, material);
     mesh.castShadow = false;
