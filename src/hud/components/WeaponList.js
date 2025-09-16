@@ -25,7 +25,7 @@ export class WeaponList {
     if (!this.weapons || this.weapons.length === 0) {
       const emptyState = document.createElement('p');
       emptyState.className = 'description';
-      emptyState.textContent = 'No weapons have been catalogued for this division yet.';
+      emptyState.textContent = 'No equipment has been added to this category yet.';
       this.cardsContainer.appendChild(emptyState);
       return;
     }

@@ -78,14 +78,14 @@ export class WeaponDetailPanel {
     `;
 
     if (this.footerElement) {
-      this.footerElement.textContent = `Manifest node: ${weapon.id}`;
+      this.footerElement.textContent = `Reference ID: ${weapon.id}`;
     }
   }
 
   renderEmpty() {
     if (this.contentElement) {
       this.contentElement.innerHTML =
-        '<p class="description">Select an armament to reveal its statistics and lore.</p>';
+        '<p class="description">Select a weapon to see its details.</p>';
     }
 
     if (this.rarityBadge) {
@@ -94,7 +94,7 @@ export class WeaponDetailPanel {
     }
 
     if (this.footerElement) {
-      this.footerElement.textContent = 'Awaiting attunement';
+      this.footerElement.textContent = 'Awaiting selection';
     }
 
     this.panelElement.classList.add('is-empty');
