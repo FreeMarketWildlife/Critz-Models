@@ -1,5 +1,3 @@
-import { deriveStatsList } from '../../data/weaponSchema.js';
-
 const RARITY_TITLES = {
   common: 'Common',
   uncommon: 'Uncommon',
@@ -8,6 +6,138 @@ const RARITY_TITLES = {
   legendary: 'Legendary',
   mythic: 'Mythic',
 };
+
+const AMMO_STAT_KEYS = ['ammo', 'magazineSize', 'quiverCapacity', 'capacity', 'heatCapacity'];
+
+const STAT_BAR_DEFINITIONS = [
+  {
+    key: 'damage',
+    label: 'Damage',
+    getRaw: (stats) => stats.damage,
+    max: 200,
+  },
+  {
+    key: 'fireRate',
+    label: 'Fire Rate',
+    getRaw: (stats) => stats.fireRate,
+    max: 10,
+  },
+  {
+    key: 'ammo',
+    label: 'Ammo',
+    getRaw: (stats) => getAmmoStat(stats),
+    max: 60,
+  },
+  {
+    key: 'weight',
+    label: 'Weight',
+    getRaw: (stats) => stats.weight,
+    max: 20,
+  },
+];
+
+const MIN_NON_ZERO_BAR_WIDTH = 6;
+
+function buildStatBarsMarkup(weapon) {
+  if (!weapon) {
+    return '';
+  }
+
+  const barData = collectStatBarData(weapon);
+  if (!barData.length) {
+    return '';
+  }
+
+  const barsMarkup = barData.map(createStatBarMarkup).join('');
+  return `<div class="stat-grid">${barsMarkup}</div>`;
+}
+
+function collectStatBarData(weapon) {
+  const stats = weapon?.stats || {};
+
+  return STAT_BAR_DEFINITIONS.map((definition) => {
+    const raw = definition.getRaw(stats);
+    const display = formatDisplayValue(raw);
+    const numeric = parseStatValue(raw);
+    const hasValue = typeof numeric === 'number' && Number.isFinite(numeric);
+    const baseMax = definition.max ?? 100;
+    const safeMax = hasValue ? Math.max(baseMax, numeric) : baseMax;
+    const ratio = hasValue && safeMax > 0 ? numeric / safeMax : 0;
+    const percent = clamp(ratio * 100, 0, 100);
+    const fill = hasValue && percent > 0 ? Math.max(percent, MIN_NON_ZERO_BAR_WIDTH) : 0;
+
+    return {
+      key: definition.key,
+      label: definition.label,
+      display,
+      value: hasValue ? Number.parseFloat(numeric.toFixed(2)) : null,
+      max: safeMax,
+      hasValue,
+      fill,
+    };
+  });
+}
+
+function createStatBarMarkup(stat) {
+  const valueClass = stat.hasValue ? 'stat-bar-value' : 'stat-bar-value is-missing';
+  const ariaValueNow = stat.hasValue ? stat.value : 0;
+  const ariaValueText = stat.hasValue ? stat.display : 'Not available';
+  const dataEmptyAttr = stat.hasValue ? '' : ' data-empty="true"';
+  const fillStyle = ` style="--fill:${(stat.hasValue ? stat.fill : 0).toFixed(2)}"`;
+
+  return `
+    <div class="stat stat-bar" data-stat="${stat.key}">
+      <div class="stat-bar-header">
+        <span class="stat-label">${stat.label}</span>
+        <span class="${valueClass}">${stat.display}</span>
+      </div>
+      <div class="stat-bar-track"${dataEmptyAttr} role="meter" aria-label="${stat.label}" aria-valuemin="0" aria-valuemax="${stat.max}" aria-valuenow="${ariaValueNow}" aria-valuetext="${ariaValueText}">
+        <div class="stat-bar-fill"${fillStyle}></div>
+      </div>
+    </div>
+  `;
+}
+
+function getAmmoStat(stats) {
+  for (const key of AMMO_STAT_KEYS) {
+    const value = stats?.[key];
+    if (value !== null && value !== undefined && value !== '') {
+      return value;
+    }
+  }
+  return null;
+}
+
+function parseStatValue(raw) {
+  if (typeof raw === 'number') {
+    return Number.isFinite(raw) ? raw : null;
+  }
+
+  if (typeof raw === 'string') {
+    const match = raw.match(/-?\d+(?:\.\d+)?/);
+    return match ? Number.parseFloat(match[0]) : null;
+  }
+
+  return null;
+}
+
+function formatDisplayValue(raw) {
+  if (raw === null || raw === undefined || raw === '') {
+    return 'N/A';
+  }
+
+  if (typeof raw === 'number') {
+    return Number.isFinite(raw)
+      ? Number(raw).toLocaleString(undefined, { maximumFractionDigits: 2 })
+      : 'N/A';
+  }
+
+  return String(raw);
+}
+
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
 
 export class WeaponDetailPanel {
   constructor({ panelElement, rarityBadge, footerElement }) {
@@ -38,21 +168,10 @@ export class WeaponDetailPanel {
   }
 
   renderContent(weapon) {
-    const stats = deriveStatsList(weapon);
+    const statsMarkup = buildStatBarsMarkup(weapon);
     const specialEntries = Object.entries(weapon.special || {}).filter(([, value]) =>
       value !== null && value !== undefined && value !== ''
     );
-
-    const statsMarkup = stats
-      .map(
-        (stat) => `
-          <div class="stat">
-            <span class="stat-label">${stat.label}</span>
-            <span class="stat-value">${stat.value}</span>
-          </div>
-        `
-      )
-      .join('');
 
     const specialMarkup = specialEntries.length
       ? `
@@ -73,7 +192,7 @@ export class WeaponDetailPanel {
     this.contentElement.innerHTML = `
       <h3>${weapon.name}</h3>
       <p class="description">${weapon.description}</p>
-      ${stats.length ? `<div class="stat-grid">${statsMarkup}</div>` : ''}
+      ${statsMarkup}
       ${specialMarkup}
     `;
 
