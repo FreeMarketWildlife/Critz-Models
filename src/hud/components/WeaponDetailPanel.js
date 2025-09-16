@@ -78,14 +78,14 @@ export class WeaponDetailPanel {
     `;
 
     if (this.footerElement) {
-      this.footerElement.textContent = `Manifest reference: ${weapon.id}`;
+      this.footerElement.textContent = `Arcforge manifest: ${weapon.id}`;
     }
   }
 
   renderEmpty() {
     if (this.contentElement) {
       this.contentElement.innerHTML =
-        '<p class="description">Select a weapon to reveal its statistics and lore.</p>';
+        '<p class="description">Select an armament to reveal its stats and storybook lore.</p>';
     }
 
     if (this.rarityBadge) {
@@ -94,7 +94,7 @@ export class WeaponDetailPanel {
     }
 
     if (this.footerElement) {
-      this.footerElement.textContent = 'Awaiting selection';
+      this.footerElement.textContent = 'Awaiting attunement';
     }
 
     this.panelElement.classList.add('is-empty');
