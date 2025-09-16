@@ -54,7 +54,17 @@ export class WeaponDisplayApp {
   buildLayout() {
     this.root.innerHTML = `
       <div class="app-shell">
-        <div class="hud-brand">Crtiz Armory</div>
+        <div class="hud-brand">
+          <div class="brand-crest" aria-hidden="true">
+            <span class="brand-crest__leaf brand-crest__leaf--left"></span>
+            <span class="brand-crest__leaf brand-crest__leaf--right"></span>
+            <span class="brand-crest__seed"></span>
+          </div>
+          <div class="brand-copy">
+            <span class="brand-title">Crtiz Armory</span>
+            <span class="brand-subtitle">Field-crafted arsenal guide</span>
+          </div>
+        </div>
         <nav class="hud-nav" aria-label="Weapon categories">
           <h2>Categories</h2>
           <ul class="nav-tabs" data-component="nav-tabs"></ul>
@@ -65,7 +75,7 @@ export class WeaponDisplayApp {
             <span data-role="list-context"></span>
           </div>
           <div class="weapon-cards" data-role="weapon-cards"></div>
-          <div class="panel-footer" data-role="list-footer">Choose a category to see its gear.</div>
+          <div class="panel-footer" data-role="list-footer">Select a category to explore the crafted gear.</div>
         </section>
         <section class="panel hud-panel hud-detail" data-component="weapon-detail">
           <div class="panel-header">
@@ -75,7 +85,7 @@ export class WeaponDisplayApp {
           <div class="detail-content" data-role="detail-content">
             <p class="description">Pick a tool to see its details.</p>
           </div>
-          <div class="panel-footer" data-role="detail-footer">Awaiting selection</div>
+          <div class="panel-footer" data-role="detail-footer">Awaiting your chosen tool</div>
         </section>
         <section class="stage" data-component="stage"></section>
       </div>
