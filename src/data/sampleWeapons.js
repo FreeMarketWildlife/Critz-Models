@@ -4,178 +4,665 @@ const basePath = 'assets/models';
 
 const weapons = [
   normalizeWeapon({
-    id: 'arc-light-lance',
-    name: 'Arc-Light Lance',
+    id: 'assault-rifle',
+    name: 'Assault Rifle',
     category: 'primary',
-    rarity: 'legendary',
+    rarity: 'rare',
     description:
-      'A spear forged from crystallized lightning. Every thrust fractures reality, discharging arcs that chain between foes.',
+      'Arc-bloom assault blaster that channels prismatic bolts without ever singeing allies.',
     modelPath: null,
     preview: {
-      scale: 1.35,
+      scale: 1.08,
     },
     stats: {
-      damage: 94,
-      fireRate: 0.8,
-      reloadSpeed: 2.6,
-      magazineSize: 4,
-      capacity: 16,
-      range: '36m',
+      damage: 24,
+      fireRate: '9.2 /s',
+      reloadSpeed: '2.1 s',
+      magazineSize: '28 rounds',
+      capacity: '168 reserve',
+      range: '32 m',
+      projectileVelocity: '720 m/s',
+      weight: '8 pts',
     },
     special: {
-      elementalAffinity: 'storm',
-      passive: 'Charge attacks mark enemies, causing delayed thunderstrikes.',
+      perk: 'Prism rounds mark targets so allies deal +10% damage for 3s.',
     },
   }),
   normalizeWeapon({
-    id: 'gilded-repeater',
-    name: 'Gilded Repeater',
+    id: 'sniper-rifle',
+    name: 'Sniper Rifle',
     category: 'primary',
     rarity: 'epic',
     description:
-      'Arcane engravings along its barrel siphon mana to stabilize recoil. Designed for elite sentinels of Critz.',
-    modelPath: `${basePath}/primary/gilded-repeater.glb`,
+      'A crystalline long-range blaster that threads starlight lances across the battlefield.',
+    modelPath: null,
+    preview: {
+      scale: 1.18,
+    },
+    stats: {
+      damage: 110,
+      fireRate: '0.6 /s',
+      reloadSpeed: '2.8 s',
+      magazineSize: '4 rounds',
+      capacity: '20 reserve',
+      range: '180 m',
+      projectileVelocity: '1400 m/s',
+      weight: '12 pts',
+    },
+    special: {
+      perk: 'Fully-charged shots reveal struck enemies to the squad for 4s.',
+    },
+  }),
+  normalizeWeapon({
+    id: 'rocket-launcher',
+    name: 'Rocket Launcher',
+    category: 'primary',
+    rarity: 'legendary',
+    description:
+      'Launches humming comets that burst into friendly-safe shockwaves of glittering force.',
+    modelPath: null,
+    preview: {
+      scale: 1.12,
+    },
+    stats: {
+      damage: 180,
+      splashDamage: 90,
+      fireRate: '0.5 /s',
+      reloadSpeed: '3.2 s',
+      magazineSize: '1 rocket',
+      capacity: '5 reserve',
+      range: '60 m',
+      aoeRadius: '6 m',
+      weight: '18 pts',
+    },
+    special: {
+      perk: 'Blast shields grant the wielder 1s stagger immunity on detonation.',
+    },
+  }),
+  normalizeWeapon({
+    id: 'bow',
+    name: 'Bow',
+    category: 'primary',
+    rarity: 'uncommon',
+    description:
+      'Fey-grown limbs launch luminous arrows that leave a sparkling trail for teammates to follow.',
+    modelPath: `${basePath}/primary/bow.glb`,
+    preview: {
+      scale: 1.04,
+    },
+    stats: {
+      damage: 64,
+      drawSpeed: '1.1 s',
+      reloadSpeed: '0.6 s',
+      quiverCapacity: '24 arrows',
+      range: '70 m',
+      projectileVelocity: '90 m/s',
+      weight: '5 pts',
+    },
+    special: {
+      perk: 'Holding the draw for 1.5s adds +25 damage and a guidance shimmer for allies.',
+    },
+  }),
+  normalizeWeapon({
+    id: 'crossbow',
+    name: 'Crossbow',
+    category: 'primary',
+    rarity: 'rare',
+    description:
+      'Clockwork limbs weave bolts of condensed mana that pin foes without ricocheting into friends.',
+    modelPath: `${basePath}/primary/crossbow.glb`,
     preview: {
       scale: 1.05,
     },
     stats: {
-      damage: 42,
-      fireRate: 6.2,
-      reloadSpeed: 1.9,
-      magazineSize: 36,
-      capacity: 180,
-      range: '28m',
+      damage: 80,
+      fireRate: '1.1 /s',
+      reloadSpeed: '2.4 s',
+      magazineSize: '1 bolt',
+      capacity: '12 reserve',
+      range: '60 m',
+      projectileVelocity: '110 m/s',
+      weight: '7 pts',
     },
     special: {
-      passive: 'Landing critical hits refunds ammo and increases fire rate briefly.',
+      perk: 'Bolts pin targets for 1s while staying harmless to nearby teammates.',
     },
   }),
   normalizeWeapon({
-    id: 'whispering-pistol',
-    name: 'Whispering Pistol',
+    id: 'wizard-staff',
+    name: 'Wizard Staff',
+    category: 'primary',
+    rarity: 'epic',
+    description:
+      'A living focus that overchannels starfire into sweeping volleys before venting into safety bubbles.',
+    modelPath: `${basePath}/primary/wizard-staff.glb`,
+    preview: {
+      scale: 1.22,
+    },
+    stats: {
+      damage: 55,
+      fireRate: '1.5 /s',
+      heatCapacity: '120 heat',
+      heatDissipation: '24 /s',
+      range: '40 m',
+      projectileType: 'Arcane bolts',
+      weight: '10 pts',
+    },
+    special: {
+      perk: 'Venting overheats cleanse nearby allies of debuffs while leaving foes exposed.',
+    },
+  }),
+  normalizeWeapon({
+    id: 'blaster-pistol',
+    name: 'Blaster Pistol',
+    category: 'secondary',
+    rarity: 'uncommon',
+    description:
+      'Pocket starcaster with an overheat dial that keeps squadmates perfectly safe.',
+    modelPath: `${basePath}/secondary/blaster-pistol.glb`,
+    preview: {
+      scale: 0.92,
+    },
+    stats: {
+      damage: 28,
+      fireRate: '5.4 /s',
+      heatCapacity: '80 heat',
+      heatDissipation: '18 /s',
+      range: '22 m',
+      projectileType: 'Star bolts',
+      weight: '3 pts',
+    },
+    special: {
+      perk: 'Maintains accuracy while sprinting; overheats never scorch teammates.',
+    },
+  }),
+  normalizeWeapon({
+    id: 'splash-blaster',
+    name: 'Splash Blaster',
     category: 'secondary',
     rarity: 'rare',
     description:
-      'Compact spellfire sidearm that murmurs prophecies as it reloads. Favored by covert agents.',
-    modelPath: `${basePath}/secondary/whispering-pistol.glb`,
+      'Launches glittering globes that burst in soft radiance, showering enemies without hurting allies.',
+    modelPath: null,
+    preview: {
+      scale: 0.98,
+    },
+    stats: {
+      damage: 32,
+      splashDamage: 18,
+      fireRate: '2.8 /s',
+      reloadSpeed: '1.9 s',
+      magazineSize: '6 shells',
+      capacity: '24 reserve',
+      aoeRadius: '2.5 m',
+      range: '16 m',
+      weight: '4 pts',
+    },
+    special: {
+      perk: 'Direct hits grant nearby allies a 10 health sparkle shield.',
+    },
+  }),
+  normalizeWeapon({
+    id: 'slingshot',
+    name: 'Slingshot',
+    category: 'secondary',
+    rarity: 'common',
+    description:
+      'A playful rune-slinger that pelts foes with pebble meteors while dazzling spectators.',
+    modelPath: `${basePath}/secondary/slingshot.glb`,
+    preview: {
+      scale: 0.85,
+    },
+    stats: {
+      damage: 22,
+      fireRate: '3.6 /s',
+      drawSpeed: '0.7 s',
+      capacity: '30 stones',
+      range: '18 m',
+      projectileVelocity: '60 m/s',
+      weight: '2 pts',
+    },
+    special: {
+      perk: 'Headshots daze foes for 0.6s without causing friendly grief.',
+    },
+  }),
+  normalizeWeapon({
+    id: 'fey-wand',
+    name: 'Fey Wand',
+    category: 'secondary',
+    rarity: 'epic',
+    description:
+      'Channel faelight motes that slow enemies into a glittery trance.',
+    modelPath: null,
+    preview: {
+      scale: 1.02,
+    },
+    stats: {
+      damage: 20,
+      fireRate: '4.2 /s',
+      heatCapacity: '60 heat',
+      heatDissipation: '20 /s',
+      range: '24 m',
+      statusEffect: '20% slow',
+      effectDuration: '2.5 s',
+      weight: '1.5 pts',
+    },
+    special: {
+      perk: 'Every third bolt grants nearby allies +15 stamina bloom.',
+    },
+  }),
+  normalizeWeapon({
+    id: 'flamethrower',
+    name: 'Flamethrower',
+    category: 'secondary',
+    rarity: 'rare',
+    description:
+      'Handheld dragonet that sprays short cones of team-safe flame.',
+    modelPath: null,
+    preview: {
+      scale: 1.08,
+    },
+    stats: {
+      damage: 18,
+      dotDamage: '12 /s',
+      fireRate: '14 /s',
+      magazineSize: '60 fuel',
+      reloadSpeed: '3.0 s',
+      range: '12 m',
+      igniteDuration: '4 s',
+      weight: '9 pts',
+    },
+    special: {
+      perk: "Ignites Bottle o' Gas while leaving the caster's team unharmed.",
+    },
+  }),
+  normalizeWeapon({
+    id: 'fists',
+    name: 'Fists',
+    category: 'melee',
+    rarity: 'common',
+    description:
+      'Gauntleted knuckles woven with grappling ribbons for playful takedowns.',
+    modelPath: null,
     preview: {
       scale: 0.9,
     },
     stats: {
-      damage: 38,
-      fireRate: 4.8,
-      reloadSpeed: 1.4,
-      magazineSize: 12,
-      capacity: 72,
-      range: '18m',
+      damage: 16,
+      attackSpeed: 'Very Fast',
+      staminaCost: 6,
+      range: '1.5 m',
+      abilityCooldown: '10 s',
+      weight: '0 pts',
     },
     special: {
-      passive: 'First shot after reload is silenced and guaranteed to stagger.',
+      ability: 'Grapple: Leap and bind a foe for 1.5s, dealing 12 bonus damage.',
+      perk: 'Grappled targets cannot swing and grant you 20% damage resist.',
     },
   }),
   normalizeWeapon({
-    id: 'sunflare-discus',
-    name: 'Sunflare Discus',
-    category: 'secondary',
-    rarity: 'legendary',
-    description:
-      'A radiant chakram forged in solar furnaces. Returns to the wielder trailing embers.',
-    modelPath: null,
-    preview: {
-      scale: 1.2,
-    },
-    stats: {
-      damage: 56,
-      fireRate: 2.1,
-      reloadSpeed: 0.9,
-      magazineSize: 1,
-      capacity: 6,
-      cooldown: '18s',
-      range: '22m',
-    },
-    special: {
-      passive: 'Successful return throws trigger a blinding solar flare.',
-    },
-  }),
-  normalizeWeapon({
-    id: 'thorned-glaive',
-    name: 'Thorned Glaive',
-    category: 'melee',
-    rarity: 'epic',
-    description:
-      'Living vines coil around this polearm, injecting venom with every sweeping strike.',
-    modelPath: `${basePath}/melee/thorned-glaive.glb`,
-    preview: {
-      scale: 1.5,
-    },
-    stats: {
-      damage: 72,
-      staminaCost: 14,
-      attackSpeed: 'Medium',
-      range: '4.5m',
-    },
-    special: {
-      passive: 'Critical hits spawn grasping roots that immobilize nearby enemies.',
-    },
-  }),
-  normalizeWeapon({
-    id: 'aetheric-daggers',
-    name: 'Aetheric Daggers',
+    id: 'knife',
+    name: 'Knife',
     category: 'melee',
     rarity: 'rare',
     description:
-      'Twin blades phased slightly out of reality. They slip through armor before materializing.',
-    modelPath: null,
+      'Slim arcblade for elegant close-quarters flourishes.',
+    modelPath: `${basePath}/melee/knife.glb`,
     preview: {
-      scale: 0.8,
+      scale: 1,
     },
     stats: {
-      damage: 32,
-      staminaCost: 6,
+      damage: 34,
       attackSpeed: 'Very Fast',
+      staminaCost: 5,
+      range: '1.8 m',
+      abilityCooldown: '12 s',
+      weight: '1 pt',
     },
     special: {
-      passive: 'Backstab damage creates ethereal clones that repeat the attack.',
+      ability: 'Backstab: Striking from behind deals 150 damage and silences for 1s.',
+      perk: 'Backstab refunds the stamina cost instead of draining it.',
     },
   }),
   normalizeWeapon({
-    id: 'wyrmwood-quiver',
-    name: 'Wyrmwood Quiver',
-    category: 'utility',
-    rarity: 'epic',
+    id: 'tomahawk',
+    name: 'Tomahawk',
+    category: 'melee',
+    rarity: 'uncommon',
     description:
-      'Quiver grown from draconic trees. Transmutes mundane arrows into wyrmfire bolts.',
-    modelPath: `${basePath}/utility/wyrmwood-quiver.glb`,
-    preview: {
-      scale: 1.1,
-    },
-    stats: {
-      quiverCapacity: 24,
-      reloadSpeed: 1.1,
-      drawSpeed: 1.3,
-    },
-    special: {
-      passive: 'Last arrow fired in a volley erupts into splitting wyrmlings.',
-    },
-  }),
-  normalizeWeapon({
-    id: 'veilweaver-tome',
-    name: 'Veilweaver Tome',
-    category: 'utility',
-    rarity: 'legendary',
-    description:
-      'Spellbook that summons protective veils while channeling destructive wards.',
+      'Feathered hatchet balanced for looping throws that always find home.',
     modelPath: null,
     preview: {
       scale: 1.05,
     },
     stats: {
-      shieldStrength: 320,
-      cooldown: '24s',
-      duration: '12s',
+      damage: 48,
+      attackSpeed: 'Medium',
+      staminaCost: 12,
+      range: '2.6 m',
+      abilityCooldown: '20 s',
+      weight: '4 pts',
     },
     special: {
-      passive: 'Channel to alternate between fortifying allies and unleashing arcane bursts.',
+      ability: 'Returning Throw: Toss up to 18 m for 70 damage and recall automatically.',
+      perk: 'Thrown strikes mark targets so allies deal +15% damage for 4s.',
+    },
+  }),
+  normalizeWeapon({
+    id: 'katana',
+    name: 'Katana',
+    category: 'melee',
+    rarity: 'epic',
+    description:
+      'Wind-cutting blade that sings with every graceful parry.',
+    modelPath: `${basePath}/melee/katana.glb`,
+    preview: {
+      scale: 1.08,
+    },
+    stats: {
+      damage: 42,
+      attackSpeed: 'Fast',
+      staminaCost: 9,
+      range: '2.8 m',
+      abilityCooldown: '6 s',
+      weight: '3 pts',
+    },
+    special: {
+      ability: 'Wind Deflect: Reflect projectiles for 1s then counter-cut for bonus damage.',
+      perk: 'Successful deflect restores 20 stamina to nearby allies.',
+    },
+  }),
+  normalizeWeapon({
+    id: 'shield',
+    name: 'Shield',
+    category: 'melee',
+    rarity: 'rare',
+    description:
+      'Radiant bulwark for bash-happy guardians.',
+    modelPath: `${basePath}/melee/shield.glb`,
+    preview: {
+      scale: 1.12,
+    },
+    stats: {
+      damage: 26,
+      attackSpeed: 'Slow',
+      staminaCost: 14,
+      range: '1.6 m',
+      abilityCooldown: '8 s',
+      weight: '8 pts',
+    },
+    special: {
+      ability: 'Shield Bash: Lunge forward, knocking enemies back 4 m and stunning 0.8s.',
+      perk: 'Holding guard grants allies behind you 5% damage reduction.',
+    },
+  }),
+  normalizeWeapon({
+    id: 'warhammer',
+    name: 'Warhammer',
+    category: 'melee',
+    rarity: 'legendary',
+    description:
+      'Meteor-headed maul that paints impact circles of friendly boons.',
+    modelPath: null,
+    preview: {
+      scale: 1.18,
+    },
+    stats: {
+      damage: 72,
+      attackSpeed: 'Slow',
+      staminaCost: 18,
+      range: '2.4 m',
+      abilityCooldown: '14 s',
+      aoeRadius: '5 m',
+      weight: '10 pts',
+    },
+    special: {
+      ability: 'Starfall Slam: Crash down for 90 AoE damage and launch foes skyward.',
+      perk: 'Impact zone grants allies +20 stamina over 3s.',
+    },
+  }),
+  normalizeWeapon({
+    id: 'bo-staff',
+    name: 'Bo Staff',
+    category: 'melee',
+    rarity: 'epic',
+    description:
+      'Celestial staff that twirls into a protective whirlwind.',
+    modelPath: null,
+    preview: {
+      scale: 1.1,
+    },
+    stats: {
+      damage: 38,
+      attackSpeed: 'Fast',
+      staminaCost: 11,
+      range: '3.2 m',
+      abilityCooldown: '12 s',
+      weight: '4 pts',
+    },
+    special: {
+      ability: 'Cyclone Spin: Deflect bolts, push foes 3 m, and propel yourself 4 m back.',
+      perk: 'Spin clears projectiles embedded in allies.',
+    },
+  }),
+  normalizeWeapon({
+    id: 'grenade',
+    name: 'Grenade',
+    category: 'utility',
+    rarity: 'rare',
+    description:
+      'Sparkburst charge that pops with a friendly nudge instead of friendly fire.',
+    modelPath: `${basePath}/utility/grenade.glb`,
+    preview: {
+      scale: 0.9,
+    },
+    stats: {
+      damage: 160,
+      fuseTime: '2.5 s',
+      aoeRadius: '4.5 m',
+      carryLimit: 2,
+      weight: '1 pt',
+    },
+    special: {
+      perk: 'Outer blast nudges allies instead of harming them.',
+    },
+  }),
+  normalizeWeapon({
+    id: 'smoke-grenade',
+    name: 'Smoke Grenade',
+    category: 'utility',
+    rarity: 'common',
+    description:
+      'Billows of lilac smoke that hide movement and calm wildfires.',
+    modelPath: null,
+    preview: {
+      scale: 0.88,
+    },
+    stats: {
+      duration: '10 s',
+      aoeRadius: '6 m',
+      deployTime: '0.7 s',
+      carryLimit: 2,
+      weight: '1 pt',
+    },
+    special: {
+      perk: "Smoke extinguishes flames and shields Bottle o' Gas from ignition for 5s.",
+    },
+  }),
+  normalizeWeapon({
+    id: 'resource-pack',
+    name: 'Resource Pack',
+    category: 'utility',
+    rarity: 'uncommon',
+    description:
+      'Friendly courier bundle that rains snacks, ammo, and stamina confetti.',
+    modelPath: `${basePath}/utility/resource-pack.glb`,
+    preview: {
+      scale: 1,
+    },
+    stats: {
+      healAmount: '60 HP',
+      ammoRestock: '40%',
+      deployTime: '1.2 s',
+      carryLimit: 1,
+      weight: '5 pts',
+    },
+    special: {
+      perk: 'Opening grants 25 stamina to teammates.',
+    },
+  }),
+  normalizeWeapon({
+    id: 'mines',
+    name: 'Mines',
+    category: 'utility',
+    rarity: 'epic',
+    description:
+      'Crystal petals that only blossom under enemy footsteps.',
+    modelPath: null,
+    preview: {
+      scale: 0.95,
+    },
+    stats: {
+      damage: 200,
+      aoeRadius: '3 m',
+      armTime: '1.5 s',
+      carryLimit: 3,
+      weight: '4 pts',
+    },
+    special: {
+      perk: 'Mines ignore friendly footsteps and glow for allies.',
+    },
+  }),
+  normalizeWeapon({
+    id: 'glider',
+    name: 'Glider',
+    category: 'utility',
+    rarity: 'rare',
+    description:
+      'Whimsical wingpack that lets the squad float without stamina strain.',
+    modelPath: null,
+    preview: {
+      scale: 1.1,
+    },
+    stats: {
+      glideSpeed: '18 m/s',
+      staminaDrain: '0 /s',
+      deployTime: '0.4 s',
+      carryLimit: 1,
+      weight: '2 pts',
+    },
+    special: {
+      perk: 'Activating negates fall damage for nearby allies for 2s.',
+    },
+  }),
+  normalizeWeapon({
+    id: 'bottle-gas',
+    name: "Bottle o' Gas",
+    category: 'utility',
+    rarity: 'uncommon',
+    description:
+      'Breaks into a shimmering vapor pool begging for a friendly spark.',
+    modelPath: null,
+    preview: {
+      scale: 0.88,
+    },
+    stats: {
+      poolDuration: '12 s',
+      poolRadius: '5 m',
+      carryLimit: 3,
+      weight: '2 pts',
+    },
+    special: {
+      perk: "Ignite with allied flames to create enemy-only fire for 45 damage per second.",
+    },
+  }),
+  normalizeWeapon({
+    id: 'bottle-fire',
+    name: "Bottle o' Fire",
+    category: 'utility',
+    rarity: 'rare',
+    description:
+      'Splashes into a dancing ring of flame that loves foes and ignores friends.',
+    modelPath: null,
+    preview: {
+      scale: 0.9,
+    },
+    stats: {
+      damage: '25 /s',
+      duration: '6 s',
+      aoeRadius: '4 m',
+      carryLimit: 2,
+      weight: '2 pts',
+    },
+    special: {
+      perk: "Fire respects the thrower's team, letting allies dance through safely.",
+    },
+  }),
+  normalizeWeapon({
+    id: 'bottle-lightning',
+    name: "Bottle o' Lightning",
+    category: 'utility',
+    rarity: 'epic',
+    description:
+      'Crackling storm bottled for paralyzing surprise parties.',
+    modelPath: null,
+    preview: {
+      scale: 0.9,
+    },
+    stats: {
+      damage: 40,
+      stunDuration: '2.5 s',
+      duration: '3 s',
+      aoeRadius: '3.5 m',
+      carryLimit: 2,
+      weight: '2 pts',
+    },
+    special: {
+      perk: 'Paralyzed enemies take +15% ranged damage from your squad.',
+    },
+  }),
+  normalizeWeapon({
+    id: 'bottle-ice',
+    name: "Bottle o' Ice",
+    category: 'utility',
+    rarity: 'uncommon',
+    description:
+      'Frosty slick that sends foes skating while allies glide with style.',
+    modelPath: null,
+    preview: {
+      scale: 0.9,
+    },
+    stats: {
+      duration: '8 s',
+      aoeRadius: '4 m',
+      frictionModifier: '0.35x',
+      carryLimit: 3,
+      weight: '2 pts',
+    },
+    special: {
+      perk: 'Allies sliding gain +20% speed; enemies skid without control.',
+    },
+  }),
+  normalizeWeapon({
+    id: 'bottle-air',
+    name: "Bottle o' Air",
+    category: 'utility',
+    rarity: 'uncommon',
+    description:
+      'A giggling gust in a jar, perfect for repositioning friends and foes alike.',
+    modelPath: null,
+    preview: {
+      scale: 0.9,
+    },
+    stats: {
+      aoeRadius: '4.5 m',
+      pushForce: '6 m',
+      deployTime: '0.5 s',
+      carryLimit: 3,
+      weight: '2 pts',
+    },
+    special: {
+      perk: 'Self-knockback refunds 20 stamina and never harms friends.',
     },
   }),
 ];
