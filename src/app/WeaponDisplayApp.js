@@ -53,7 +53,7 @@ export class WeaponDisplayApp {
   buildLayout() {
     this.root.innerHTML = `
       <div class="app-shell">
-        <div class="hud-brand">Crtiz</div>
+        <div class="hud-brand">Crtiz Arsenal</div>
         <nav class="hud-nav" aria-label="Weapon categories">
           <h2>Arsenal</h2>
           <ul class="nav-tabs" data-component="nav-tabs"></ul>
@@ -62,15 +62,15 @@ export class WeaponDisplayApp {
         <aside class="hud-info">
           <section class="panel" data-component="weapon-list">
             <div class="panel-header">
-              <span>Inventory</span>
-              <span data-role="list-context">Primary</span>
+              <span>Division Arsenal</span>
+              <span data-role="list-context">Primary Arsenal</span>
             </div>
             <div class="weapon-cards" data-role="weapon-cards"></div>
-            <div class="panel-footer">Browse the arsenal of Critz.</div>
+            <div class="panel-footer">Curate the perfect battle kit.</div>
           </section>
           <section class="panel" data-component="weapon-detail">
             <div class="panel-header">
-              <span>Weapon Codex</span>
+              <span>Arcane Dossier</span>
               <span data-role="rarity-badge"></span>
             </div>
             <div class="detail-content" data-role="detail-content">
@@ -80,8 +80,8 @@ export class WeaponDisplayApp {
           </section>
         </aside>
         <footer class="hud-footer">
-          <span>Arcane Systems Online</span>
-          <span>Version 0.1.0 • Prototype HUD</span>
+          <span>Arcane Systems Aligned</span>
+          <span>Version 0.2.0 • Prototype HUD</span>
         </footer>
       </div>
     `;
