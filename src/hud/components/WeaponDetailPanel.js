@@ -1,4 +1,4 @@
-import { deriveStatsList } from '../../data/weaponSchema.js';
+import { createStatBars } from './createStatBars.js';
 
 const RARITY_TITLES = {
   common: 'Common',
@@ -10,11 +10,12 @@ const RARITY_TITLES = {
 };
 
 export class WeaponDetailPanel {
-  constructor({ panelElement, rarityBadge, footerElement }) {
+  constructor({ panelElement, rarityBadge, footerElement, statNormalizer }) {
     this.panelElement = panelElement;
     this.contentElement = panelElement.querySelector('[data-role="detail-content"]');
     this.rarityBadge = rarityBadge;
     this.footerElement = footerElement;
+    this.statNormalizer = statNormalizer || null;
   }
 
   render(weapon) {
@@ -38,44 +39,55 @@ export class WeaponDetailPanel {
   }
 
   renderContent(weapon) {
-    const stats = deriveStatsList(weapon);
+    const stats = this.statNormalizer ? this.statNormalizer.getStats(weapon) : [];
     const specialEntries = Object.entries(weapon.special || {}).filter(([, value]) =>
       value !== null && value !== undefined && value !== ''
     );
 
-    const statsMarkup = stats
-      .map(
-        (stat) => `
-          <div class="stat">
-            <span class="stat-label">${stat.label}</span>
-            <span class="stat-value">${stat.value}</span>
-          </div>
-        `
-      )
-      .join('');
+    this.contentElement.innerHTML = '';
 
-    const specialMarkup = specialEntries.length
-      ? `
-        <div class="special-section">
-          <h4>Special Properties</h4>
-          <ul class="special-list">
-            ${specialEntries
-              .map(
-                ([key, value]) =>
-                  `<li><span class="special-key">${this.prettify(key)}:</span> ${value}</li>`
-              )
-              .join('')}
-          </ul>
-        </div>
-      `
-      : '';
+    const fragment = document.createDocumentFragment();
 
-    this.contentElement.innerHTML = `
-      <h3>${weapon.name}</h3>
-      <p class="description">${weapon.description}</p>
-      ${stats.length ? `<div class="stat-grid">${statsMarkup}</div>` : ''}
-      ${specialMarkup}
-    `;
+    const heading = document.createElement('h3');
+    heading.textContent = weapon.name;
+    fragment.appendChild(heading);
+
+    const description = document.createElement('p');
+    description.className = 'description';
+    description.textContent = weapon.description;
+    fragment.appendChild(description);
+
+    const statBars = createStatBars(stats);
+    if (statBars) {
+      fragment.appendChild(statBars);
+    }
+
+    if (specialEntries.length) {
+      const specialSection = document.createElement('div');
+      specialSection.className = 'special-section';
+
+      const specialHeading = document.createElement('h4');
+      specialHeading.textContent = 'Special Properties';
+      specialSection.appendChild(specialHeading);
+
+      const list = document.createElement('ul');
+      list.className = 'special-list';
+
+      specialEntries.forEach(([key, value]) => {
+        const item = document.createElement('li');
+        const keyElement = document.createElement('span');
+        keyElement.className = 'special-key';
+        keyElement.textContent = `${this.prettify(key)}:`;
+        item.appendChild(keyElement);
+        item.append(document.createTextNode(` ${value}`));
+        list.appendChild(item);
+      });
+
+      specialSection.appendChild(list);
+      fragment.appendChild(specialSection);
+    }
+
+    this.contentElement.appendChild(fragment);
 
     if (this.footerElement) {
       this.footerElement.textContent = `Catalog ID: ${weapon.id}`;

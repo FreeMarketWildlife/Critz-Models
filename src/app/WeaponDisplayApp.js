@@ -2,6 +2,7 @@ import { SceneManager } from '../core/SceneManager.js';
 import { HUDController } from '../hud/HUDController.js';
 import { sampleWeapons } from '../data/sampleWeapons.js';
 import { createEventBus } from '../utils/eventBus.js';
+import { createStatBarNormalizer } from '../utils/statBars.js';
 
 export class WeaponDisplayApp {
   constructor(rootElement) {
@@ -15,6 +16,7 @@ export class WeaponDisplayApp {
     this.categories = ['primary', 'secondary', 'melee', 'utility'];
     this.activeCategory = 'primary';
     this.activeWeapon = null;
+    this.statNormalizer = createStatBarNormalizer(this.weapons);
   }
 
   init() {
@@ -43,6 +45,7 @@ export class WeaponDisplayApp {
       weaponsByCategory: this.groupWeaponsByCategory(),
       defaultCategory: this.activeCategory,
       defaultWeaponId: defaultWeapon ? defaultWeapon.id : null,
+      statNormalizer: this.statNormalizer,
     });
 
     if (defaultWeapon) {
