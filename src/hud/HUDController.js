@@ -2,6 +2,7 @@ import { NavigationTabs } from './components/NavigationTabs.js';
 import { WeaponList } from './components/WeaponList.js';
 import { WeaponDetailPanel } from './components/WeaponDetailPanel.js';
 import { WEAPON_CATEGORIES } from '../data/weaponSchema.js';
+import { buildWeaponStatContext } from '../utils/weaponStatBars.js';
 
 const CATEGORY_LABELS = {
   primary: 'Primary',
@@ -34,6 +35,7 @@ export class HUDController {
 
     this.weaponsByCategory = {};
     this.weaponMap = new Map();
+    this.statContext = { profiles: new Map(), maxValues: {} };
 
     this.activeCategory = WEAPON_CATEGORIES[0];
     this.activeWeaponId = null;
@@ -68,7 +70,10 @@ export class HUDController {
       panelElement: this.detailPanelElement,
       rarityBadge: this.rarityBadge,
       footerElement: this.detailFooter,
+      statContext: this.statContext,
     });
+
+    this.weaponDetailPanel.setStatContext(this.statContext);
 
     this.refreshCategory(this.activeCategory, { announce: false });
     if (this.activeWeaponId) {
@@ -78,9 +83,20 @@ export class HUDController {
 
   buildWeaponIndex() {
     this.weaponMap.clear();
+    const allWeapons = [];
+
     Object.values(this.weaponsByCategory).forEach((list = []) => {
-      list.forEach((weapon) => this.weaponMap.set(weapon.id, weapon));
+      list.forEach((weapon) => {
+        this.weaponMap.set(weapon.id, weapon);
+        allWeapons.push(weapon);
+      });
     });
+
+    this.statContext = buildWeaponStatContext(allWeapons);
+
+    if (this.weaponDetailPanel) {
+      this.weaponDetailPanel.setStatContext(this.statContext);
+    }
   }
 
   handleCategoryChange(category) {

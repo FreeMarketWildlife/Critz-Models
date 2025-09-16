@@ -1,4 +1,7 @@
-import { deriveStatsList } from '../../data/weaponSchema.js';
+import {
+  createWeaponStatProfile,
+  calculateStatPercent,
+} from '../../utils/weaponStatBars.js';
 
 const RARITY_TITLES = {
   common: 'Common',
@@ -10,11 +13,21 @@ const RARITY_TITLES = {
 };
 
 export class WeaponDetailPanel {
-  constructor({ panelElement, rarityBadge, footerElement }) {
+  constructor({ panelElement, rarityBadge, footerElement, statContext }) {
     this.panelElement = panelElement;
     this.contentElement = panelElement.querySelector('[data-role="detail-content"]');
     this.rarityBadge = rarityBadge;
     this.footerElement = footerElement;
+    this.statContext = statContext || { profiles: new Map(), maxValues: {} };
+  }
+
+  setStatContext(statContext) {
+    if (!statContext) {
+      this.statContext = { profiles: new Map(), maxValues: {} };
+      return;
+    }
+
+    this.statContext = statContext;
   }
 
   render(weapon) {
@@ -38,21 +51,12 @@ export class WeaponDetailPanel {
   }
 
   renderContent(weapon) {
-    const stats = deriveStatsList(weapon);
+    const stats = this.getStatProfile(weapon);
     const specialEntries = Object.entries(weapon.special || {}).filter(([, value]) =>
       value !== null && value !== undefined && value !== ''
     );
 
-    const statsMarkup = stats
-      .map(
-        (stat) => `
-          <div class="stat">
-            <span class="stat-label">${stat.label}</span>
-            <span class="stat-value">${stat.value}</span>
-          </div>
-        `
-      )
-      .join('');
+    const statsMarkup = this.renderStats(stats);
 
     const specialMarkup = specialEntries.length
       ? `
@@ -73,13 +77,75 @@ export class WeaponDetailPanel {
     this.contentElement.innerHTML = `
       <h3>${weapon.name}</h3>
       <p class="description">${weapon.description}</p>
-      ${stats.length ? `<div class="stat-grid">${statsMarkup}</div>` : ''}
+      ${statsMarkup}
       ${specialMarkup}
     `;
 
     if (this.footerElement) {
       this.footerElement.textContent = `Catalog ID: ${weapon.id}`;
     }
+  }
+
+  getStatProfile(weapon) {
+    if (!weapon) return [];
+
+    if (this.statContext?.profiles instanceof Map) {
+      const cached = this.statContext.profiles.get(weapon.id);
+      if (cached) {
+        return cached;
+      }
+    }
+
+    return createWeaponStatProfile(weapon);
+  }
+
+  renderStats(stats) {
+    if (!stats || stats.length === 0) {
+      return '';
+    }
+
+    const items = stats.map((stat) => this.renderStatBar(stat)).join('');
+    return `<div class="stat-bar-list">${items}</div>`;
+  }
+
+  renderStatBar(stat) {
+    const maxValues = this.statContext?.maxValues || {};
+    const max = maxValues[stat.key] || 0;
+    const percent = calculateStatPercent(stat.numericValue, max);
+    const hasNumeric = typeof stat.numericValue === 'number' && Number.isFinite(stat.numericValue);
+    const valueText = stat.displayValue ?? '—';
+    const valueClasses = ['stat-value'];
+    const progressClasses = ['stat-bar-track'];
+
+    if (!hasNumeric) {
+      progressClasses.push('is-empty');
+    }
+
+    if (!stat.hasValue) {
+      valueClasses.push('is-empty');
+    }
+
+    const ariaNow = hasNumeric ? Math.round(percent) : 0;
+
+    return `
+      <div class="stat-bar">
+        <div class="stat-header">
+          <span class="stat-label">${stat.label}</span>
+          <span class="${valueClasses.join(' ')}">${valueText}</span>
+        </div>
+        <div
+          class="${progressClasses.join(' ')}"
+          role="progressbar"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="${ariaNow}"
+          aria-valuetext="${valueText}"
+          aria-label="${stat.label}: ${valueText}"
+        >
+          <div class="stat-bar-fill" style="width: ${Math.round(percent)}%"></div>
+        </div>
+      </div>
+    `;
   }
 
   renderEmpty() {
