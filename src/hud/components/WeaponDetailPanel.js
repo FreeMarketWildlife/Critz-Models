@@ -7,14 +7,14 @@ const RARITY_TITLES = {
   mythic: 'Mythic',
 };
 
-const AMMO_STAT_KEYS = ['ammo', 'magazineSize', 'quiverCapacity', 'capacity', 'heatCapacity'];
+const AMMO_STAT_KEYS = ['ammo', 'magazineSize', 'carryLimit', 'quiverCapacity', 'capacity', 'heatCapacity'];
 
 const STAT_BAR_DEFINITIONS = [
   {
     key: 'damage',
-    label: 'Damage',
+    label: 'Body Damage',
     getRaw: (stats) => stats.damage,
-    max: 200,
+    max: 120,
   },
   {
     key: 'fireRate',
@@ -23,16 +23,17 @@ const STAT_BAR_DEFINITIONS = [
     max: 10,
   },
   {
-    key: 'ammo',
-    label: 'Ammo',
+    key: 'magazine',
+    label: 'Magazine / Charges',
     getRaw: (stats) => getAmmoStat(stats),
-    max: 60,
+    max: 50,
   },
   {
-    key: 'weight',
-    label: 'Weight',
-    getRaw: (stats) => stats.weight,
-    max: 20,
+    key: 'ttkBody',
+    label: 'TTK (Body)',
+    getRaw: (stats) => stats.ttkBody,
+    getNumericValue: ({ parsed }) => (parsed && parsed > 0 ? 1 / parsed : null),
+    max: 1,
   },
 ];
 
@@ -58,7 +59,11 @@ function collectStatBarData(weapon) {
   return STAT_BAR_DEFINITIONS.map((definition) => {
     const raw = definition.getRaw(stats);
     const display = formatDisplayValue(raw);
-    const numeric = parseStatValue(raw);
+    const parsed = parseStatValue(raw);
+    const numeric =
+      typeof definition.getNumericValue === 'function'
+        ? definition.getNumericValue({ stats, raw, parsed })
+        : parsed;
     const hasValue = typeof numeric === 'number' && Number.isFinite(numeric);
     const baseMax = definition.max ?? 100;
     const safeMax = hasValue ? Math.max(baseMax, numeric) : baseMax;
@@ -70,7 +75,7 @@ function collectStatBarData(weapon) {
       key: definition.key,
       label: definition.label,
       display,
-      value: hasValue ? Number.parseFloat(numeric.toFixed(2)) : null,
+      value: typeof parsed === 'number' && Number.isFinite(parsed) ? Number.parseFloat(parsed.toFixed(2)) : null,
       max: safeMax,
       hasValue,
       fill,
