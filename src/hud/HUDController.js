@@ -2,6 +2,7 @@ import { NavigationTabs } from './components/NavigationTabs.js';
 import { WeaponList } from './components/WeaponList.js';
 import { WeaponDetailPanel } from './components/WeaponDetailPanel.js';
 import { WEAPON_CATEGORIES } from '../data/weaponSchema.js';
+import { computeStatMeta } from '../utils/statBars.js';
 
 const CATEGORY_LABELS = {
   primary: 'Primary',
@@ -39,6 +40,7 @@ export class HUDController {
     this.activeWeaponId = null;
     this.rarityBadge = rarityBadge;
     this.detailFooter = detailFooter;
+    this.statMeta = {};
   }
 
   init({ categories, weaponsByCategory, defaultCategory, defaultWeaponId }) {
@@ -46,6 +48,7 @@ export class HUDController {
     this.activeCategory = defaultCategory || categories[0] || WEAPON_CATEGORIES[0];
     this.activeWeaponId = defaultWeaponId || null;
     this.buildWeaponIndex();
+    this.statMeta = computeStatMeta(Array.from(this.weaponMap.values()));
 
     this.navigationTabs = new NavigationTabs({
       element: this.navElement,
@@ -68,6 +71,7 @@ export class HUDController {
       panelElement: this.detailPanelElement,
       rarityBadge: this.rarityBadge,
       footerElement: this.detailFooter,
+      statMeta: this.statMeta,
     });
 
     this.refreshCategory(this.activeCategory, { announce: false });
