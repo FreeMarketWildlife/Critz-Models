@@ -1,4 +1,5 @@
 import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+import { OrbitControls } from 'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
 import { createRenderer } from './RendererFactory.js';
 import { ResourceLoader } from './ResourceLoader.js';
 
@@ -24,7 +25,13 @@ export class SceneManager {
     this.currentModel = null;
     this.platform = null;
     this.glowRing = null;
-    this.pendingWeaponId = null;
+    this.pendingLoad = null;
+    this.controls = null;
+    this.autoSpinEnabled = true;
+    this.baseCameraPosition = new THREE.Vector3(0, 1.1, 3.3);
+    this.baseCameraTarget = new THREE.Vector3(0, 0.4, 0);
+    this.cameraHomePosition = this.baseCameraPosition.clone();
+    this.cameraHomeTarget = this.baseCameraTarget.clone();
 
     this.handleResize = this.handleResize.bind(this);
     this.animate = this.animate.bind(this);
@@ -33,6 +40,7 @@ export class SceneManager {
   init() {
     this.renderer = createRenderer(this.container);
     this.camera = this.createCamera();
+    this.controls = this.createControls();
     this.setupLights();
     this.setupEnvironment();
     this.scene.add(this.stageGroup);
@@ -49,12 +57,13 @@ export class SceneManager {
   animate() {
     const delta = this.clock.getDelta();
     this.update(delta);
+    this.controls?.update();
     this.renderer.render(this.scene, this.camera);
     this.animationFrame = requestAnimationFrame(this.animate);
   }
 
   update(delta) {
-    if (this.currentModel) {
+    if (this.currentModel && this.autoSpinEnabled) {
       this.currentModel.rotation.y += delta * 0.4;
     }
 
@@ -66,9 +75,27 @@ export class SceneManager {
   createCamera() {
     const aspect = this.container.clientWidth / Math.max(this.container.clientHeight, 1);
     const camera = new THREE.PerspectiveCamera(40, aspect, 0.1, 100);
-    camera.position.set(0, 1.1, 3.3);
-    camera.lookAt(0, 0.4, 0);
+    camera.position.copy(this.baseCameraPosition);
+    camera.lookAt(this.baseCameraTarget);
     return camera;
+  }
+
+  createControls() {
+    const controls = new OrbitControls(this.camera, this.renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.12;
+    controls.enablePan = false;
+    controls.minDistance = 1.4;
+    controls.maxDistance = 6;
+    controls.maxPolarAngle = Math.PI * 0.48;
+    controls.enableKeys = false;
+    controls.zoomSpeed = 0.8;
+    controls.rotateSpeed = 0.6;
+    controls.target.copy(this.cameraHomeTarget);
+    controls.update();
+    this.renderer.domElement.tabIndex = 0;
+    this.renderer.domElement.style.touchAction = 'none';
+    return controls;
   }
 
   setupLights() {
@@ -113,16 +140,22 @@ export class SceneManager {
   }
 
   async loadWeapon(weapon) {
-    if (!weapon) return;
+    if (!weapon) {
+      this.disposeCurrentModel();
+      this.applyRarityGlow();
+      this.pendingLoad = null;
+      return;
+    }
 
-    const requestId = (this.pendingWeaponId = weapon.id);
+    const requestToken = { type: 'weapon', id: weapon.id };
+    this.pendingLoad = requestToken;
 
     let model = null;
     if (weapon.modelPath) {
       model = await this.resourceLoader.loadModel(weapon.modelPath);
     }
 
-    if (this.pendingWeaponId !== requestId) {
+    if (this.pendingLoad !== requestToken) {
       return;
     }
 
@@ -130,17 +163,65 @@ export class SceneManager {
       model = this.createPlaceholderModel();
     }
 
-    model.position.set(0, 0, 0);
-    model.rotation.set(0, Math.PI / 4, 0);
-
-    const scale = weapon.preview?.scale ?? 1.2;
-    model.scale.setScalar(scale);
+    this.prepareModel(model, weapon.preview, {
+      position: { x: 0, y: 0, z: 0 },
+      rotation: { x: 0, y: Math.PI / 4, z: 0 },
+      scale: 1.2,
+    });
 
     this.disposeCurrentModel();
     this.currentModel = model;
     this.stageGroup.add(model);
 
     this.applyRarityGlow(weapon.rarity);
+    this.setCameraHome(weapon.preview?.camera || null);
+    this.resetView();
+  }
+
+  async loadCritter(critter) {
+    if (!critter) {
+      this.disposeCurrentModel();
+      this.applyRarityGlow();
+      this.setCameraHome(null);
+      this.resetView();
+      this.pendingLoad = null;
+      return;
+    }
+
+    const requestToken = { type: 'critter', id: critter.id };
+    this.pendingLoad = requestToken;
+
+    let model = null;
+    if (critter.modelPath) {
+      model = await this.resourceLoader.loadModel(critter.modelPath);
+    }
+
+    if (this.pendingLoad !== requestToken) {
+      return;
+    }
+
+    if (!model) {
+      model = this.createPlaceholderModel();
+    }
+
+    this.prepareModel(model, critter.preview, {
+      position: { x: 0, y: -0.8, z: 0 },
+      rotation: { x: 0, y: Math.PI, z: 0 },
+      scale: 1,
+    });
+
+    this.disposeCurrentModel();
+    this.currentModel = model;
+    this.stageGroup.add(model);
+
+    if (critter.preview?.ringColor) {
+      this.setGlowRingColor(critter.preview.ringColor);
+    } else {
+      this.applyRarityGlow();
+    }
+
+    this.setCameraHome(critter.preview?.camera || null);
+    this.resetView();
   }
 
   disposeCurrentModel() {
@@ -168,6 +249,78 @@ export class SceneManager {
     }
   }
 
+  setGlowRingColor(color) {
+    if (!this.glowRing || color == null) return;
+    this.glowRing.material.color = new THREE.Color(color);
+  }
+
+  prepareModel(model, preview = {}, defaults = {}) {
+    const position = this.resolveVector(preview.position, defaults.position || { x: 0, y: 0, z: 0 });
+    model.position.set(position.x, position.y, position.z);
+
+    const rotation = this.resolveVector(preview.rotation, defaults.rotation || { x: 0, y: 0, z: 0 });
+    model.rotation.set(rotation.x, rotation.y, rotation.z);
+
+    const scale = preview.scale ?? defaults.scale ?? 1;
+    if (typeof scale === 'number') {
+      model.scale.setScalar(scale);
+    } else if (Array.isArray(scale)) {
+      const [x = 1, y = 1, z = 1] = scale;
+      model.scale.set(x, y, z);
+    } else if (typeof scale === 'object') {
+      model.scale.set(scale.x ?? 1, scale.y ?? 1, scale.z ?? 1);
+    }
+  }
+
+  resolveVector(value, fallback = { x: 0, y: 0, z: 0 }) {
+    const fallbackVector = fallback instanceof THREE.Vector3 ? { x: fallback.x, y: fallback.y, z: fallback.z } : fallback;
+
+    if (value instanceof THREE.Vector3) {
+      return { x: value.x, y: value.y, z: value.z };
+    }
+
+    if (Array.isArray(value)) {
+      return {
+        x: value[0] ?? fallbackVector.x,
+        y: value[1] ?? fallbackVector.y,
+        z: value[2] ?? fallbackVector.z,
+      };
+    }
+
+    if (typeof value === 'object' && value !== null) {
+      return {
+        x: value.x ?? fallbackVector.x,
+        y: value.y ?? fallbackVector.y,
+        z: value.z ?? fallbackVector.z,
+      };
+    }
+
+    return { ...fallbackVector };
+  }
+
+  setCameraHome(preset) {
+    if (preset && typeof preset === 'object') {
+      const position = this.resolveVector(preset.position, this.baseCameraPosition);
+      const target = this.resolveVector(preset.target, this.baseCameraTarget);
+      this.cameraHomePosition.set(position.x, position.y, position.z);
+      this.cameraHomeTarget.set(target.x, target.y, target.z);
+    } else {
+      this.cameraHomePosition.copy(this.baseCameraPosition);
+      this.cameraHomeTarget.copy(this.baseCameraTarget);
+    }
+  }
+
+  setAutoSpin(enabled) {
+    this.autoSpinEnabled = Boolean(enabled);
+  }
+
+  resetView() {
+    if (!this.camera || !this.controls) return;
+    this.camera.position.copy(this.cameraHomePosition);
+    this.controls.target.copy(this.cameraHomeTarget);
+    this.controls.update();
+  }
+
   createPlaceholderModel() {
     const geometry = new THREE.TorusKnotGeometry(0.65, 0.18, 128, 16);
     const material = new THREE.MeshStandardMaterial({
@@ -188,6 +341,7 @@ export class SceneManager {
     this.renderer.setSize(clientWidth, clientHeight, false);
     this.camera.aspect = clientWidth / Math.max(clientHeight, 1);
     this.camera.updateProjectionMatrix();
+    this.controls?.update();
   }
 
   dispose() {
@@ -204,5 +358,6 @@ export class SceneManager {
       }
     });
     this.renderer?.dispose?.();
+    this.controls?.dispose?.();
   }
 }
