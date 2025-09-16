@@ -25,7 +25,7 @@ export class WeaponList {
     if (!this.weapons || this.weapons.length === 0) {
       const emptyState = document.createElement('p');
       emptyState.className = 'description';
-      emptyState.textContent = 'No weapons have been catalogued for this division yet.';
+      emptyState.textContent = 'No relics have been attuned for this wing yet.';
       this.cardsContainer.appendChild(emptyState);
       return;
     }
@@ -47,10 +47,42 @@ export class WeaponList {
     title.textContent = weapon.name;
     card.appendChild(title);
 
-    const stats = deriveStatsList(weapon).slice(0, 4);
-    if (stats.length > 0) {
+    const stats = deriveStatsList(weapon);
+    const weightStat = stats.find((stat) => stat.key === 'weight') || null;
+    const rangeStat = stats.find((stat) => stat.key === 'range') || null;
+    const coreStats = stats.filter(
+      (stat) => stat.key !== 'weight' && stat.key !== 'range'
+    );
+    const summaryStats = [];
+
+    coreStats.slice(0, 2).forEach((stat) => summaryStats.push(stat));
+
+    if (rangeStat && summaryStats.length < 4) {
+      summaryStats.push(rangeStat);
+    }
+
+    if (summaryStats.length < 3) {
+      const extraStat = coreStats.slice(2).find((stat) => !summaryStats.includes(stat));
+      if (extraStat) {
+        summaryStats.push(extraStat);
+      }
+    }
+
+    if (weightStat && summaryStats.length < 4) {
+      summaryStats.push(weightStat);
+    }
+
+    while (summaryStats.length < 4) {
+      const filler = stats.find((stat) => !summaryStats.includes(stat));
+      if (!filler) {
+        break;
+      }
+      summaryStats.push(filler);
+    }
+
+    if (summaryStats.length > 0) {
       const statList = document.createElement('dl');
-      stats.forEach(({ label, value }) => {
+      summaryStats.forEach(({ label, value }) => {
         const dt = document.createElement('dt');
         dt.textContent = label;
         const dd = document.createElement('dd');

@@ -4,10 +4,10 @@ import { WeaponDetailPanel } from './components/WeaponDetailPanel.js';
 import { WEAPON_CATEGORIES } from '../data/weaponSchema.js';
 
 const CATEGORY_LABELS = {
-  primary: 'Primary',
-  secondary: 'Secondary',
-  melee: 'Melee',
-  utility: 'Utility',
+  primary: 'Primary Arsenal',
+  secondary: 'Secondary Arsenal',
+  melee: 'Melee Arsenal',
+  utility: 'Utility Arsenal',
 };
 
 export class HUDController {
