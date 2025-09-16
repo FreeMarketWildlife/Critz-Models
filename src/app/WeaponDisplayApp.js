@@ -31,6 +31,7 @@ export class WeaponDisplayApp {
       listPanel: layout.weaponListPanel,
       detailPanel: layout.weaponDetailPanel,
       listContextLabel: layout.listContextLabel,
+      listFooter: layout.listFooter,
       rarityBadge: layout.rarityBadge,
       detailFooter: layout.detailFooter,
     });
@@ -53,36 +54,30 @@ export class WeaponDisplayApp {
   buildLayout() {
     this.root.innerHTML = `
       <div class="app-shell">
-        <div class="hud-brand">Crtiz</div>
+        <div class="hud-brand">Crtiz Armory</div>
         <nav class="hud-nav" aria-label="Weapon categories">
-          <h2>Arsenal</h2>
+          <h2>Categories</h2>
           <ul class="nav-tabs" data-component="nav-tabs"></ul>
         </nav>
+        <section class="panel hud-panel hud-list" data-component="weapon-list">
+          <div class="panel-header">
+            <span>Arsenal</span>
+            <span data-role="list-context"></span>
+          </div>
+          <div class="weapon-cards" data-role="weapon-cards"></div>
+          <div class="panel-footer" data-role="list-footer">Choose a category to see its gear.</div>
+        </section>
+        <section class="panel hud-panel hud-detail" data-component="weapon-detail">
+          <div class="panel-header">
+            <span>Equipment Info</span>
+            <span data-role="rarity-badge"></span>
+          </div>
+          <div class="detail-content" data-role="detail-content">
+            <p class="description">Pick a tool to see its details.</p>
+          </div>
+          <div class="panel-footer" data-role="detail-footer">Awaiting selection</div>
+        </section>
         <section class="stage" data-component="stage"></section>
-        <aside class="hud-info">
-          <section class="panel" data-component="weapon-list">
-            <div class="panel-header">
-              <span>Arsenal Roster</span>
-              <span data-role="list-context">Primary Wing</span>
-            </div>
-            <div class="weapon-cards" data-role="weapon-cards"></div>
-            <div class="panel-footer">No friendly mischief, only radiant firepower.</div>
-          </section>
-          <section class="panel" data-component="weapon-detail">
-            <div class="panel-header">
-              <span>Arcane Briefing</span>
-              <span data-role="rarity-badge"></span>
-            </div>
-            <div class="detail-content" data-role="detail-content">
-              <p class="description">Select an armament to reveal its spark.</p>
-            </div>
-            <div class="panel-footer" data-role="detail-footer">Awaiting attunement</div>
-          </section>
-        </aside>
-        <footer class="hud-footer">
-          <span>Arcane Carousel Online</span>
-          <span>Version 0.2.0 • Prototype HUD</span>
-        </footer>
       </div>
     `;
 
@@ -92,6 +87,7 @@ export class WeaponDisplayApp {
       weaponListPanel: this.root.querySelector('[data-component="weapon-list"]'),
       weaponDetailPanel: this.root.querySelector('[data-component="weapon-detail"]'),
       listContextLabel: this.root.querySelector('[data-role="list-context"]'),
+      listFooter: this.root.querySelector('[data-role="list-footer"]'),
       rarityBadge: this.root.querySelector('[data-role="rarity-badge"]'),
       detailFooter: this.root.querySelector('[data-role="detail-footer"]'),
     };

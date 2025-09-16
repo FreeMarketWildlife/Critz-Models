@@ -17,6 +17,7 @@ export class HUDController {
     listPanel,
     detailPanel,
     listContextLabel,
+    listFooter,
     rarityBadge,
     detailFooter,
   }) {
@@ -25,6 +26,7 @@ export class HUDController {
     this.listPanel = listPanel;
     this.detailPanelElement = detailPanel;
     this.listContextLabel = listContextLabel;
+    this.listFooter = listFooter;
 
     this.navigationTabs = null;
     this.weaponList = null;
@@ -58,6 +60,7 @@ export class HUDController {
 
     this.weaponList = new WeaponList({
       panelElement: this.listPanel,
+      footerElement: this.listFooter,
       onSelect: (weaponId) => this.handleWeaponSelection(weaponId),
     });
 
@@ -90,7 +93,7 @@ export class HUDController {
     const weapons = this.weaponsByCategory[category] || [];
     const label = CATEGORY_LABELS[category] || this.prettify(category);
     if (this.listContextLabel) {
-      this.listContextLabel.textContent = `${label} Wing`;
+      this.listContextLabel.textContent = label;
     }
     this.navigationTabs.setActive(category);
     const defaultWeaponId = weapons[0]?.id ?? null;
