@@ -1,4 +1,4 @@
-import { deriveStatsList } from '../../data/weaponSchema.js';
+import { deriveWeaponStatBars } from '../../utils/statBars.js';
 
 const RARITY_TITLES = {
   common: 'Common',
@@ -10,11 +10,12 @@ const RARITY_TITLES = {
 };
 
 export class WeaponDetailPanel {
-  constructor({ panelElement, rarityBadge, footerElement }) {
+  constructor({ panelElement, rarityBadge, footerElement, statMeta = {} }) {
     this.panelElement = panelElement;
     this.contentElement = panelElement.querySelector('[data-role="detail-content"]');
     this.rarityBadge = rarityBadge;
     this.footerElement = footerElement;
+    this.statMeta = statMeta;
   }
 
   render(weapon) {
@@ -38,20 +39,36 @@ export class WeaponDetailPanel {
   }
 
   renderContent(weapon) {
-    const stats = deriveStatsList(weapon);
+    const stats = deriveWeaponStatBars(weapon, this.statMeta);
     const specialEntries = Object.entries(weapon.special || {}).filter(([, value]) =>
       value !== null && value !== undefined && value !== ''
     );
 
     const statsMarkup = stats
-      .map(
-        (stat) => `
-          <div class="stat">
-            <span class="stat-label">${stat.label}</span>
-            <span class="stat-value">${stat.value}</span>
+      .map((stat) => {
+        const classes = ['stat-bar'];
+        if (!stat.hasValue) {
+          classes.push('stat-bar--empty');
+        }
+
+        const width = stat.hasValue ? stat.percentage : 0;
+        const roundedWidth = Math.round(width);
+        const accessibilityAttributes = stat.hasValue
+          ? `role="progressbar" aria-label="${stat.label}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${roundedWidth}"`
+          : `role="progressbar" aria-label="${stat.label}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-valuetext="Not available"`;
+
+        return `
+          <div class="${classes.join(' ')}">
+            <div class="stat-bar-header">
+              <span class="stat-label">${stat.label}</span>
+              <span class="stat-value">${stat.value}</span>
+            </div>
+            <div class="stat-bar-track" role="presentation">
+              <div class="stat-bar-fill" style="--stat-bar-fill: ${width}%;" ${accessibilityAttributes}></div>
+            </div>
           </div>
-        `
-      )
+        `;
+      })
       .join('');
 
     const specialMarkup = specialEntries.length
@@ -73,7 +90,7 @@ export class WeaponDetailPanel {
     this.contentElement.innerHTML = `
       <h3>${weapon.name}</h3>
       <p class="description">${weapon.description}</p>
-      ${stats.length ? `<div class="stat-grid">${statsMarkup}</div>` : ''}
+      ${stats.length ? `<div class="stat-bars">${statsMarkup}</div>` : ''}
       ${specialMarkup}
     `;
 
