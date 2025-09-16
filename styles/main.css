@@ -319,16 +319,69 @@ body::after {
   letter-spacing: 0.08em;
 }
 
-.weapon-card dl {
-  margin: 0;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.3rem 0.6rem;
-  font-size: 0.8rem;
+.weapon-card .stat-bars {
+  margin-top: 0.8rem;
 }
 
-dl dt {
-  opacity: 0.7;
+.stat-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.stat-bars--compact {
+  gap: 0.45rem;
+}
+
+.stat-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.stat-bars--compact .stat-bar {
+  gap: 0.25rem;
+}
+
+.stat-bar-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(243, 248, 240, 0.72);
+}
+
+.stat-bars--compact .stat-bar-label {
+  font-size: 0.64rem;
+  letter-spacing: 0.12em;
+}
+
+.stat-bar-track {
+  position: relative;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+
+.stat-bars--compact .stat-bar-track {
+  height: 0.38rem;
+}
+
+.stat-bar-fill {
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, rgba(124, 200, 111, 0.85), rgba(90, 169, 201, 0.9));
+  box-shadow: 0 0 12px rgba(124, 200, 111, 0.45);
+  transition: width 0.3s ease;
+}
+
+.stat-bar.is-empty .stat-bar-track {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.stat-bar.is-empty .stat-bar-fill {
+  width: 0;
+  box-shadow: none;
 }
 
 .detail-content {
@@ -354,32 +407,6 @@ dl dt {
   font-size: 0.92rem;
   line-height: 1.7;
   color: var(--color-text-secondary);
-}
-
-.stat-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.85rem 1.2rem;
-  font-size: 0.9rem;
-}
-
-.stat-grid .stat {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.stat-label {
-  font-size: 0.75rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: rgba(243, 248, 240, 0.72);
-}
-
-.stat-value {
-  font-size: 1.08rem;
-  color: var(--color-text-primary);
-  font-weight: 600;
 }
 
 .special-section {

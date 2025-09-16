@@ -1,7 +1,7 @@
-import { deriveStatsList } from '../../data/weaponSchema.js';
+import { createStatBars } from './createStatBars.js';
 
 export class WeaponList {
-  constructor({ panelElement, footerElement, onSelect }) {
+  constructor({ panelElement, footerElement, onSelect, statNormalizer }) {
     this.panelElement = panelElement;
     this.cardsContainer = panelElement.querySelector('[data-role="weapon-cards"]');
     this.footerElement = footerElement;
@@ -9,6 +9,7 @@ export class WeaponList {
     this.cards = new Map();
     this.weapons = [];
     this.activeWeaponId = null;
+    this.statNormalizer = statNormalizer || null;
   }
 
   setWeapons(weapons, defaultWeaponId = null) {
@@ -60,18 +61,10 @@ export class WeaponList {
     title.textContent = weapon.name;
     card.appendChild(title);
 
-    const stats = deriveStatsList(weapon).slice(0, 4);
-    if (stats.length > 0) {
-      const statList = document.createElement('dl');
-      stats.forEach(({ label, value }) => {
-        const dt = document.createElement('dt');
-        dt.textContent = label;
-        const dd = document.createElement('dd');
-        dd.textContent = value;
-        statList.appendChild(dt);
-        statList.appendChild(dd);
-      });
-      card.appendChild(statList);
+    const stats = this.statNormalizer ? this.statNormalizer.getStats(weapon) : [];
+    const statBars = createStatBars(stats, { compact: true });
+    if (statBars) {
+      card.appendChild(statBars);
     }
 
     card.addEventListener('click', () => this.handleSelection(weapon.id));

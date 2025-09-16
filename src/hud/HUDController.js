@@ -39,12 +39,14 @@ export class HUDController {
     this.activeWeaponId = null;
     this.rarityBadge = rarityBadge;
     this.detailFooter = detailFooter;
+    this.statNormalizer = null;
   }
 
-  init({ categories, weaponsByCategory, defaultCategory, defaultWeaponId }) {
+  init({ categories, weaponsByCategory, defaultCategory, defaultWeaponId, statNormalizer }) {
     this.weaponsByCategory = weaponsByCategory;
     this.activeCategory = defaultCategory || categories[0] || WEAPON_CATEGORIES[0];
     this.activeWeaponId = defaultWeaponId || null;
+    this.statNormalizer = statNormalizer || null;
     this.buildWeaponIndex();
 
     this.navigationTabs = new NavigationTabs({
@@ -62,12 +64,14 @@ export class HUDController {
       panelElement: this.listPanel,
       footerElement: this.listFooter,
       onSelect: (weaponId) => this.handleWeaponSelection(weaponId),
+      statNormalizer: this.statNormalizer,
     });
 
     this.weaponDetailPanel = new WeaponDetailPanel({
       panelElement: this.detailPanelElement,
       rarityBadge: this.rarityBadge,
       footerElement: this.detailFooter,
+      statNormalizer: this.statNormalizer,
     });
 
     this.refreshCategory(this.activeCategory, { announce: false });
