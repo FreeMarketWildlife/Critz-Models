@@ -90,7 +90,7 @@ export class HUDController {
     const weapons = this.weaponsByCategory[category] || [];
     const label = CATEGORY_LABELS[category] || this.prettify(category);
     if (this.listContextLabel) {
-      this.listContextLabel.textContent = `${label} Wing`;
+      this.listContextLabel.textContent = label;
     }
     this.navigationTabs.setActive(category);
     const defaultWeaponId = weapons[0]?.id ?? null;
