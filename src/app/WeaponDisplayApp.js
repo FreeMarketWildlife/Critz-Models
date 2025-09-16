@@ -62,26 +62,26 @@ export class WeaponDisplayApp {
         <aside class="hud-info">
           <section class="panel" data-component="weapon-list">
             <div class="panel-header">
-              <span>Inventory</span>
-              <span data-role="list-context">Primary</span>
+              <span>Arsenal Roster</span>
+              <span data-role="list-context">Primary Wing</span>
             </div>
             <div class="weapon-cards" data-role="weapon-cards"></div>
-            <div class="panel-footer">Browse the arsenal of Critz.</div>
+            <div class="panel-footer">No friendly mischief, only radiant firepower.</div>
           </section>
           <section class="panel" data-component="weapon-detail">
             <div class="panel-header">
-              <span>Weapon Codex</span>
+              <span>Arcane Briefing</span>
               <span data-role="rarity-badge"></span>
             </div>
             <div class="detail-content" data-role="detail-content">
-              <p class="description">Select a weapon to reveal its legend.</p>
+              <p class="description">Select an armament to reveal its spark.</p>
             </div>
-            <div class="panel-footer" data-role="detail-footer">Awaiting selection</div>
+            <div class="panel-footer" data-role="detail-footer">Awaiting attunement</div>
           </section>
         </aside>
         <footer class="hud-footer">
-          <span>Arcane Systems Online</span>
-          <span>Version 0.1.0 • Prototype HUD</span>
+          <span>Arcane Carousel Online</span>
+          <span>Version 0.2.0 • Prototype HUD</span>
         </footer>
       </div>
     `;
