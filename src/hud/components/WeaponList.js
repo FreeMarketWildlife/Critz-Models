@@ -1,9 +1,10 @@
 import { deriveStatsList } from '../../data/weaponSchema.js';
 
 export class WeaponList {
-  constructor({ panelElement, onSelect }) {
+  constructor({ panelElement, footerElement, onSelect }) {
     this.panelElement = panelElement;
     this.cardsContainer = panelElement.querySelector('[data-role="weapon-cards"]');
+    this.footerElement = footerElement;
     this.onSelect = onSelect;
     this.cards = new Map();
     this.weapons = [];
@@ -13,6 +14,7 @@ export class WeaponList {
   setWeapons(weapons, defaultWeaponId = null) {
     this.weapons = weapons;
     this.render();
+    this.updateFooter();
     if (defaultWeaponId) {
       this.setActiveWeapon(defaultWeaponId);
     }
@@ -25,7 +27,7 @@ export class WeaponList {
     if (!this.weapons || this.weapons.length === 0) {
       const emptyState = document.createElement('p');
       emptyState.className = 'description';
-      emptyState.textContent = 'No weapons have been catalogued for this division yet.';
+      emptyState.textContent = 'Nothing is available in this category yet.';
       this.cardsContainer.appendChild(emptyState);
       return;
     }
@@ -35,6 +37,17 @@ export class WeaponList {
       this.cardsContainer.appendChild(card);
       this.cards.set(weapon.id, card);
     });
+  }
+
+  updateFooter() {
+    if (!this.footerElement) return;
+    const count = this.weapons?.length ?? 0;
+    if (count === 0) {
+      this.footerElement.textContent = 'No gear catalogued yet.';
+      return;
+    }
+    const label = count === 1 ? 'choice' : 'choices';
+    this.footerElement.textContent = `${count} ${label} available`;
   }
 
   createCard(weapon) {
