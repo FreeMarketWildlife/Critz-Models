@@ -1,4 +1,5 @@
 import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+import { OrbitControls } from 'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
 import { createRenderer } from './RendererFactory.js';
 import { ResourceLoader } from './ResourceLoader.js';
 
@@ -24,7 +25,11 @@ export class SceneManager {
     this.currentModel = null;
     this.platform = null;
     this.glowRing = null;
-    this.pendingWeaponId = null;
+    this.controls = null;
+    this.autoSpin = true;
+    this.defaultCameraPosition = new THREE.Vector3(0, 1.1, 3.3);
+    this.defaultCameraTarget = new THREE.Vector3(0, 0.7, 0);
+    this.loadRequestId = 0;
 
     this.handleResize = this.handleResize.bind(this);
     this.animate = this.animate.bind(this);
@@ -36,6 +41,7 @@ export class SceneManager {
     this.setupLights();
     this.setupEnvironment();
     this.scene.add(this.stageGroup);
+    this.setupControls();
 
     window.addEventListener('resize', this.handleResize);
     this.handleResize();
@@ -49,12 +55,13 @@ export class SceneManager {
   animate() {
     const delta = this.clock.getDelta();
     this.update(delta);
+    this.controls?.update();
     this.renderer.render(this.scene, this.camera);
     this.animationFrame = requestAnimationFrame(this.animate);
   }
 
   update(delta) {
-    if (this.currentModel) {
+    if (this.currentModel && this.autoSpin) {
       this.currentModel.rotation.y += delta * 0.4;
     }
 
@@ -66,9 +73,26 @@ export class SceneManager {
   createCamera() {
     const aspect = this.container.clientWidth / Math.max(this.container.clientHeight, 1);
     const camera = new THREE.PerspectiveCamera(40, aspect, 0.1, 100);
-    camera.position.set(0, 1.1, 3.3);
-    camera.lookAt(0, 0.4, 0);
+    camera.position.copy(this.defaultCameraPosition);
+    camera.lookAt(this.defaultCameraTarget);
     return camera;
+  }
+
+  setupControls() {
+    if (!this.renderer || !this.camera) return;
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.controls.enableDamping = true;
+    this.controls.dampingFactor = 0.08;
+    this.controls.enablePan = false;
+    this.controls.minDistance = 1.6;
+    this.controls.maxDistance = 6;
+    this.controls.maxPolarAngle = Math.PI * 0.55;
+    this.controls.target.copy(this.defaultCameraTarget);
+    this.controls.update();
+    this.controls.saveState();
+
+    this.renderer.domElement.setAttribute('tabindex', '0');
+    this.renderer.domElement.setAttribute('aria-label', '3D preview viewport');
   }
 
   setupLights() {
@@ -115,14 +139,42 @@ export class SceneManager {
   async loadWeapon(weapon) {
     if (!weapon) return;
 
-    const requestId = (this.pendingWeaponId = weapon.id);
+    await this.loadEntity(weapon, {
+      applyRarity: true,
+      defaultRotation: { x: 0, y: Math.PI / 4, z: 0 },
+      defaultScale: 1.2,
+      defaultPosition: { x: 0, y: 0, z: 0 },
+    });
+  }
+
+  async loadCharacter(critter) {
+    if (!critter) return;
+
+    await this.loadEntity(critter, {
+      defaultRotation: { x: 0, y: 0, z: 0 },
+      defaultScale: 1,
+      defaultPosition: { x: 0, y: 0, z: 0 },
+      glowColor: 0x7cc86f,
+    });
+  }
+
+  async loadEntity(entity, {
+    applyRarity = false,
+    defaultRotation = {},
+    defaultScale = 1,
+    defaultPosition = {},
+    glowColor = null,
+  } = {}) {
+    if (!entity) return;
+
+    const requestToken = ++this.loadRequestId;
 
     let model = null;
-    if (weapon.modelPath) {
-      model = await this.resourceLoader.loadModel(weapon.modelPath);
+    if (entity.modelPath) {
+      model = await this.resourceLoader.loadModel(entity.modelPath);
     }
 
-    if (this.pendingWeaponId !== requestId) {
+    if (requestToken !== this.loadRequestId) {
       return;
     }
 
@@ -130,17 +182,46 @@ export class SceneManager {
       model = this.createPlaceholderModel();
     }
 
-    model.position.set(0, 0, 0);
-    model.rotation.set(0, Math.PI / 4, 0);
-
-    const scale = weapon.preview?.scale ?? 1.2;
-    model.scale.setScalar(scale);
+    this.configureModel(model, entity.preview ?? {}, {
+      defaultRotation,
+      defaultScale,
+      defaultPosition,
+    });
 
     this.disposeCurrentModel();
     this.currentModel = model;
     this.stageGroup.add(model);
 
-    this.applyRarityGlow(weapon.rarity);
+    const glowOverride = entity.preview?.glowColor ?? glowColor;
+    if (applyRarity) {
+      this.applyRarityGlow(entity.rarity);
+    } else {
+      this.applyGlowColor(glowOverride);
+    }
+  }
+
+  configureModel(model, preview = {}, { defaultRotation = {}, defaultScale = 1, defaultPosition = {} } = {}) {
+    const rotation = preview.rotation || defaultRotation || {};
+    model.rotation.set(
+      rotation.x ?? 0,
+      rotation.y ?? 0,
+      rotation.z ?? 0,
+    );
+
+    const position = preview.position || defaultPosition || {};
+    model.position.set(
+      position.x ?? 0,
+      position.y ?? 0,
+      position.z ?? 0,
+    );
+
+    const scale = preview.scale ?? defaultScale;
+    if (typeof scale === 'number') {
+      model.scale.setScalar(scale);
+    } else if (scale && typeof scale === 'object') {
+      const { x = 1, y = 1, z = 1 } = scale;
+      model.scale.set(x, y, z);
+    }
   }
 
   disposeCurrentModel() {
@@ -163,9 +244,13 @@ export class SceneManager {
 
   applyRarityGlow(rarity = 'common') {
     const color = RARITY_GLOWS[rarity] ?? RARITY_GLOWS.common;
-    if (this.glowRing) {
-      this.glowRing.material.color = new THREE.Color(color);
-    }
+    this.applyGlowColor(color);
+  }
+
+  applyGlowColor(color) {
+    if (!this.glowRing) return;
+    const targetColor = color != null ? color : RARITY_GLOWS.common;
+    this.glowRing.material.color = new THREE.Color(targetColor);
   }
 
   createPlaceholderModel() {
@@ -188,6 +273,19 @@ export class SceneManager {
     this.renderer.setSize(clientWidth, clientHeight, false);
     this.camera.aspect = clientWidth / Math.max(clientHeight, 1);
     this.camera.updateProjectionMatrix();
+    this.controls?.update();
+  }
+
+  setAutoSpin(enabled) {
+    this.autoSpin = Boolean(enabled);
+  }
+
+  resetView() {
+    if (!this.controls) return;
+    this.controls.reset();
+    this.controls.target.copy(this.defaultCameraTarget);
+    this.camera.position.copy(this.defaultCameraPosition);
+    this.controls.update();
   }
 
   dispose() {
@@ -204,5 +302,6 @@ export class SceneManager {
       }
     });
     this.renderer?.dispose?.();
+    this.controls?.dispose?.();
   }
 }

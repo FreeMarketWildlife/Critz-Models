@@ -1,4 +1,5 @@
 import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+import { SkeletonUtils } from 'https://unpkg.com/three@0.160.0/examples/jsm/utils/SkeletonUtils.js';
 
 export class ResourceLoader {
   constructor() {
@@ -12,7 +13,7 @@ export class ResourceLoader {
     }
 
     if (this.cache.has(path)) {
-      return this.cache.get(path).clone();
+      return this._cloneModel(this.cache.get(path));
     }
 
     try {
@@ -21,7 +22,7 @@ export class ResourceLoader {
       const scene = gltf.scene || gltf.scenes?.[0];
       if (scene) {
         this.cache.set(path, scene);
-        return scene.clone(true);
+        return this._cloneModel(scene);
       }
     } catch (error) {
       console.warn(`Failed to load model at ${path}. Using fallback geometry instead.`, error);
@@ -29,7 +30,7 @@ export class ResourceLoader {
 
     const fallback = this._createPlaceholder();
     this.cache.set(path, fallback);
-    return fallback.clone();
+    return this._cloneModel(fallback);
   }
 
   async loadTexture(path) {
@@ -72,5 +73,10 @@ export class ResourceLoader {
     const group = new THREE.Group();
     group.add(mesh);
     return group;
+  }
+
+  _cloneModel(source) {
+    if (!source) return null;
+    return SkeletonUtils.clone(source);
   }
 }
