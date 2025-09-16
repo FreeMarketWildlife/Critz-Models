@@ -35,6 +35,7 @@ export class WeaponDetailPanel {
     this.rarityBadge.textContent = label;
     this.rarityBadge.className = '';
     this.rarityBadge.classList.add('rarity-badge', `rarity-${rarity}`);
+    this.rarityBadge.style.display = 'inline-flex';
   }
 
   renderContent(weapon) {
@@ -78,23 +79,24 @@ export class WeaponDetailPanel {
     `;
 
     if (this.footerElement) {
-      this.footerElement.textContent = `Manifest node: ${weapon.id}`;
+      this.footerElement.textContent = `ID: ${weapon.id}`;
     }
   }
 
   renderEmpty() {
     if (this.contentElement) {
       this.contentElement.innerHTML =
-        '<p class="description">Select an armament to reveal its statistics and lore.</p>';
+        '<p class="description">Select a weapon to see its story and stats.</p>';
     }
 
     if (this.rarityBadge) {
       this.rarityBadge.textContent = '';
       this.rarityBadge.className = 'rarity-badge';
+      this.rarityBadge.style.display = 'none';
     }
 
     if (this.footerElement) {
-      this.footerElement.textContent = 'Awaiting attunement';
+      this.footerElement.textContent = 'ID: —';
     }
 
     this.panelElement.classList.add('is-empty');

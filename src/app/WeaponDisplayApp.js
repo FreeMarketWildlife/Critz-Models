@@ -53,36 +53,33 @@ export class WeaponDisplayApp {
   buildLayout() {
     this.root.innerHTML = `
       <div class="app-shell">
-        <div class="hud-brand">Crtiz</div>
-        <nav class="hud-nav" aria-label="Weapon categories">
-          <h2>Arsenal</h2>
-          <ul class="nav-tabs" data-component="nav-tabs"></ul>
-        </nav>
-        <section class="stage" data-component="stage"></section>
-        <aside class="hud-info">
-          <section class="panel" data-component="weapon-list">
-            <div class="panel-header">
-              <span>Arsenal Roster</span>
-              <span data-role="list-context">Primary Wing</span>
-            </div>
-            <div class="weapon-cards" data-role="weapon-cards"></div>
-            <div class="panel-footer">No friendly mischief, only radiant firepower.</div>
-          </section>
-          <section class="panel" data-component="weapon-detail">
-            <div class="panel-header">
-              <span>Arcane Briefing</span>
-              <span data-role="rarity-badge"></span>
-            </div>
-            <div class="detail-content" data-role="detail-content">
-              <p class="description">Select an armament to reveal its spark.</p>
-            </div>
-            <div class="panel-footer" data-role="detail-footer">Awaiting attunement</div>
-          </section>
+        <aside class="category-panel">
+          <div class="brand">Critz Arsenal</div>
+          <nav class="category-nav" aria-label="Weapon categories">
+            <h2>Categories</h2>
+            <ul class="nav-tabs" data-component="nav-tabs"></ul>
+          </nav>
         </aside>
-        <footer class="hud-footer">
-          <span>Arcane Carousel Online</span>
-          <span>Version 0.2.0 • Prototype HUD</span>
-        </footer>
+        <section class="panel panel--list" data-component="weapon-list">
+          <div class="panel-header">
+            <h2>Arsenal</h2>
+            <span data-role="list-context">Primary</span>
+          </div>
+          <div class="panel-content">
+            <div class="weapon-cards" data-role="weapon-cards"></div>
+          </div>
+        </section>
+        <section class="panel panel--detail" data-component="weapon-detail">
+          <div class="panel-header">
+            <h2>Details</h2>
+            <span class="rarity-badge" data-role="rarity-badge"></span>
+          </div>
+          <div class="panel-content detail-content" data-role="detail-content">
+            <p class="description">Choose a weapon to see more information.</p>
+          </div>
+          <div class="panel-footer" data-role="detail-footer">ID: —</div>
+        </section>
+        <section class="stage" data-component="stage" aria-label="3D preview area"></section>
       </div>
     `;
 
