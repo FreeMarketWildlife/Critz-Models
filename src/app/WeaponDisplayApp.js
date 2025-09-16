@@ -53,31 +53,47 @@ export class WeaponDisplayApp {
 
   buildLayout() {
     this.root.innerHTML = `
-      <div class="app-shell">
-        <div class="hud-brand">Crtiz Armory</div>
-        <nav class="hud-nav" aria-label="Weapon categories">
-          <h2>Categories</h2>
-          <ul class="nav-tabs" data-component="nav-tabs"></ul>
-        </nav>
-        <section class="panel hud-panel hud-list" data-component="weapon-list">
-          <div class="panel-header">
-            <span>Arsenal</span>
-            <span data-role="list-context"></span>
+      <div class="app-surface">
+        <div class="app-ambient" aria-hidden="true">
+          <span class="ambient ambient-sun"></span>
+          <span class="ambient ambient-haze"></span>
+          <span class="ambient ambient-canopy"></span>
+          <span class="ambient-leaf ambient-leaf-one"></span>
+          <span class="ambient-leaf ambient-leaf-two"></span>
+          <span class="ambient-leaf ambient-leaf-three"></span>
+        </div>
+        <div class="app-shell">
+          <div class="hud-brand">
+            <div class="brand-badge" aria-hidden="true"></div>
+            <div class="brand-text">
+              <span class="brand-title">Crtiz Armory</span>
+              <span class="brand-tagline">Wildcrafted Arsenal</span>
+            </div>
           </div>
-          <div class="weapon-cards" data-role="weapon-cards"></div>
-          <div class="panel-footer" data-role="list-footer">Choose a category to see its gear.</div>
-        </section>
-        <section class="panel hud-panel hud-detail" data-component="weapon-detail">
-          <div class="panel-header">
-            <span>Equipment Info</span>
-            <span data-role="rarity-badge"></span>
-          </div>
-          <div class="detail-content" data-role="detail-content">
-            <p class="description">Pick a tool to see its details.</p>
-          </div>
-          <div class="panel-footer" data-role="detail-footer">Awaiting selection</div>
-        </section>
-        <section class="stage" data-component="stage"></section>
+          <nav class="hud-nav" aria-label="Weapon categories">
+            <h2>Categories</h2>
+            <ul class="nav-tabs" data-component="nav-tabs"></ul>
+          </nav>
+          <section class="panel hud-panel hud-list" data-component="weapon-list">
+            <div class="panel-header">
+              <span>Arsenal</span>
+              <span data-role="list-context"></span>
+            </div>
+            <div class="weapon-cards" data-role="weapon-cards"></div>
+            <div class="panel-footer" data-role="list-footer">Choose a category to see its gear.</div>
+          </section>
+          <section class="panel hud-panel hud-detail" data-component="weapon-detail">
+            <div class="panel-header">
+              <span>Equipment Info</span>
+              <span data-role="rarity-badge"></span>
+            </div>
+            <div class="detail-content" data-role="detail-content">
+              <p class="description">Pick a tool to see its details.</p>
+            </div>
+            <div class="panel-footer" data-role="detail-footer">Awaiting selection</div>
+          </section>
+          <section class="stage" data-component="stage"></section>
+        </div>
       </div>
     `;
 
