@@ -13,6 +13,63 @@ const RARITY_GLOWS = {
   mythic: 0xffb7ff,
 };
 
+const MIXAMO_TO_UE_BONE_MAP = {
+  pelvis: 'Hips',
+  spine_01: 'Spine',
+  spine_02: 'Spine1',
+  spine_03: 'Spine2',
+  neck_01: 'Neck',
+  head: 'Head',
+  clavicle_l: 'LeftShoulder',
+  upperarm_l: 'LeftArm',
+  lowerarm_l: 'LeftForeArm',
+  hand_l: 'LeftHand',
+  clavicle_r: 'RightShoulder',
+  upperarm_r: 'RightArm',
+  lowerarm_r: 'RightForeArm',
+  hand_r: 'RightHand',
+  thigh_l: 'LeftUpLeg',
+  calf_l: 'LeftLeg',
+  calf_twist_01_l: 'LeftLeg',
+  foot_l: 'LeftFoot',
+  ball_l: 'LeftToeBase',
+  thigh_r: 'RightUpLeg',
+  calf_r: 'RightLeg',
+  calf_twist_01_r: 'RightLeg',
+  foot_r: 'RightFoot',
+  ball_r: 'RightToeBase',
+  thumb_01_l: 'LeftHandThumb1',
+  thumb_02_l: 'LeftHandThumb2',
+  thumb_03_l: 'LeftHandThumb3',
+  thumb_01_r: 'RightHandThumb1',
+  thumb_02_r: 'RightHandThumb2',
+  thumb_03_r: 'RightHandThumb3',
+  index_metacarpal_l: 'LeftHandIndex1',
+  index_01_l: 'LeftHandIndex2',
+  index_02_l: 'LeftHandIndex3',
+  index_03_l: 'LeftHandIndex3',
+  index_metacarpal_r: 'RightHandIndex1',
+  index_01_r: 'RightHandIndex2',
+  index_02_r: 'RightHandIndex3',
+  index_03_r: 'RightHandIndex3',
+  middle_metacarpal_l: 'LeftHandMiddle1',
+  middle_01_l: 'LeftHandMiddle2',
+  middle_02_l: 'LeftHandMiddle3',
+  middle_03_l: 'LeftHandMiddle3',
+  middle_metacarpal_r: 'RightHandMiddle1',
+  middle_01_r: 'RightHandMiddle2',
+  middle_02_r: 'RightHandMiddle3',
+  middle_03_r: 'RightHandMiddle3',
+  pinky_metacarpal_l: 'LeftHandPinky1',
+  pinky_01_l: 'LeftHandPinky2',
+  pinky_02_l: 'LeftHandPinky3',
+  pinky_03_l: 'LeftHandPinky3',
+  pinky_metacarpal_r: 'RightHandPinky1',
+  pinky_01_r: 'RightHandPinky2',
+  pinky_02_r: 'RightHandPinky3',
+  pinky_03_r: 'RightHandPinky3',
+};
+
 const CAMERA_DEFAULT_POSITION = new THREE.Vector3(0, 1.1, 3.3);
 const CAMERA_DEFAULT_TARGET = new THREE.Vector3(0, 0.65, 0);
 const CAMERA_TRANSITION_SPEED = 2.25;
@@ -41,6 +98,7 @@ export class SceneManager {
     this.pendingCritterId = null;
     this.mixer = null;
     this.activeAction = null;
+    this.currentSkinnedMesh = null;
     this.orbitControls = null;
     this.autoRotateEnabled = false;
 
@@ -265,32 +323,9 @@ export class SceneManager {
   }
 
   setupEnvironment() {
-    const platformGeometry = new THREE.CylinderGeometry(1.45, 1.45, 0.12, 48, 1, true);
-    const platformMaterial = new THREE.MeshStandardMaterial({
-      color: 0x20153f,
-      emissive: 0x0c0620,
-      metalness: 0.28,
-      roughness: 0.62,
-      transparent: true,
-      opacity: 0.95,
-    });
-    this.platform = new THREE.Mesh(platformGeometry, platformMaterial);
-    this.platform.rotation.x = Math.PI / 2;
-    this.platform.position.set(0, -0.7, 0);
-    this.platform.receiveShadow = false;
-
-    const ringGeometry = new THREE.TorusGeometry(1.55, 0.035, 16, 100);
-    const ringMaterial = new THREE.MeshBasicMaterial({
-      color: 0xff9de6,
-      transparent: true,
-      opacity: 0.65,
-    });
-    this.glowRing = new THREE.Mesh(ringGeometry, ringMaterial);
-    this.glowRing.rotation.x = Math.PI / 2;
-    this.glowRing.position.y = -0.35;
-
-    this.stageGroup.add(this.platform);
-    this.stageGroup.add(this.glowRing);
+    // The viewport should remain clear so the active model is unobstructed.
+    this.platform = null;
+    this.glowRing = null;
   }
 
   async loadWeapon(weapon) {
@@ -388,6 +423,7 @@ export class SceneManager {
     this.currentModel = model;
     this.currentCritterId = critter.id;
     this.stageGroup.add(model);
+    this.currentSkinnedMesh = this.findFirstSkinnedMesh(model);
 
     this.mixer = new THREE.AnimationMixer(model);
     this.activeAction = null;
@@ -409,9 +445,20 @@ export class SceneManager {
       this.mixer = new THREE.AnimationMixer(this.currentModel);
     }
 
-    const clip = await this.resourceLoader.loadAnimationClip(animation.path);
-    if (!clip) {
+    const clipData = await this.resourceLoader.loadAnimationClip(animation.path);
+    if (!clipData?.clip) {
       return;
+    }
+
+    let clip = clipData.clip;
+    const targetMesh = this.getCurrentSkinnedMesh();
+    const sourceMesh = this.findFirstSkinnedMesh(clipData.root);
+
+    if (targetMesh && sourceMesh) {
+      clip = await this.resourceLoader.retargetClip(targetMesh, sourceMesh, clip, {
+        names: MIXAMO_TO_UE_BONE_MAP,
+        hip: MIXAMO_TO_UE_BONE_MAP.pelvis,
+      });
     }
 
     const action = this.mixer.clipAction(clip);
@@ -460,6 +507,30 @@ export class SceneManager {
     this.mixer?.stopAllAction?.();
     this.mixer = null;
     this.activeAction = null;
+    this.currentSkinnedMesh = null;
+  }
+
+  getCurrentSkinnedMesh() {
+    if (this.currentSkinnedMesh?.parent) {
+      return this.currentSkinnedMesh;
+    }
+
+    this.currentSkinnedMesh = this.findFirstSkinnedMesh(this.currentModel);
+    return this.currentSkinnedMesh;
+  }
+
+  findFirstSkinnedMesh(object) {
+    if (!object) {
+      return null;
+    }
+
+    let target = null;
+    object.traverse?.((child) => {
+      if (!target && child.isSkinnedMesh) {
+        target = child;
+      }
+    });
+    return target;
   }
 
   applyRarityGlow(rarity = 'common') {
