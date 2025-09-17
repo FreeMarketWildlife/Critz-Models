@@ -190,7 +190,14 @@ export class WeaponDisplayApp {
         return;
       }
       this.activeWeapon = weapon;
-      this.sceneManager.applyRarityGlow(weapon.rarity);
+      this.activeCritter = null;
+      this.animationSelector?.setCritterName('--');
+      this.animationSelector?.setAnimations([]);
+      if (this.sceneManager) {
+        this.sceneManager.stopAnimation?.();
+        this.sceneManager.applyRarityGlow(weapon.rarity);
+        this.sceneManager.loadWeapon(weapon);
+      }
     });
 
     this.eventBus.on('critter:selected', (critterId) => {
@@ -199,11 +206,12 @@ export class WeaponDisplayApp {
         return;
       }
 
+      this.activeWeapon = null;
       this.activeCritter = critter;
-      this.animationSelector.setCritterName(critter.name);
-      this.animationSelector.setAnimations(critter.animations, critter.defaultAnimationId);
+      this.animationSelector?.setCritterName(critter.name);
+      this.animationSelector?.setAnimations(critter.animations, critter.defaultAnimationId);
 
-      const activeAnimationId = this.animationSelector.getActiveAnimationId();
+      const activeAnimationId = this.animationSelector?.getActiveAnimationId?.();
       const activeAnimation = this.findAnimation(critter, activeAnimationId);
 
       this.sceneManager.loadCritter(critter).then(() => {

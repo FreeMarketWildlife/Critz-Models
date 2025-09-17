@@ -478,7 +478,20 @@ const RAW_WEAPONS = [
 ];
 
 const LEGACY_DETAILS = new Map([
-  ['Assault Rifle', { rarity: 'rare', description: 'Arc-bloom assault blaster that channels prismatic bolts without ever singeing allies.', special: { perk: 'Prism rounds mark targets so allies deal +10% damage for 3s.' } }],
+  [
+    'Assault Rifle',
+    {
+      rarity: 'rare',
+      description: 'Arc-bloom assault blaster that channels prismatic bolts without ever singeing allies.',
+      special: { perk: 'Prism rounds mark targets so allies deal +10% damage for 3s.' },
+      placeholderModelId: 'assault-rifle-blaster',
+      preview: {
+        rotation: { x: -0.12, y: Math.PI / 6, z: 0.08 },
+        position: { x: 0, y: -0.05, z: 0 },
+        scale: 1.05,
+      },
+    },
+  ],
   ['Sniper Rifle', { rarity: 'epic', description: 'A crystalline long-range blaster that threads starlight lances across the battlefield.', special: { perk: 'Fully-charged shots reveal struck enemies to the squad for 4s.' } }],
   ['Rocket Launcher', { rarity: 'legendary', description: 'Launches humming comets that burst into friendly-safe shockwaves of glittering force.', special: { perk: 'Blast shields grant the wielder 1s stagger immunity on detonation.' } }],
   ['Bow', { rarity: 'uncommon', description: 'Fey-grown limbs launch luminous arrows that leave a sparkling trail for teammates to follow.', special: { perk: 'Holding the draw for 1.5s adds +25 damage and a guidance shimmer for allies.' } }],
@@ -1085,6 +1098,7 @@ const weapons = RAW_WEAPONS.map((weapon) => {
     rarity: legacy.rarity || FALLBACK_RARITY_BY_CATEGORY[category] || 'common',
     description: legacy.description || weapon.notes || 'Specification pending.',
     modelPath: legacy.modelPath ?? null,
+    placeholderModelId: legacy.placeholderModelId ?? null,
     preview: legacy.preview || undefined,
     stats: buildStats(weapon, category),
     special: buildSpecial(weapon, legacy.special || {}, category),
