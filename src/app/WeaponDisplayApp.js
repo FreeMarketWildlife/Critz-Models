@@ -6,6 +6,7 @@ import { critters } from '../data/critters.js';
 import { CritterSelector } from '../hud/components/CritterSelector.js';
 import { AnimationSelector } from '../hud/components/AnimationSelector.js';
 import { ViewportOverlay } from '../hud/components/ViewportOverlay.js';
+import { RigControlPanel } from '../hud/components/RigControlPanel.js';
 
 export class WeaponDisplayApp {
   constructor(rootElement) {
@@ -16,6 +17,7 @@ export class WeaponDisplayApp {
     this.critterSelector = null;
     this.animationSelector = null;
     this.viewportOverlay = null;
+    this.rigControlPanel = null;
 
     this.weapons = sampleWeapons;
     this.weaponMap = new Map();
@@ -33,6 +35,7 @@ export class WeaponDisplayApp {
     this.indexWeapons();
     this.indexCritters();
     this.registerEventHandlers();
+    this.setupStageControls(layout);
 
     this.sceneManager = new SceneManager(layout.stageViewportElement, { bus: this.eventBus });
     this.sceneManager.init();
@@ -80,6 +83,12 @@ export class WeaponDisplayApp {
     });
     this.animationSelector.init();
 
+    this.rigControlPanel = new RigControlPanel({
+      container: layout.rigControlsElement,
+      bus: this.eventBus,
+    });
+    this.rigControlPanel.init();
+
     const defaultCritter = this.findDefaultCritter();
     if (defaultCritter) {
       this.activeCritter = defaultCritter;
@@ -103,6 +112,36 @@ export class WeaponDisplayApp {
     }
 
     this.critterSelector.render(defaultCritter?.id);
+  }
+
+  setupStageControls(layout) {
+    const controlsElement = layout.stageControlsElement;
+    const toggleButton = layout.stageToolbarToggle;
+    const toolbarElement = layout.stageToolbarElement;
+
+    if (!controlsElement || !toggleButton) {
+      return;
+    }
+
+    toggleButton.setAttribute('aria-controls', 'stage-controls-panel');
+    toggleButton.setAttribute('title', 'Toggle animation and rig controls');
+
+    const applyState = (collapsed) => {
+      controlsElement.classList.toggle('is-collapsed', collapsed);
+      if (toolbarElement) {
+        toolbarElement.setAttribute('aria-hidden', collapsed ? 'true' : 'false');
+      }
+      toggleButton.setAttribute('aria-expanded', collapsed ? 'false' : 'true');
+      toggleButton.textContent = collapsed ? 'Show Controls' : 'Hide Controls';
+    };
+
+    let isCollapsed = true;
+    applyState(isCollapsed);
+
+    toggleButton.addEventListener('click', () => {
+      isCollapsed = !isCollapsed;
+      applyState(isCollapsed);
+    });
   }
 
   buildLayout() {
@@ -138,13 +177,28 @@ export class WeaponDisplayApp {
           <div class="panel-footer" data-role="detail-footer">Awaiting selection</div>
         </section>
         <section class="stage" data-component="stage">
-          <div class="stage-toolbar" data-component="animation-selector"></div>
           <div
             class="stage-viewport"
             data-role="stage-viewport"
             aria-label="Critter viewer"
             tabindex="0"
           ></div>
+          <div class="stage-controls" data-role="stage-controls">
+            <button
+              type="button"
+              class="stage-controls__toggle"
+              data-role="stage-toolbar-toggle"
+              aria-expanded="true"
+            >
+              Hide Controls
+            </button>
+            <div id="stage-controls-panel" class="stage-toolbar" data-component="stage-toolbar">
+              <div class="stage-tool-grid">
+                <div class="stage-tool-panel stage-tool-panel--selector" data-component="animation-selector"></div>
+                <div class="stage-tool-panel stage-tool-panel--rig" data-component="rig-controls"></div>
+              </div>
+            </div>
+          </div>
         </section>
       </div>
     `;
@@ -152,6 +206,9 @@ export class WeaponDisplayApp {
     return {
       stageElement: this.root.querySelector('[data-component="stage"]'),
       stageViewportElement: this.root.querySelector('[data-role="stage-viewport"]'),
+      stageControlsElement: this.root.querySelector('[data-role="stage-controls"]'),
+      stageToolbarToggle: this.root.querySelector('[data-role="stage-toolbar-toggle"]'),
+      stageToolbarElement: this.root.querySelector('[data-component="stage-toolbar"]'),
       navTabsElement: this.root.querySelector('[data-component="nav-tabs"]'),
       critterSelectorElement: this.root.querySelector('[data-component="critter-selector"]'),
       weaponListPanel: this.root.querySelector('[data-component="weapon-list"]'),
@@ -161,6 +218,7 @@ export class WeaponDisplayApp {
       rarityBadge: this.root.querySelector('[data-role="rarity-badge"]'),
       detailFooter: this.root.querySelector('[data-role="detail-footer"]'),
       animationSelectorElement: this.root.querySelector('[data-component="animation-selector"]'),
+      rigControlsElement: this.root.querySelector('[data-component="rig-controls"]'),
     };
   }
 
@@ -211,6 +269,10 @@ export class WeaponDisplayApp {
         this.sceneManager.playAnimation(animation);
       }
     });
+
+    this.eventBus.on('rig:refresh-requested', () => {
+      this.refreshActiveCritter();
+    });
   }
 
   indexWeapons() {
@@ -252,5 +314,22 @@ export class WeaponDisplayApp {
     }
 
     return critter.animations?.find((animation) => animation.id === animationId) || null;
+  }
+
+  refreshActiveCritter() {
+    if (!this.activeCritter || !this.sceneManager) {
+      return;
+    }
+
+    const animationId = this.animationSelector?.getActiveAnimationId?.();
+    const animation = this.findAnimation(this.activeCritter, animationId);
+
+    this.sceneManager.loadCritter(this.activeCritter).then(() => {
+      if (animation) {
+        this.sceneManager.playAnimation(animation);
+      } else {
+        this.sceneManager.stopAnimation();
+      }
+    });
   }
 }
