@@ -1,9 +1,9 @@
-import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+import * as THREE from 'https://esm.sh/three@0.160.0';
 import { createRenderer } from './RendererFactory.js';
 import { ResourceLoader } from './ResourceLoader.js';
 
 const ORBIT_CONTROLS_MODULE =
-  'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+  'https://esm.sh/three@0.160.0/examples/jsm/controls/OrbitControls.js';
 
 const RARITY_GLOWS = {
   common: 0x7c6cff,
