@@ -14,8 +14,9 @@ const RARITY_GLOWS = {
 };
 
 export class SceneManager {
-  constructor(container) {
+  constructor(container, options = {}) {
     this.container = container;
+    this.options = options;
     this.scene = new THREE.Scene();
     this.camera = null;
     this.renderer = null;
@@ -33,6 +34,10 @@ export class SceneManager {
     this.mixer = null;
     this.activeAction = null;
     this.orbitControls = null;
+    this.autoOrbitEnabled = false;
+    this.defaultCameraPosition = new THREE.Vector3(0, 1.1, 3.3);
+    this.defaultCameraTarget = new THREE.Vector3(0, 0.65, 0);
+    this.pendingFocus = null;
 
     this.handleResize = this.handleResize.bind(this);
     this.animate = this.animate.bind(this);
@@ -79,8 +84,8 @@ export class SceneManager {
   createCamera() {
     const aspect = this.container.clientWidth / Math.max(this.container.clientHeight, 1);
     const camera = new THREE.PerspectiveCamera(40, aspect, 0.1, 100);
-    camera.position.set(0, 1.1, 3.3);
-    camera.lookAt(0, 0.4, 0);
+    camera.position.copy(this.defaultCameraPosition);
+    camera.lookAt(this.defaultCameraTarget);
     return camera;
   }
 
@@ -89,13 +94,36 @@ export class SceneManager {
     const module = await import(ORBIT_CONTROLS_MODULE);
     this.orbitControls = new module.OrbitControls(this.camera, this.renderer.domElement);
     this.orbitControls.enableDamping = true;
-    this.orbitControls.dampingFactor = 0.08;
-    this.orbitControls.enablePan = false;
-    this.orbitControls.maxPolarAngle = Math.PI * 0.52;
-    this.orbitControls.minDistance = 2.0;
-    this.orbitControls.maxDistance = 6.0;
-    this.orbitControls.target.set(0, 0.65, 0);
+    this.orbitControls.dampingFactor = 0.12;
+    this.orbitControls.enablePan = true;
+    this.orbitControls.panSpeed = 0.65;
+    this.orbitControls.rotateSpeed = 0.75;
+    this.orbitControls.zoomSpeed = 0.9;
+    this.orbitControls.screenSpacePanning = true;
+    this.orbitControls.minPolarAngle = Math.PI * 0.12;
+    this.orbitControls.maxPolarAngle = Math.PI * 0.58;
+    this.orbitControls.minDistance = 1.6;
+    this.orbitControls.maxDistance = 8.0;
+    this.orbitControls.autoRotate = this.autoOrbitEnabled;
+    this.orbitControls.autoRotateSpeed = 1.4;
+    this.orbitControls.target.copy(this.defaultCameraTarget);
     this.orbitControls.update();
+    this.orbitControls.saveState();
+    this.orbitControls.addEventListener('start', () => {
+      this.options?.onInteractionStart?.();
+      if (this.autoOrbitEnabled) {
+        this.setAutoOrbitEnabled(false);
+      }
+    });
+    this.orbitControls.addEventListener('end', () => {
+      this.options?.onInteractionEnd?.();
+    });
+    this.options?.onAutoOrbitChanged?.(this.autoOrbitEnabled);
+    if (this.pendingFocus && this.currentModel) {
+      const pending = this.pendingFocus;
+      this.pendingFocus = null;
+      this.focusCurrentModel(pending);
+    }
   }
 
   setupLights() {
@@ -140,7 +168,7 @@ export class SceneManager {
   }
 
   async loadWeapon(weapon) {
-    if (!weapon) return;
+    if (!weapon) return false;
 
     const requestId = (this.pendingWeaponId = weapon.id);
 
@@ -150,11 +178,15 @@ export class SceneManager {
     }
 
     if (this.pendingWeaponId !== requestId) {
-      return;
+      return false;
     }
 
+    this.pendingWeaponId = null;
+
+    this.disposeCurrentModel();
+
     if (!model) {
-      model = this.createPlaceholderModel();
+      return false;
     }
 
     model.position.set(0, 0, 0);
@@ -163,15 +195,17 @@ export class SceneManager {
     const scale = weapon.preview?.scale ?? 1.2;
     model.scale.setScalar(scale);
 
-    this.disposeCurrentModel();
     this.currentModel = model;
     this.stageGroup.add(model);
 
     this.applyRarityGlow(weapon.rarity);
+    this.focusCurrentModel({ padding: weapon.preview?.focusPadding ?? 1.4 });
+
+    return true;
   }
 
   async loadCritter(critter) {
-    if (!critter) return;
+    if (!critter) return false;
 
     const requestId = (this.pendingCritterId = critter.id);
 
@@ -181,14 +215,16 @@ export class SceneManager {
     }
 
     if (this.pendingCritterId !== requestId) {
-      return;
+      return false;
     }
 
-    if (!model) {
-      model = this.createPlaceholderModel();
-    }
+    this.pendingCritterId = null;
 
     this.disposeCurrentModel();
+
+    if (!model) {
+      return false;
+    }
 
     const offset = critter.offset ?? {};
     const rotation = critter.rotation ?? {};
@@ -204,6 +240,110 @@ export class SceneManager {
 
     this.mixer = new THREE.AnimationMixer(model);
     this.activeAction = null;
+
+    this.focusCurrentModel({ padding: critter.focusPadding ?? 1.5 });
+
+    return true;
+  }
+
+  focusCurrentModel({ padding = 1.4 } = {}) {
+    if (!this.currentModel) {
+      this.pendingFocus = { padding };
+      return;
+    }
+
+    if (!this.camera || !this.orbitControls) {
+      this.pendingFocus = { padding };
+      return;
+    }
+
+    this.pendingFocus = null;
+
+    const box = new THREE.Box3().setFromObject(this.currentModel);
+    if (box.isEmpty()) {
+      return;
+    }
+
+    const size = box.getSize(new THREE.Vector3());
+    const center = box.getCenter(new THREE.Vector3());
+    const maxDimension = Math.max(size.x, size.y, size.z);
+
+    if (!Number.isFinite(maxDimension) || maxDimension <= 0) {
+      return;
+    }
+
+    const paddingFactor = Math.max(1, padding ?? 1.4);
+    const halfFov = THREE.MathUtils.degToRad(this.camera.fov / 2);
+    const baseDistance = maxDimension / 2 / Math.tan(halfFov);
+    const targetDistance = baseDistance * paddingFactor;
+
+    const direction = this.camera.position.clone().sub(this.orbitControls.target);
+    if (direction.lengthSq() === 0) {
+      direction.copy(this.defaultCameraPosition).sub(this.defaultCameraTarget);
+    }
+
+    direction.normalize();
+    const offset = direction.multiplyScalar(targetDistance);
+
+    this.orbitControls.target.copy(center);
+    this.camera.position.copy(center.clone().add(offset));
+    this.camera.updateProjectionMatrix();
+    this.orbitControls.update();
+  }
+
+  adjustZoom(delta = 0) {
+    if (!this.camera || !this.orbitControls || delta === 0) {
+      return;
+    }
+
+    const offset = this.camera.position.clone().sub(this.orbitControls.target);
+    const distance = offset.length();
+
+    if (!distance) {
+      return;
+    }
+
+    const minDistance = this.orbitControls.minDistance ?? 0.1;
+    const maxDistance = this.orbitControls.maxDistance ?? Infinity;
+    const nextDistance = THREE.MathUtils.clamp(distance + delta, minDistance, maxDistance);
+
+    offset.setLength(nextDistance);
+    this.camera.position.copy(this.orbitControls.target.clone().add(offset));
+    this.camera.updateProjectionMatrix();
+    this.orbitControls.update();
+  }
+
+  resetCamera() {
+    if (!this.orbitControls) {
+      return;
+    }
+
+    this.orbitControls.reset();
+    this.setAutoOrbitEnabled(false);
+  }
+
+  setAutoOrbitEnabled(enabled, { silent = false } = {}) {
+    const nextState = Boolean(enabled);
+    const changed = nextState !== this.autoOrbitEnabled;
+    this.autoOrbitEnabled = nextState;
+
+    if (this.orbitControls) {
+      this.orbitControls.autoRotate = this.autoOrbitEnabled;
+    }
+
+    if (!silent && changed) {
+      this.options?.onAutoOrbitChanged?.(this.autoOrbitEnabled);
+    }
+
+    return this.autoOrbitEnabled;
+  }
+
+  toggleAutoOrbit() {
+    return this.setAutoOrbitEnabled(!this.autoOrbitEnabled);
+  }
+
+  getAutoOrbitEnabled() {
+    return this.autoOrbitEnabled;
   }
 
   async playAnimation(animation) {
@@ -266,6 +406,7 @@ export class SceneManager {
     this.mixer?.stopAllAction?.();
     this.mixer = null;
     this.activeAction = null;
+    this.pendingFocus = null;
   }
 
   applyRarityGlow(rarity = 'common') {
@@ -273,20 +414,6 @@ export class SceneManager {
     if (this.glowRing) {
       this.glowRing.material.color = new THREE.Color(color);
     }
-  }
-
-  createPlaceholderModel() {
-    const geometry = new THREE.TorusKnotGeometry(0.65, 0.18, 128, 16);
-    const material = new THREE.MeshStandardMaterial({
-      color: 0xff9dce,
-      emissive: 0x2b0f35,
-      metalness: 0.28,
-      roughness: 0.28,
-      emissiveIntensity: 0.6,
-    });
-    const mesh = new THREE.Mesh(geometry, material);
-    mesh.castShadow = false;
-    return mesh;
   }
 
   handleResize() {
