@@ -6,6 +6,7 @@ import { critters } from '../data/critters.js';
 import { CritterSelector } from '../hud/components/CritterSelector.js';
 import { AnimationSelector } from '../hud/components/AnimationSelector.js';
 import { ViewportOverlay } from '../hud/components/ViewportOverlay.js';
+import { RigControlPanel } from '../hud/components/RigControlPanel.js';
 
 export class WeaponDisplayApp {
   constructor(rootElement) {
@@ -16,6 +17,7 @@ export class WeaponDisplayApp {
     this.critterSelector = null;
     this.animationSelector = null;
     this.viewportOverlay = null;
+    this.rigControlPanel = null;
 
     this.weapons = sampleWeapons;
     this.weaponMap = new Map();
@@ -30,6 +32,7 @@ export class WeaponDisplayApp {
 
   init() {
     const layout = this.buildLayout();
+    this.bindStageToolbar(layout);
     this.indexWeapons();
     this.indexCritters();
     this.registerEventHandlers();
@@ -79,6 +82,12 @@ export class WeaponDisplayApp {
       bus: this.eventBus,
     });
     this.animationSelector.init();
+
+    this.rigControlPanel = new RigControlPanel({
+      container: layout.rigControlsElement,
+      bus: this.eventBus,
+    });
+    this.rigControlPanel.init();
 
     const defaultCritter = this.findDefaultCritter();
     if (defaultCritter) {
@@ -138,7 +147,22 @@ export class WeaponDisplayApp {
           <div class="panel-footer" data-role="detail-footer">Awaiting selection</div>
         </section>
         <section class="stage" data-component="stage">
-          <div class="stage-toolbar" data-component="animation-selector"></div>
+          <div class="stage-toolbar" data-component="stage-toolbar">
+            <button
+              type="button"
+              class="stage-toolbar__toggle"
+              data-action="stage-tools-toggle"
+              aria-expanded="true"
+              aria-controls="stage-tool-drawer"
+              title="Toggle animation and pose controls"
+            >
+              Show Pose Tools
+            </button>
+            <div class="stage-tool-grid" id="stage-tool-drawer" data-role="stage-tool-grid">
+              <div class="stage-tool-panel stage-tool-panel--selector" data-component="animation-selector"></div>
+              <div class="stage-tool-panel stage-tool-panel--rig" data-component="rig-controls"></div>
+            </div>
+          </div>
           <div
             class="stage-viewport"
             data-role="stage-viewport"
@@ -161,7 +185,37 @@ export class WeaponDisplayApp {
       rarityBadge: this.root.querySelector('[data-role="rarity-badge"]'),
       detailFooter: this.root.querySelector('[data-role="detail-footer"]'),
       animationSelectorElement: this.root.querySelector('[data-component="animation-selector"]'),
+      rigControlsElement: this.root.querySelector('[data-component="rig-controls"]'),
+      stageToolbarElement: this.root.querySelector('[data-component="stage-toolbar"]'),
+      stageToolbarToggle: this.root.querySelector('[data-action="stage-tools-toggle"]'),
     };
+  }
+
+  bindStageToolbar(layout) {
+    const stageElement = layout.stageElement;
+    const toggle = layout.stageToolbarToggle;
+
+    if (!stageElement || !toggle) {
+      return;
+    }
+
+    let isExpanded = false;
+
+    const applyState = () => {
+      stageElement.classList.toggle('stage--tools-collapsed', !isExpanded);
+      if (layout.stageToolbarElement) {
+        layout.stageToolbarElement.dataset.state = isExpanded ? 'expanded' : 'collapsed';
+      }
+      toggle.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+      toggle.textContent = isExpanded ? 'Hide Pose Tools' : 'Show Pose Tools';
+    };
+
+    toggle.addEventListener('click', () => {
+      isExpanded = !isExpanded;
+      applyState();
+    });
+
+    applyState();
   }
 
   registerEventHandlers() {
@@ -211,6 +265,10 @@ export class WeaponDisplayApp {
         this.sceneManager.playAnimation(animation);
       }
     });
+
+    this.eventBus.on('rig:refresh-requested', () => {
+      this.refreshActiveCritter();
+    });
   }
 
   indexWeapons() {
@@ -252,5 +310,22 @@ export class WeaponDisplayApp {
     }
 
     return critter.animations?.find((animation) => animation.id === animationId) || null;
+  }
+
+  refreshActiveCritter() {
+    if (!this.activeCritter || !this.sceneManager) {
+      return;
+    }
+
+    const animationId = this.animationSelector?.getActiveAnimationId?.();
+    const animation = this.findAnimation(this.activeCritter, animationId);
+
+    this.sceneManager.loadCritter(this.activeCritter).then(() => {
+      if (animation) {
+        this.sceneManager.playAnimation(animation);
+      } else {
+        this.sceneManager.stopAnimation();
+      }
+    });
   }
 }

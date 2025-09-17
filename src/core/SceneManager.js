@@ -1,6 +1,7 @@
 import * as THREE from 'https://esm.sh/three@0.160.0';
 import { createRenderer } from './RendererFactory.js';
 import { ResourceLoader } from './ResourceLoader.js';
+import { RigController } from './RigController.js';
 
 const ORBIT_CONTROLS_MODULE =
   'https://esm.sh/three@0.160.0/examples/jsm/controls/OrbitControls.js';
@@ -43,6 +44,8 @@ export class SceneManager {
     this.orbitControls = null;
     this.autoRotateEnabled = false;
     this.rarityLight = null;
+    this.rigController = null;
+    this.hasRigControls = false;
 
     this.handleResize = this.handleResize.bind(this);
     this.animate = this.animate.bind(this);
@@ -73,6 +76,7 @@ export class SceneManager {
     this.registerBusHandlers();
     this.resetView(true);
     this.emitStageEvent('stage:auto-rotate-changed', { enabled: this.autoRotateEnabled });
+    this.emitStageEvent('stage:rig-controls-cleared');
 
     window.addEventListener('resize', this.handleResize);
     this.handleResize();
@@ -107,6 +111,10 @@ export class SceneManager {
 
     if (this.mixer) {
       this.mixer.update(delta);
+    }
+
+    if (this.rigController) {
+      this.rigController.applyPoseAdjustments();
     }
 
   }
@@ -156,12 +164,84 @@ export class SceneManager {
         } else {
           this.setAutoRotate(!this.autoRotateEnabled);
         }
-      })
+      }),
+      this.bus.on('rig:pose-changed', (payload) => this.handleRigPoseChanged(payload)),
+      this.bus.on('rig:reset-requested', () => this.resetRigPose())
     );
   }
 
   emitStageEvent(event, detail) {
     this.bus?.emit?.(event, detail);
+  }
+
+  handleRigPoseChanged(payload) {
+    if (!payload || !this.rigController) {
+      return;
+    }
+
+    const value = this.rigController.setPoseValue(payload.id, payload.value);
+    if (value === null) {
+      return;
+    }
+
+    this.rigController.applyPoseAdjustments();
+    this.emitStageEvent('stage:rig-pose-updated', { id: payload.id, value });
+  }
+
+  resetRigPose() {
+    if (!this.rigController) {
+      return;
+    }
+
+    const result = this.rigController.resetPose();
+    this.rigController.applyPoseAdjustments();
+    this.emitStageEvent('stage:rig-pose-reset', result);
+  }
+
+  setupRigController(model) {
+    this.disposeRigController({ silent: true });
+
+    if (!model) {
+      this.hasRigControls = false;
+      this.emitStageEvent('stage:rig-controls-cleared');
+      return;
+    }
+
+    this.rigController = new RigController(model);
+    const controls = this.rigController.getControls();
+    const values = this.rigController.getPoseValues();
+    this.hasRigControls = controls.length > 0;
+
+    if (this.hasRigControls) {
+      this.emitStageEvent('stage:rig-controls-ready', { controls, values });
+    } else {
+      this.emitStageEvent('stage:rig-controls-cleared');
+    }
+  }
+
+  disposeRigController({ silent = false } = {}) {
+    if (this.rigController) {
+      this.rigController.dispose();
+      this.rigController = null;
+    }
+    if (!silent && this.hasRigControls) {
+      this.emitStageEvent('stage:rig-controls-cleared');
+    }
+    this.hasRigControls = false;
+  }
+
+  getPrimarySkinnedMesh() {
+    if (this.rigController?.skinnedMeshes?.length) {
+      return this.rigController.skinnedMeshes[0];
+    }
+
+    let mesh = null;
+    this.currentModel?.traverse?.((child) => {
+      if (!mesh && child.isSkinnedMesh) {
+        mesh = child;
+      }
+    });
+    return mesh;
   }
 
   startCameraTransition(position, target, { immediate = false } = {}) {
@@ -361,6 +441,8 @@ export class SceneManager {
     this.currentCritterId = critter.id;
     this.stageGroup.add(model);
 
+    this.setupRigController(model);
+
     this.mixer = new THREE.AnimationMixer(model);
     this.activeAction = null;
     this.focusOnCurrentModel({ immediate: false });
@@ -384,14 +466,25 @@ export class SceneManager {
       this.mixer = new THREE.AnimationMixer(this.currentModel);
     }
 
-    const clip = await this.resourceLoader.loadAnimationClip(animation.path);
-    if (!clip || this.pendingAnimationId !== requestId || !this.currentModel) {
+    const animationData = await this.resourceLoader.loadAnimationClip(animation.path);
+    if (!animationData || this.pendingAnimationId !== requestId || !this.currentModel) {
+      return;
+    }
+
+    let clip = animationData.clip;
+    const targetMesh = this.getPrimarySkinnedMesh();
+    if (animationData.source && targetMesh) {
+      clip = await this.resourceLoader.retargetClip(targetMesh, animationData.source, clip);
+    }
+
+    if (!clip) {
       return;
     }
 
     this.mixer.stopAllAction();
 
-    const action = this.mixer.clipAction(clip, this.currentModel);
+    const actionRoot = targetMesh ?? this.currentModel;
+    const action = this.mixer.clipAction(clip, actionRoot);
     if (!action) {
       return;
     }
@@ -440,6 +533,7 @@ export class SceneManager {
     this.mixer = null;
     this.activeAction = null;
     this.pendingAnimationId = null;
+    this.disposeRigController();
   }
 
   applyRarityGlow(rarity = 'common') {
@@ -481,5 +575,6 @@ export class SceneManager {
     this.orbitControls?.dispose?.();
     this.busOffHandlers.forEach((off) => off?.());
     this.busOffHandlers = [];
+    this.disposeRigController({ silent: true });
   }
 }
