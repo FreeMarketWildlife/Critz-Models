@@ -2,6 +2,9 @@ import { SceneManager } from '../core/SceneManager.js';
 import { HUDController } from '../hud/HUDController.js';
 import { sampleWeapons } from '../data/sampleWeapons.js';
 import { createEventBus } from '../utils/eventBus.js';
+import { critters } from '../data/critters.js';
+import { CritterSelector } from '../hud/components/CritterSelector.js';
+import { AnimationSelector } from '../hud/components/AnimationSelector.js';
 
 export class WeaponDisplayApp {
   constructor(rootElement) {
@@ -9,20 +12,27 @@ export class WeaponDisplayApp {
     this.eventBus = createEventBus();
     this.sceneManager = null;
     this.hudController = null;
+    this.critterSelector = null;
+    this.animationSelector = null;
 
     this.weapons = sampleWeapons;
     this.weaponMap = new Map();
     this.categories = ['primary', 'secondary', 'melee', 'utility'];
     this.activeCategory = 'primary';
     this.activeWeapon = null;
+
+    this.critters = critters;
+    this.critterMap = new Map();
+    this.activeCritter = null;
   }
 
   init() {
     const layout = this.buildLayout();
     this.indexWeapons();
+    this.indexCritters();
     this.registerEventHandlers();
 
-    this.sceneManager = new SceneManager(layout.stageElement);
+    this.sceneManager = new SceneManager(layout.stageViewportElement);
     this.sceneManager.init();
 
     this.hudController = new HUDController({
@@ -47,17 +57,59 @@ export class WeaponDisplayApp {
 
     if (defaultWeapon) {
       this.activeWeapon = defaultWeapon;
-      this.sceneManager.loadWeapon(defaultWeapon);
+      this.sceneManager.applyRarityGlow(defaultWeapon.rarity);
     }
+
+    this.critterSelector = new CritterSelector({
+      element: layout.critterSelectorElement,
+      critters: this.critters,
+      bus: this.eventBus,
+    });
+
+    this.animationSelector = new AnimationSelector({
+      container: layout.animationSelectorElement,
+      bus: this.eventBus,
+    });
+    this.animationSelector.init();
+
+    const defaultCritter = this.findDefaultCritter();
+    if (defaultCritter) {
+      this.activeCritter = defaultCritter;
+      this.animationSelector.setCritterName(defaultCritter.name);
+      this.animationSelector.setAnimations(
+        defaultCritter.animations,
+        defaultCritter.defaultAnimationId
+      );
+
+      const activeAnimationId = this.animationSelector.getActiveAnimationId();
+      const activeAnimation = this.findAnimation(defaultCritter, activeAnimationId);
+
+      this.sceneManager.loadCritter(defaultCritter).then(() => {
+        if (activeAnimation) {
+          this.sceneManager.playAnimation(activeAnimation);
+        }
+      });
+    } else {
+      this.animationSelector.setCritterName('--');
+      this.animationSelector.setAnimations([]);
+    }
+
+    this.critterSelector.render(defaultCritter?.id);
   }
 
   buildLayout() {
     this.root.innerHTML = `
       <div class="app-shell">
         <div class="hud-brand">Crtiz Armory</div>
-        <nav class="hud-nav" aria-label="Weapon categories">
-          <h2>Categories</h2>
-          <ul class="nav-tabs" data-component="nav-tabs"></ul>
+        <nav class="hud-nav" aria-label="Interface options">
+          <div class="nav-section nav-section--critters">
+            <h2>Critters</h2>
+            <div data-component="critter-selector"></div>
+          </div>
+          <div class="nav-section nav-section--categories">
+            <h2>Categories</h2>
+            <ul class="nav-tabs" data-component="nav-tabs"></ul>
+          </div>
         </nav>
         <section class="panel hud-panel hud-list" data-component="weapon-list">
           <div class="panel-header">
@@ -77,19 +129,30 @@ export class WeaponDisplayApp {
           </div>
           <div class="panel-footer" data-role="detail-footer">Awaiting selection</div>
         </section>
-        <section class="stage" data-component="stage"></section>
+        <section class="stage" data-component="stage">
+          <div class="stage-toolbar" data-component="animation-selector"></div>
+          <div
+            class="stage-viewport"
+            data-role="stage-viewport"
+            aria-label="Critter viewer"
+            tabindex="0"
+          ></div>
+        </section>
       </div>
     `;
 
     return {
       stageElement: this.root.querySelector('[data-component="stage"]'),
+      stageViewportElement: this.root.querySelector('[data-role="stage-viewport"]'),
       navTabsElement: this.root.querySelector('[data-component="nav-tabs"]'),
+      critterSelectorElement: this.root.querySelector('[data-component="critter-selector"]'),
       weaponListPanel: this.root.querySelector('[data-component="weapon-list"]'),
       weaponDetailPanel: this.root.querySelector('[data-component="weapon-detail"]'),
       listContextLabel: this.root.querySelector('[data-role="list-context"]'),
       listFooter: this.root.querySelector('[data-role="list-footer"]'),
       rarityBadge: this.root.querySelector('[data-role="rarity-badge"]'),
       detailFooter: this.root.querySelector('[data-role="detail-footer"]'),
+      animationSelectorElement: this.root.querySelector('[data-component="animation-selector"]'),
     };
   }
 
@@ -105,7 +168,40 @@ export class WeaponDisplayApp {
         return;
       }
       this.activeWeapon = weapon;
-      this.sceneManager.loadWeapon(weapon);
+      this.sceneManager.applyRarityGlow(weapon.rarity);
+    });
+
+    this.eventBus.on('critter:selected', (critterId) => {
+      const critter = this.critterMap.get(critterId);
+      if (!critter || this.activeCritter?.id === critterId) {
+        return;
+      }
+
+      this.activeCritter = critter;
+      this.animationSelector.setCritterName(critter.name);
+      this.animationSelector.setAnimations(critter.animations, critter.defaultAnimationId);
+
+      const activeAnimationId = this.animationSelector.getActiveAnimationId();
+      const activeAnimation = this.findAnimation(critter, activeAnimationId);
+
+      this.sceneManager.loadCritter(critter).then(() => {
+        if (activeAnimation) {
+          this.sceneManager.playAnimation(activeAnimation);
+        } else {
+          this.sceneManager.stopAnimation();
+        }
+      });
+    });
+
+    this.eventBus.on('critter:animation-selected', (animationId) => {
+      if (!this.activeCritter) {
+        return;
+      }
+
+      const animation = this.findAnimation(this.activeCritter, animationId);
+      if (animation) {
+        this.sceneManager.playAnimation(animation);
+      }
     });
   }
 
@@ -113,6 +209,13 @@ export class WeaponDisplayApp {
     this.weaponMap.clear();
     this.weapons.forEach((weapon) => {
       this.weaponMap.set(weapon.id, weapon);
+    });
+  }
+
+  indexCritters() {
+    this.critterMap.clear();
+    this.critters.forEach((critter) => {
+      this.critterMap.set(critter.id, critter);
     });
   }
 
@@ -129,5 +232,17 @@ export class WeaponDisplayApp {
     const byCategory = this.groupWeaponsByCategory();
     const defaultList = byCategory[this.activeCategory];
     return defaultList && defaultList.length > 0 ? defaultList[0] : null;
+  }
+
+  findDefaultCritter() {
+    return this.critters[0] || null;
+  }
+
+  findAnimation(critter, animationId) {
+    if (!critter || !animationId) {
+      return null;
+    }
+
+    return critter.animations?.find((animation) => animation.id === animationId) || null;
   }
 }
