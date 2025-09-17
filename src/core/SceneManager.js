@@ -35,14 +35,13 @@ export class SceneManager {
     this.stageGroup = new THREE.Group();
     this.currentModel = null;
     this.currentCritterId = null;
-    this.platform = null;
-    this.glowRing = null;
     this.pendingWeaponId = null;
     this.pendingCritterId = null;
     this.mixer = null;
     this.activeAction = null;
     this.orbitControls = null;
     this.autoRotateEnabled = false;
+    this.currentRarityColor = RARITY_GLOWS.common;
 
     this.handleResize = this.handleResize.bind(this);
     this.animate = this.animate.bind(this);
@@ -109,9 +108,6 @@ export class SceneManager {
       this.mixer.update(delta);
     }
 
-    if (this.glowRing) {
-      this.glowRing.rotation.z += delta * 0.2;
-    }
   }
 
   createCamera() {
@@ -265,32 +261,9 @@ export class SceneManager {
   }
 
   setupEnvironment() {
-    const platformGeometry = new THREE.CylinderGeometry(1.45, 1.45, 0.12, 48, 1, true);
-    const platformMaterial = new THREE.MeshStandardMaterial({
-      color: 0x20153f,
-      emissive: 0x0c0620,
-      metalness: 0.28,
-      roughness: 0.62,
-      transparent: true,
-      opacity: 0.95,
-    });
-    this.platform = new THREE.Mesh(platformGeometry, platformMaterial);
-    this.platform.rotation.x = Math.PI / 2;
-    this.platform.position.set(0, -0.7, 0);
-    this.platform.receiveShadow = false;
-
-    const ringGeometry = new THREE.TorusGeometry(1.55, 0.035, 16, 100);
-    const ringMaterial = new THREE.MeshBasicMaterial({
-      color: 0xff9de6,
-      transparent: true,
-      opacity: 0.65,
-    });
-    this.glowRing = new THREE.Mesh(ringGeometry, ringMaterial);
-    this.glowRing.rotation.x = Math.PI / 2;
-    this.glowRing.position.y = -0.35;
-
-    this.stageGroup.add(this.platform);
-    this.stageGroup.add(this.glowRing);
+    // The stage no longer uses an ornamental platform or glow ring so that the
+    // active critter is the only visible mesh in the viewport. This method is
+    // retained in case environmental elements need to be added in the future.
   }
 
   async loadWeapon(weapon) {
@@ -464,9 +437,10 @@ export class SceneManager {
 
   applyRarityGlow(rarity = 'common') {
     const color = RARITY_GLOWS[rarity] ?? RARITY_GLOWS.common;
-    if (this.glowRing) {
-      this.glowRing.material.color = new THREE.Color(color);
-    }
+    this.currentRarityColor = color;
+    // With the platform removed there is no supporting glow geometry to tint.
+    // Keeping the method allows callers to remain unchanged and provides a
+    // convenient hook if a new visual treatment is added later.
   }
 
   createPlaceholderModel() {
