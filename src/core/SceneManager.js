@@ -265,32 +265,32 @@ export class SceneManager {
   }
 
   setupEnvironment() {
-    const platformGeometry = new THREE.CylinderGeometry(1.45, 1.45, 0.12, 48, 1, true);
-    const platformMaterial = new THREE.MeshStandardMaterial({
-      color: 0x20153f,
-      emissive: 0x0c0620,
-      metalness: 0.28,
-      roughness: 0.62,
-      transparent: true,
-      opacity: 0.95,
-    });
-    this.platform = new THREE.Mesh(platformGeometry, platformMaterial);
-    this.platform.rotation.x = Math.PI / 2;
-    this.platform.position.set(0, -0.7, 0);
-    this.platform.receiveShadow = false;
+    // The scene previously included a platform and glow ring that framed the
+    // selected model. These elements visually overlapped the critters and made
+    // it harder to review animations and poses. We now leave the stage group
+    // empty so only the currently selected model is visible in the viewport.
+    if (this.platform) {
+      this.stageGroup.remove(this.platform);
+      this.platform.geometry?.dispose?.();
+      if (Array.isArray(this.platform.material)) {
+        this.platform.material.forEach((material) => material.dispose?.());
+      } else {
+        this.platform.material?.dispose?.();
+      }
+    }
 
-    const ringGeometry = new THREE.TorusGeometry(1.55, 0.035, 16, 100);
-    const ringMaterial = new THREE.MeshBasicMaterial({
-      color: 0xff9de6,
-      transparent: true,
-      opacity: 0.65,
-    });
-    this.glowRing = new THREE.Mesh(ringGeometry, ringMaterial);
-    this.glowRing.rotation.x = Math.PI / 2;
-    this.glowRing.position.y = -0.35;
+    if (this.glowRing) {
+      this.stageGroup.remove(this.glowRing);
+      this.glowRing.geometry?.dispose?.();
+      if (Array.isArray(this.glowRing.material)) {
+        this.glowRing.material.forEach((material) => material.dispose?.());
+      } else {
+        this.glowRing.material?.dispose?.();
+      }
+    }
 
-    this.stageGroup.add(this.platform);
-    this.stageGroup.add(this.glowRing);
+    this.platform = null;
+    this.glowRing = null;
   }
 
   async loadWeapon(weapon) {
