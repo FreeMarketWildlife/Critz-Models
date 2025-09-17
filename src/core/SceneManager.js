@@ -109,6 +109,10 @@ export class SceneManager {
       this.orbitControls.update();
     }
 
+    if (this.rigController) {
+      this.rigController.prepareFrame();
+    }
+
     if (this.mixer) {
       this.mixer.update(delta);
     }
