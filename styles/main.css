@@ -142,6 +142,91 @@ body::after {
   color: var(--color-highlight);
 }
 
+.nav-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.nav-section--critters {
+  padding-bottom: 0.4rem;
+}
+
+.nav-section-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(124, 200, 111, 0.4), transparent);
+  opacity: 0.6;
+}
+
+.nav-section-label {
+  margin: 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(243, 248, 240, 0.72);
+}
+
+.critter-selector-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.critter-button {
+  width: 100%;
+  padding: 0.65rem 0.9rem;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(61, 102, 76, 0.28);
+  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+  font-family: var(--font-display);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.critter-button::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(124, 200, 111, 0.18), transparent 65%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.critter-button:hover,
+.critter-button:focus-visible {
+  border-color: rgba(211, 243, 107, 0.65);
+  color: var(--color-text-primary);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.critter-button:hover::after,
+.critter-button:focus-visible::after,
+.critter-button.active::after {
+  opacity: 1;
+}
+
+.critter-button.active {
+  border-color: rgba(211, 243, 107, 0.85);
+  color: var(--color-text-primary);
+  box-shadow: 0 12px 26px rgba(18, 49, 33, 0.35);
+}
+
+.critter-button {
+  --critter-accent: rgba(124, 200, 111, 0.35);
+}
+
+.critter-button.active {
+  background: rgba(124, 200, 111, 0.18);
+  background: linear-gradient(135deg, var(--critter-accent), rgba(90, 169, 201, 0.16));
+}
+
 .nav-tabs {
   list-style: none;
   margin: 0;
@@ -544,7 +629,7 @@ dl dt {
   background: rgba(211, 243, 107, 0.3);
 }
 
-.stage {
+.stage { 
   grid-column: 4;
   grid-row: 1 / span 2;
   position: relative;
@@ -579,6 +664,105 @@ dl dt {
   width: 100%;
   height: 100%;
   display: block;
+}
+
+.stage-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(15, 31, 23, 0.55), transparent 55%);
+}
+
+.stage-toolbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.2rem;
+  pointer-events: none;
+}
+
+.stage-meta,
+.stage-animation {
+  pointer-events: auto;
+}
+
+.stage-label {
+  display: block;
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(243, 248, 240, 0.68);
+  margin-bottom: 0.35rem;
+}
+
+.stage-critter-name {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-highlight);
+  text-shadow: 0 0 18px rgba(124, 200, 111, 0.3);
+}
+
+.animation-select-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-width: 180px;
+}
+
+.animation-select-wrapper select {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.animation-select-display {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.55rem 0.95rem;
+  border-radius: 999px;
+  border: 1px solid rgba(211, 243, 107, 0.4);
+  background: rgba(32, 53, 42, 0.72);
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  color: var(--color-text-secondary);
+  pointer-events: none;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.animation-select-wrapper::after {
+  content: '▾';
+  position: absolute;
+  right: 0.9rem;
+  font-size: 0.75rem;
+  pointer-events: none;
+  color: rgba(243, 248, 240, 0.7);
+}
+
+.animation-select-wrapper:focus-within .animation-select-display,
+.animation-select-wrapper select:focus-visible + .animation-select-display {
+  border-color: rgba(211, 243, 107, 0.8);
+  background: rgba(35, 65, 48, 0.9);
+  color: var(--color-text-primary);
+}
+
+.stage-hint {
+  margin: 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(243, 248, 240, 0.6);
+  pointer-events: none;
 }
 
 @media (max-width: 1400px) {
@@ -636,6 +820,24 @@ dl dt {
     gap: 1.1rem;
   }
 
+  .nav-section {
+    flex: 1 1 0;
+  }
+
+  .nav-section-divider {
+    width: 1px;
+    height: 60%;
+    background: linear-gradient(180deg, transparent, rgba(124, 200, 111, 0.4), transparent);
+  }
+
+  .critter-selector-buttons {
+    flex-direction: row;
+  }
+
+  .critter-button {
+    flex: 1 1 0;
+  }
+
   .hud-nav h2 {
     margin-bottom: 0;
   }
@@ -668,6 +870,10 @@ dl dt {
     grid-row: 5;
     grid-column: 1;
     height: 320px;
+  }
+
+  .stage-overlay {
+    padding: 1rem 1.2rem;
   }
 }
 

@@ -2,7 +2,8 @@ import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
 
 export class ResourceLoader {
   constructor() {
-    this.cache = new Map();
+    this.gltfCache = new Map();
+    this.textureCache = new Map();
     this.loaderPromise = null;
   }
 
@@ -11,42 +12,64 @@ export class ResourceLoader {
       return this._createPlaceholder();
     }
 
-    if (this.cache.has(path)) {
-      return this.cache.get(path).clone();
+    const gltf = await this.loadGLTF(path);
+    if (gltf?.scene) {
+      return gltf.scene;
     }
 
-    try {
-      const loader = await this._getLoader();
-      const gltf = await loader.loadAsync(path);
-      const scene = gltf.scene || gltf.scenes?.[0];
-      if (scene) {
-        this.cache.set(path, scene);
-        return scene.clone(true);
-      }
-    } catch (error) {
-      console.warn(`Failed to load model at ${path}. Using fallback geometry instead.`, error);
-    }
-
-    const fallback = this._createPlaceholder();
-    this.cache.set(path, fallback);
-    return fallback.clone();
+    console.warn(`Failed to load model at ${path}. Using fallback geometry instead.`);
+    return this._createPlaceholder();
   }
 
   async loadTexture(path) {
     if (!path) return null;
-    if (this.cache.has(path)) {
-      return this.cache.get(path);
+    if (this.textureCache.has(path)) {
+      return this.textureCache.get(path);
     }
 
     const textureLoader = new THREE.TextureLoader();
     try {
       const texture = await textureLoader.loadAsync(path);
-      this.cache.set(path, texture);
+      this.textureCache.set(path, texture);
       return texture;
     } catch (error) {
       console.warn(`Failed to load texture at ${path}.`, error);
       return null;
     }
+  }
+
+  async loadGLTF(path) {
+    if (!path) return null;
+
+    if (this.gltfCache.has(path)) {
+      const cached = this.gltfCache.get(path);
+      return {
+        scene: cached.scene?.clone(true) ?? null,
+        animations: cached.animations.map((clip) => clip.clone()),
+      };
+    }
+
+    try {
+      const loader = await this._getLoader();
+      const gltf = await loader.loadAsync(path);
+      const scene = gltf.scene || gltf.scenes?.[0] || null;
+      const animations = (gltf.animations || []).map((clip) => clip.clone());
+
+      if (scene) {
+        this.gltfCache.set(path, {
+          scene,
+          animations: gltf.animations || [],
+        });
+        return {
+          scene: scene.clone(true),
+          animations,
+        };
+      }
+    } catch (error) {
+      console.warn(`Failed to load GLTF at ${path}.`, error);
+    }
+
+    return null;
   }
 
   async _getLoader() {
