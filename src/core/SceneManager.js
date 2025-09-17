@@ -1,4 +1,5 @@
 import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+import { OrbitControls } from 'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
 import { createRenderer } from './RendererFactory.js';
 import { ResourceLoader } from './ResourceLoader.js';
 
@@ -10,21 +11,42 @@ const RARITY_GLOWS = {
   mythic: 0xffb7ff,
 };
 
+const DEFAULT_CAMERA_POSITION = new THREE.Vector3(0, 1.1, 3.3);
+const DEFAULT_CAMERA_TARGET = new THREE.Vector3(0, 0.6, 0);
+const SCRATCH_VECTOR = new THREE.Vector3();
+const SCRATCH_BOX = new THREE.Box3();
+
 export class SceneManager {
   constructor(container) {
     this.container = container;
     this.scene = new THREE.Scene();
     this.camera = null;
     this.renderer = null;
+    this.controls = null;
     this.clock = new THREE.Clock();
     this.resourceLoader = new ResourceLoader();
     this.animationFrame = null;
 
     this.stageGroup = new THREE.Group();
-    this.currentModel = null;
+    this.weaponGroup = new THREE.Group();
+    this.weaponModel = null;
+    this.critterGroup = new THREE.Group();
+    this.critterModel = null;
+    this.critterMixer = null;
+    this.critterActions = new Map();
+    this.critterClips = new Map();
+    this.critterActiveAction = null;
     this.platform = null;
     this.glowRing = null;
     this.pendingWeaponId = null;
+    this.pendingCritterId = null;
+    this.pendingAnimationId = null;
+    this.activeCritter = null;
+    this.activeAnimationId = null;
+    this.critterFocusPoint = DEFAULT_CAMERA_TARGET.clone();
+
+    this.defaultCameraPosition = DEFAULT_CAMERA_POSITION.clone();
+    this.defaultCameraTarget = DEFAULT_CAMERA_TARGET.clone();
 
     this.handleResize = this.handleResize.bind(this);
     this.animate = this.animate.bind(this);
@@ -33,12 +55,16 @@ export class SceneManager {
   init() {
     this.renderer = createRenderer(this.container);
     this.camera = this.createCamera();
+    this.controls = this.createControls();
     this.setupLights();
     this.setupEnvironment();
     this.scene.add(this.stageGroup);
+    this.stageGroup.add(this.weaponGroup);
+    this.stageGroup.add(this.critterGroup);
 
     window.addEventListener('resize', this.handleResize);
     this.handleResize();
+    this.resetCamera();
     this.start();
   }
 
@@ -54,21 +80,42 @@ export class SceneManager {
   }
 
   update(delta) {
-    if (this.currentModel) {
-      this.currentModel.rotation.y += delta * 0.4;
+    if (this.weaponModel) {
+      this.weaponGroup.rotation.y += delta * 0.4;
     }
 
     if (this.glowRing) {
       this.glowRing.rotation.z += delta * 0.2;
+    }
+
+    if (this.critterMixer) {
+      this.critterMixer.update(delta);
+    }
+
+    if (this.controls) {
+      this.controls.update();
     }
   }
 
   createCamera() {
     const aspect = this.container.clientWidth / Math.max(this.container.clientHeight, 1);
     const camera = new THREE.PerspectiveCamera(40, aspect, 0.1, 100);
-    camera.position.set(0, 1.1, 3.3);
-    camera.lookAt(0, 0.4, 0);
+    camera.position.copy(this.defaultCameraPosition);
+    camera.lookAt(this.defaultCameraTarget);
     return camera;
+  }
+
+  createControls() {
+    const controls = new OrbitControls(this.camera, this.renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.enablePan = true;
+    controls.minDistance = 1.6;
+    controls.maxDistance = 6.0;
+    controls.maxPolarAngle = Math.PI * 0.49;
+    controls.target.copy(this.defaultCameraTarget);
+    controls.update();
+    return controls;
   }
 
   setupLights() {
@@ -133,20 +180,177 @@ export class SceneManager {
     model.position.set(0, 0, 0);
     model.rotation.set(0, Math.PI / 4, 0);
 
-    const scale = weapon.preview?.scale ?? 1.2;
+    const scale = weapon.preview?.scale ?? (weapon.modelPath ? 1.2 : 0.75);
     model.scale.setScalar(scale);
 
-    this.disposeCurrentModel();
-    this.currentModel = model;
-    this.stageGroup.add(model);
+    this.disposeWeaponModel();
+    this.weaponGroup.position.set(
+      weapon.preview?.offset?.[0] ?? 1.2,
+      weapon.preview?.offset?.[1] ?? -0.1,
+      weapon.preview?.offset?.[2] ?? 0
+    );
+    this.weaponGroup.rotation.set(0, 0, 0);
+    this.weaponGroup.add(model);
+    this.weaponModel = model;
 
     this.applyRarityGlow(weapon.rarity);
   }
 
-  disposeCurrentModel() {
-    if (!this.currentModel) return;
-    this.stageGroup.remove(this.currentModel);
-    this.currentModel.traverse?.((child) => {
+  async loadCritter(critter) {
+    if (!critter) return;
+
+    const requestId = (this.pendingCritterId = critter.id);
+
+    let model = null;
+    if (critter.modelPath) {
+      model = await this.resourceLoader.loadModel(critter.modelPath);
+    }
+
+    if (this.pendingCritterId !== requestId) {
+      return;
+    }
+
+    if (!model) {
+      console.warn(`Critter model at path "${critter.modelPath}" was not found.`);
+      return;
+    }
+
+    const { root, focusPoint } = this.prepareCritterModel(model, critter);
+    const preview = critter.preview ?? {};
+    const floorHeight = this.getStageFloorHeight();
+    const [offsetX = 0, offsetY = 0, offsetZ = 0] = preview.position ?? [];
+    root.position.set(offsetX, floorHeight + offsetY, offsetZ);
+
+    if (Array.isArray(preview.rotation)) {
+      const [rx = 0, ry = 0, rz = 0] = preview.rotation;
+      root.rotation.set(rx, ry, rz);
+    }
+
+    this.disposeCritterModel();
+    this.critterGroup.add(root);
+    this.critterModel = root;
+    this.activeCritter = critter;
+    this.critterMixer = new THREE.AnimationMixer(root);
+    this.critterActions.clear();
+    this.critterClips.clear();
+    this.critterActiveAction = null;
+    this.pendingAnimationId = null;
+    this.activeAnimationId = null;
+
+    const cameraSettings = preview.camera ?? {};
+    const focus = focusPoint.clone().add(root.position);
+    this.critterFocusPoint.copy(focus);
+    if (cameraSettings.target) {
+      this.defaultCameraTarget.fromArray(cameraSettings.target);
+    } else {
+      this.defaultCameraTarget.copy(focus);
+    }
+
+    const distance = cameraSettings.distance ?? 3.2;
+    const elevation = cameraSettings.elevation ?? 0.85;
+    const [offsetCameraX = 0, offsetCameraZ = 0] = cameraSettings.offset ?? [0, 0];
+    this.defaultCameraPosition.set(
+      this.defaultCameraTarget.x + offsetCameraX,
+      this.defaultCameraTarget.y + elevation,
+      this.defaultCameraTarget.z + offsetCameraZ + distance
+    );
+
+    if (this.controls) {
+      this.controls.minDistance = cameraSettings.minDistance ?? 1.6;
+      this.controls.maxDistance = cameraSettings.maxDistance ?? 6.0;
+    }
+
+    this.resetCamera();
+  }
+
+  prepareCritterModel(model, critter) {
+    const preview = critter.preview ?? {};
+    const root = new THREE.Group();
+    root.name = `critter-${critter.id}`;
+    root.add(model);
+
+    SCRATCH_BOX.makeEmpty();
+    SCRATCH_BOX.setFromObject(model);
+    const size = SCRATCH_BOX.getSize(SCRATCH_VECTOR.set(0, 0, 0));
+    const center = SCRATCH_BOX.getCenter(SCRATCH_VECTOR.set(0, 0, 0));
+
+    model.position.sub(center);
+    model.position.y -= SCRATCH_BOX.min.y;
+
+    const targetHeight = preview.targetHeight;
+    if (targetHeight && size.y > 0) {
+      const factor = targetHeight / size.y;
+      root.scale.setScalar(factor);
+    } else {
+      const scale = preview.scale ?? 1;
+      root.scale.setScalar(scale);
+    }
+
+    root.updateMatrixWorld(true);
+
+    SCRATCH_BOX.makeEmpty();
+    SCRATCH_BOX.setFromObject(root);
+    const finalSize = SCRATCH_BOX.getSize(SCRATCH_VECTOR.set(0, 0, 0));
+
+    const focus = new THREE.Vector3(
+      preview.focus?.[0] ?? 0,
+      preview.focus?.[1] ?? SCRATCH_BOX.min.y + finalSize.y * (preview.focusRatio ?? 0.62),
+      preview.focus?.[2] ?? 0
+    );
+
+    return { root, focusPoint: focus };
+  }
+
+  async playCritterAnimation(critter, animation) {
+    if (!this.critterModel || !this.critterMixer) return;
+    if (!critter || !animation) return;
+    if (!this.activeCritter || this.activeCritter.id !== critter.id) return;
+
+    const requestId = (this.pendingAnimationId = animation.id);
+    let clip = this.critterClips.get(animation.id);
+
+    if (!clip) {
+      clip = await this.resourceLoader.loadAnimation(animation.path);
+      if (this.pendingAnimationId !== requestId) {
+        return;
+      }
+      if (!clip) {
+        console.warn(`Animation clip at path "${animation.path}" could not be loaded.`);
+        return;
+      }
+      this.critterClips.set(animation.id, clip);
+    }
+
+    if (this.pendingAnimationId !== requestId) {
+      return;
+    }
+
+    let action = this.critterActions.get(animation.id);
+    if (!action) {
+      action = this.critterMixer.clipAction(clip);
+      const shouldLoop = animation.loop !== false;
+      action.setLoop(shouldLoop ? THREE.LoopRepeat : THREE.LoopOnce, shouldLoop ? Infinity : 1);
+      action.clampWhenFinished = !shouldLoop;
+      action.timeScale = animation.speed ?? 1;
+      this.critterActions.set(animation.id, action);
+    }
+
+    if (this.critterActiveAction && this.critterActiveAction !== action) {
+      this.critterActiveAction.fadeOut(0.25);
+    }
+
+    action.reset();
+    action.fadeIn(0.2);
+    action.play();
+
+    this.critterActiveAction = action;
+    this.activeAnimationId = animation.id;
+  }
+
+  disposeWeaponModel() {
+    if (!this.weaponModel) return;
+    this.weaponGroup.remove(this.weaponModel);
+    this.weaponModel.traverse?.((child) => {
       if (child.material) {
         if (Array.isArray(child.material)) {
           child.material.forEach((material) => material.dispose?.());
@@ -158,7 +362,34 @@ export class SceneManager {
         child.geometry.dispose?.();
       }
     });
-    this.currentModel = null;
+    this.weaponModel = null;
+  }
+
+  disposeCritterModel() {
+    if (!this.critterModel) return;
+    this.critterGroup.remove(this.critterModel);
+    this.critterModel.traverse?.((child) => {
+      if (child.material) {
+        if (Array.isArray(child.material)) {
+          child.material.forEach((material) => material.dispose?.());
+        } else {
+          child.material.dispose?.();
+        }
+      }
+      if (child.geometry) {
+        child.geometry.dispose?.();
+      }
+    });
+    this.critterModel = null;
+    this.critterMixer?.stopAllAction?.();
+    this.critterMixer = null;
+    this.critterActions.clear();
+    this.critterClips.clear();
+    this.critterActiveAction = null;
+    this.activeCritter = null;
+    this.pendingCritterId = null;
+    this.pendingAnimationId = null;
+    this.activeAnimationId = null;
   }
 
   applyRarityGlow(rarity = 'common') {
@@ -182,17 +413,38 @@ export class SceneManager {
     return mesh;
   }
 
+  resetCamera() {
+    if (!this.camera) return;
+    this.camera.position.copy(this.defaultCameraPosition);
+    this.camera.lookAt(this.defaultCameraTarget);
+    if (this.controls) {
+      this.controls.target.copy(this.defaultCameraTarget);
+      this.controls.update();
+    }
+  }
+
+  getStageFloorHeight() {
+    if (!this.platform || !this.platform.geometry?.parameters?.height) {
+      return -0.64;
+    }
+    const height = this.platform.geometry.parameters.height;
+    return this.platform.position.y + height / 2;
+  }
+
   handleResize() {
     if (!this.renderer || !this.camera) return;
     const { clientWidth, clientHeight } = this.container;
     this.renderer.setSize(clientWidth, clientHeight, false);
     this.camera.aspect = clientWidth / Math.max(clientHeight, 1);
     this.camera.updateProjectionMatrix();
+    this.controls?.update();
   }
 
   dispose() {
     cancelAnimationFrame(this.animationFrame);
     window.removeEventListener('resize', this.handleResize);
+    this.disposeWeaponModel();
+    this.disposeCritterModel();
     this.scene.traverse((object) => {
       if (object.isMesh) {
         object.geometry?.dispose?.();
@@ -204,5 +456,6 @@ export class SceneManager {
       }
     });
     this.renderer?.dispose?.();
+    this.controls?.dispose?.();
   }
 }

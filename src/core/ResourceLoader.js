@@ -1,8 +1,11 @@
 import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+import { SkeletonUtils } from 'https://unpkg.com/three@0.160.0/examples/jsm/utils/SkeletonUtils.js';
 
 export class ResourceLoader {
   constructor() {
-    this.cache = new Map();
+    this.modelCache = new Map();
+    this.textureCache = new Map();
+    this.animationCache = new Map();
     this.loaderPromise = null;
   }
 
@@ -11,8 +14,8 @@ export class ResourceLoader {
       return this._createPlaceholder();
     }
 
-    if (this.cache.has(path)) {
-      return this.cache.get(path).clone();
+    if (this.modelCache.has(path)) {
+      return SkeletonUtils.clone(this.modelCache.get(path));
     }
 
     try {
@@ -20,33 +23,55 @@ export class ResourceLoader {
       const gltf = await loader.loadAsync(path);
       const scene = gltf.scene || gltf.scenes?.[0];
       if (scene) {
-        this.cache.set(path, scene);
-        return scene.clone(true);
+        this.modelCache.set(path, scene);
+        return SkeletonUtils.clone(scene);
       }
     } catch (error) {
       console.warn(`Failed to load model at ${path}. Using fallback geometry instead.`, error);
     }
 
     const fallback = this._createPlaceholder();
-    this.cache.set(path, fallback);
+    this.modelCache.set(path, fallback);
     return fallback.clone();
   }
 
   async loadTexture(path) {
     if (!path) return null;
-    if (this.cache.has(path)) {
-      return this.cache.get(path);
+    if (this.textureCache.has(path)) {
+      return this.textureCache.get(path);
     }
 
     const textureLoader = new THREE.TextureLoader();
     try {
       const texture = await textureLoader.loadAsync(path);
-      this.cache.set(path, texture);
+      this.textureCache.set(path, texture);
       return texture;
     } catch (error) {
       console.warn(`Failed to load texture at ${path}.`, error);
       return null;
     }
+  }
+
+  async loadAnimation(path) {
+    if (!path) return null;
+
+    if (this.animationCache.has(path)) {
+      return this.animationCache.get(path).clone();
+    }
+
+    try {
+      const loader = await this._getLoader();
+      const gltf = await loader.loadAsync(path);
+      const clip = gltf.animations?.[0] ?? null;
+      if (clip) {
+        this.animationCache.set(path, clip);
+        return clip.clone();
+      }
+    } catch (error) {
+      console.warn(`Failed to load animation at ${path}.`, error);
+    }
+
+    return null;
   }
 
   async _getLoader() {
