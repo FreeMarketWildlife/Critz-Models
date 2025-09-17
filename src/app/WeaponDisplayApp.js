@@ -6,6 +6,7 @@ import { critters } from '../data/critters.js';
 import { CritterSelector } from '../hud/components/CritterSelector.js';
 import { AnimationSelector } from '../hud/components/AnimationSelector.js';
 import { ViewportOverlay } from '../hud/components/ViewportOverlay.js';
+import { RigControlPanel } from '../hud/components/RigControlPanel.js';
 
 export class WeaponDisplayApp {
   constructor(rootElement) {
@@ -16,6 +17,10 @@ export class WeaponDisplayApp {
     this.critterSelector = null;
     this.animationSelector = null;
     this.viewportOverlay = null;
+    this.rigControlPanel = null;
+    this.stageElement = null;
+    this.stageToolbarElement = null;
+    this.stageToolsExpanded = false;
 
     this.weapons = sampleWeapons;
     this.weaponMap = new Map();
@@ -30,6 +35,9 @@ export class WeaponDisplayApp {
 
   init() {
     const layout = this.buildLayout();
+    this.stageElement = layout.stageElement;
+    this.stageToolbarElement = layout.stageToolbarElement;
+    this.stageToolsExpanded = false;
     this.indexWeapons();
     this.indexCritters();
     this.registerEventHandlers();
@@ -42,6 +50,7 @@ export class WeaponDisplayApp {
       bus: this.eventBus,
     });
     this.viewportOverlay.init();
+    this.updateStageToolsVisibility(false);
 
     this.hudController = new HUDController({
       bus: this.eventBus,
@@ -80,6 +89,12 @@ export class WeaponDisplayApp {
     });
     this.animationSelector.init();
 
+    this.rigControlPanel = new RigControlPanel({
+      container: layout.rigControlsElement,
+      bus: this.eventBus,
+    });
+    this.rigControlPanel.init();
+
     const defaultCritter = this.findDefaultCritter();
     if (defaultCritter) {
       this.activeCritter = defaultCritter;
@@ -109,36 +124,43 @@ export class WeaponDisplayApp {
     this.root.innerHTML = `
       <div class="app-shell">
         <div class="hud-brand">Crtiz Armory</div>
-        <nav class="hud-nav" aria-label="Interface options">
-          <div class="nav-section nav-section--critters">
-            <h2>Critters</h2>
-            <div data-component="critter-selector"></div>
+        <div class="hud-side">
+          <nav class="hud-nav" aria-label="Interface options">
+            <div class="nav-section nav-section--critters">
+              <h2>Critters</h2>
+              <div data-component="critter-selector"></div>
+            </div>
+            <div class="nav-section nav-section--categories">
+              <h2>Categories</h2>
+              <ul class="nav-tabs" data-component="nav-tabs"></ul>
+            </div>
+          </nav>
+          <section class="panel hud-panel hud-list" data-component="weapon-list">
+            <div class="panel-header">
+              <span>Arsenal</span>
+              <span data-role="list-context"></span>
+            </div>
+            <div class="weapon-cards" data-role="weapon-cards"></div>
+            <div class="panel-footer" data-role="list-footer">Choose a category to see its gear.</div>
+          </section>
+          <section class="panel hud-panel hud-detail" data-component="weapon-detail">
+            <div class="panel-header">
+              <span>Equipment Info</span>
+              <span data-role="rarity-badge"></span>
+            </div>
+            <div class="detail-content" data-role="detail-content">
+              <p class="description">Pick a tool to see its details.</p>
+            </div>
+            <div class="panel-footer" data-role="detail-footer">Awaiting selection</div>
+          </section>
+        </div>
+        <section class="stage stage--tools-collapsed" data-component="stage">
+          <div class="stage-toolbar" data-component="stage-toolbar">
+            <div class="stage-tool-grid">
+              <div class="stage-tool-panel stage-tool-panel--selector" data-component="animation-selector"></div>
+              <div class="stage-tool-panel stage-tool-panel--rig" data-component="rig-controls"></div>
+            </div>
           </div>
-          <div class="nav-section nav-section--categories">
-            <h2>Categories</h2>
-            <ul class="nav-tabs" data-component="nav-tabs"></ul>
-          </div>
-        </nav>
-        <section class="panel hud-panel hud-list" data-component="weapon-list">
-          <div class="panel-header">
-            <span>Arsenal</span>
-            <span data-role="list-context"></span>
-          </div>
-          <div class="weapon-cards" data-role="weapon-cards"></div>
-          <div class="panel-footer" data-role="list-footer">Choose a category to see its gear.</div>
-        </section>
-        <section class="panel hud-panel hud-detail" data-component="weapon-detail">
-          <div class="panel-header">
-            <span>Equipment Info</span>
-            <span data-role="rarity-badge"></span>
-          </div>
-          <div class="detail-content" data-role="detail-content">
-            <p class="description">Pick a tool to see its details.</p>
-          </div>
-          <div class="panel-footer" data-role="detail-footer">Awaiting selection</div>
-        </section>
-        <section class="stage" data-component="stage">
-          <div class="stage-toolbar" data-component="animation-selector"></div>
           <div
             class="stage-viewport"
             data-role="stage-viewport"
@@ -151,6 +173,7 @@ export class WeaponDisplayApp {
 
     return {
       stageElement: this.root.querySelector('[data-component="stage"]'),
+      stageToolbarElement: this.root.querySelector('[data-component="stage-toolbar"]'),
       stageViewportElement: this.root.querySelector('[data-role="stage-viewport"]'),
       navTabsElement: this.root.querySelector('[data-component="nav-tabs"]'),
       critterSelectorElement: this.root.querySelector('[data-component="critter-selector"]'),
@@ -161,6 +184,7 @@ export class WeaponDisplayApp {
       rarityBadge: this.root.querySelector('[data-role="rarity-badge"]'),
       detailFooter: this.root.querySelector('[data-role="detail-footer"]'),
       animationSelectorElement: this.root.querySelector('[data-component="animation-selector"]'),
+      rigControlsElement: this.root.querySelector('[data-component="rig-controls"]'),
     };
   }
 
@@ -209,8 +233,43 @@ export class WeaponDisplayApp {
       const animation = this.findAnimation(this.activeCritter, animationId);
       if (animation) {
         this.sceneManager.playAnimation(animation);
+      } else {
+        this.sceneManager.stopAnimation();
       }
     });
+
+    this.eventBus.on('rig:refresh-requested', () => {
+      this.refreshActiveCritter();
+    });
+
+    this.eventBus.on('stage:tools-toggle-requested', (payload) => {
+      const desiredState =
+        typeof payload?.expanded === 'boolean' ? payload.expanded : !this.stageToolsExpanded;
+      this.updateStageToolsVisibility(desiredState);
+    });
+  }
+
+  updateStageToolsVisibility(expanded) {
+    const isExpanded = Boolean(expanded);
+    this.stageToolsExpanded = isExpanded;
+
+    if (this.stageElement) {
+      this.stageElement.classList.toggle('stage--tools-expanded', isExpanded);
+      this.stageElement.classList.toggle('stage--tools-collapsed', !isExpanded);
+    }
+
+    if (this.stageToolbarElement) {
+      this.stageToolbarElement.setAttribute('aria-hidden', isExpanded ? 'false' : 'true');
+      if (typeof this.stageToolbarElement.toggleAttribute === 'function') {
+        this.stageToolbarElement.toggleAttribute('inert', !isExpanded);
+      } else if (!isExpanded) {
+        this.stageToolbarElement.setAttribute('inert', '');
+      } else {
+        this.stageToolbarElement.removeAttribute('inert');
+      }
+    }
+
+    this.eventBus.emit('stage:tools-visibility-changed', { expanded: isExpanded });
   }
 
   indexWeapons() {
@@ -252,5 +311,22 @@ export class WeaponDisplayApp {
     }
 
     return critter.animations?.find((animation) => animation.id === animationId) || null;
+  }
+
+  refreshActiveCritter() {
+    if (!this.activeCritter || !this.sceneManager) {
+      return;
+    }
+
+    const animationId = this.animationSelector?.getActiveAnimationId?.();
+    const animation = this.findAnimation(this.activeCritter, animationId);
+
+    this.sceneManager.loadCritter(this.activeCritter).then(() => {
+      if (animation) {
+        this.sceneManager.playAnimation(animation);
+      } else {
+        this.sceneManager.stopAnimation();
+      }
+    });
   }
 }
