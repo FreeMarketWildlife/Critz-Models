@@ -54,28 +54,39 @@ export class WeaponDisplayApp {
   buildLayout() {
     this.root.innerHTML = `
       <div class="app-shell">
-        <div class="hud-brand">Crtiz Armory</div>
+        <div class="ambient-layers" aria-hidden="true">
+          <div class="ambient ambient-canopy"></div>
+          <div class="ambient ambient-dapple"></div>
+          <div class="ambient ambient-haze"></div>
+        </div>
+        <header class="hud-brand">
+          <div class="hud-brand-icon" aria-hidden="true"></div>
+          <div class="hud-brand-copy">
+            <span class="hud-brand-label">Crtiz Armory</span>
+            <span class="hud-brand-subtitle">Sanctuary Arsenal</span>
+          </div>
+        </header>
         <nav class="hud-nav" aria-label="Weapon categories">
           <h2>Categories</h2>
           <ul class="nav-tabs" data-component="nav-tabs"></ul>
         </nav>
         <section class="panel hud-panel hud-list" data-component="weapon-list">
           <div class="panel-header">
-            <span>Arsenal</span>
+            <span>Forest Arsenal</span>
             <span data-role="list-context"></span>
           </div>
           <div class="weapon-cards" data-role="weapon-cards"></div>
-          <div class="panel-footer" data-role="list-footer">Choose a category to see its gear.</div>
+          <div class="panel-footer" data-role="list-footer">Select a path to explore its crafted gear.</div>
         </section>
         <section class="panel hud-panel hud-detail" data-component="weapon-detail">
           <div class="panel-header">
-            <span>Equipment Info</span>
+            <span>Artifact Lore</span>
             <span data-role="rarity-badge"></span>
           </div>
           <div class="detail-content" data-role="detail-content">
-            <p class="description">Pick a tool to see its details.</p>
+            <p class="description">Select a crafted artifact to reveal its story.</p>
           </div>
-          <div class="panel-footer" data-role="detail-footer">Awaiting selection</div>
+          <div class="panel-footer" data-role="detail-footer">Awaiting chosen artifact</div>
         </section>
         <section class="stage" data-component="stage"></section>
       </div>
