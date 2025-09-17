@@ -1,4 +1,5 @@
 import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+import { OrbitControls } from 'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
 import { createRenderer } from './RendererFactory.js';
 import { ResourceLoader } from './ResourceLoader.js';
 
@@ -9,6 +10,9 @@ const RARITY_GLOWS = {
   legendary: 0xffe37d,
   mythic: 0xffb7ff,
 };
+
+const TARGET_CRITTER_HEIGHT = 1.6;
+const CRITTER_PLATFORM_OFFSET = -0.58;
 
 export class SceneManager {
   constructor(container) {
@@ -21,10 +25,19 @@ export class SceneManager {
     this.animationFrame = null;
 
     this.stageGroup = new THREE.Group();
-    this.currentModel = null;
+    this.weaponGroup = new THREE.Group();
+    this.critterGroup = new THREE.Group();
+    this.weaponModel = null;
+    this.critterModel = null;
     this.platform = null;
     this.glowRing = null;
     this.pendingWeaponId = null;
+    this.pendingCritterId = null;
+
+    this.controls = null;
+    this.mixer = null;
+    this.activeAction = null;
+    this.availableAnimations = [];
 
     this.handleResize = this.handleResize.bind(this);
     this.animate = this.animate.bind(this);
@@ -36,6 +49,16 @@ export class SceneManager {
     this.setupLights();
     this.setupEnvironment();
     this.scene.add(this.stageGroup);
+
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.controls.enableDamping = true;
+    this.controls.dampingFactor = 0.08;
+    this.controls.rotateSpeed = 0.55;
+    this.controls.minDistance = 2.2;
+    this.controls.maxDistance = 5;
+    this.controls.maxPolarAngle = Math.PI * 0.45;
+    this.controls.target.set(0, 0.9, 0);
+    this.controls.update();
 
     window.addEventListener('resize', this.handleResize);
     this.handleResize();
@@ -54,8 +77,11 @@ export class SceneManager {
   }
 
   update(delta) {
-    if (this.currentModel) {
-      this.currentModel.rotation.y += delta * 0.4;
+    this.controls?.update();
+    this.mixer?.update(delta);
+
+    if (this.weaponModel) {
+      this.weaponModel.rotation.y += delta * 0.35;
     }
 
     if (this.glowRing) {
@@ -110,6 +136,8 @@ export class SceneManager {
 
     this.stageGroup.add(this.platform);
     this.stageGroup.add(this.glowRing);
+    this.stageGroup.add(this.critterGroup);
+    this.stageGroup.add(this.weaponGroup);
   }
 
   async loadWeapon(weapon) {
@@ -136,17 +164,17 @@ export class SceneManager {
     const scale = weapon.preview?.scale ?? 1.2;
     model.scale.setScalar(scale);
 
-    this.disposeCurrentModel();
-    this.currentModel = model;
-    this.stageGroup.add(model);
+    this.disposeWeaponModel();
+    this.weaponModel = model;
+    this.weaponGroup.add(model);
 
     this.applyRarityGlow(weapon.rarity);
   }
 
-  disposeCurrentModel() {
-    if (!this.currentModel) return;
-    this.stageGroup.remove(this.currentModel);
-    this.currentModel.traverse?.((child) => {
+  disposeWeaponModel() {
+    if (!this.weaponModel) return;
+    this.weaponGroup.remove(this.weaponModel);
+    this.weaponModel.traverse?.((child) => {
       if (child.material) {
         if (Array.isArray(child.material)) {
           child.material.forEach((material) => material.dispose?.());
@@ -158,7 +186,7 @@ export class SceneManager {
         child.geometry.dispose?.();
       }
     });
-    this.currentModel = null;
+    this.weaponModel = null;
   }
 
   applyRarityGlow(rarity = 'common') {
@@ -182,17 +210,166 @@ export class SceneManager {
     return mesh;
   }
 
+  async loadCritter(critter) {
+    if (!critter) return [];
+
+    const requestId = (this.pendingCritterId = critter.id);
+
+    let gltf = null;
+    if (critter.modelPath) {
+      gltf = await this.resourceLoader.loadGLTF(critter.modelPath);
+    }
+
+    if (this.pendingCritterId !== requestId) {
+      return [];
+    }
+
+    let model = gltf?.scene ?? null;
+    if (!model) {
+      model = new THREE.Group();
+      model.add(this.createPlaceholderModel());
+    }
+
+    model.traverse?.((child) => {
+      if (child.isMesh || child.isSkinnedMesh) {
+        child.castShadow = false;
+        child.receiveShadow = false;
+        child.frustumCulled = false;
+      }
+    });
+
+    this.disposeCritterModel();
+
+    this.critterModel = model;
+    const bounds = this.prepareCritterModel(model);
+    this.critterGroup.add(model);
+
+    this.mixer?.stopAllAction();
+    this.mixer = new THREE.AnimationMixer(model);
+    this.activeAction = null;
+    this.availableAnimations = [];
+
+    const loadedAnimations = [];
+    for (const animation of critter.animations ?? []) {
+      const animationGltf = await this.resourceLoader.loadGLTF(animation.path);
+      if (this.pendingCritterId !== requestId) {
+        return [];
+      }
+
+      const clip = animationGltf?.animations?.[0];
+      if (!clip) {
+        continue;
+      }
+
+      clip.name = animation.id;
+      loadedAnimations.push({
+        id: animation.id,
+        name: animation.name,
+        clip,
+      });
+    }
+
+    if (this.pendingCritterId !== requestId) {
+      return [];
+    }
+
+    this.availableAnimations = loadedAnimations;
+    this.updateControlsTargetFromBox(bounds);
+
+    this.pendingCritterId = null;
+    return loadedAnimations.map(({ id, name }) => ({ id, name }));
+  }
+
+  playAnimation(animationId) {
+    if (!this.mixer || this.availableAnimations.length === 0) {
+      return false;
+    }
+
+    const animation =
+      this.availableAnimations.find((entry) => entry.id === animationId) || this.availableAnimations[0];
+    if (!animation) {
+      return false;
+    }
+
+    const action = this.mixer.clipAction(animation.clip);
+    action.enabled = true;
+    action.setLoop(THREE.LoopRepeat, Infinity);
+    action.clampWhenFinished = true;
+
+    if (this.activeAction && this.activeAction !== action) {
+      this.activeAction.fadeOut(0.25);
+    }
+
+    action.reset();
+    action.fadeIn(0.25);
+    action.play();
+    this.activeAction = action;
+    return true;
+  }
+
+  disposeCritterModel() {
+    if (this.critterModel) {
+      this.critterGroup.remove(this.critterModel);
+      this.critterModel.traverse?.((child) => {
+        if (child.material) {
+          if (Array.isArray(child.material)) {
+            child.material.forEach((material) => material.dispose?.());
+          } else {
+            child.material.dispose?.();
+          }
+        }
+        if (child.geometry) {
+          child.geometry.dispose?.();
+        }
+      });
+      this.critterModel = null;
+    }
+
+    this.mixer?.stopAllAction();
+    this.mixer = null;
+    this.activeAction = null;
+    this.availableAnimations = [];
+  }
+
+  prepareCritterModel(model) {
+    const box = new THREE.Box3().setFromObject(model);
+    const size = box.getSize(new THREE.Vector3());
+    const currentHeight = Math.max(size.y, 0.001);
+    const scale = TARGET_CRITTER_HEIGHT / currentHeight;
+    model.scale.setScalar(scale);
+
+    box.setFromObject(model);
+    const center = box.getCenter(new THREE.Vector3());
+    model.position.x -= center.x;
+    model.position.z -= center.z;
+    model.position.y -= box.min.y;
+    model.position.y += CRITTER_PLATFORM_OFFSET;
+
+    model.updateMatrixWorld(true);
+    return new THREE.Box3().setFromObject(model);
+  }
+
+  updateControlsTargetFromBox(box) {
+    if (!this.controls || !box) return;
+    const center = box.getCenter(new THREE.Vector3());
+    this.controls.target.copy(center);
+    this.controls.update();
+  }
+
   handleResize() {
     if (!this.renderer || !this.camera) return;
     const { clientWidth, clientHeight } = this.container;
     this.renderer.setSize(clientWidth, clientHeight, false);
     this.camera.aspect = clientWidth / Math.max(clientHeight, 1);
     this.camera.updateProjectionMatrix();
+    this.controls?.update();
   }
 
   dispose() {
     cancelAnimationFrame(this.animationFrame);
     window.removeEventListener('resize', this.handleResize);
+    this.disposeWeaponModel();
+    this.disposeCritterModel();
     this.scene.traverse((object) => {
       if (object.isMesh) {
         object.geometry?.dispose?.();
@@ -204,5 +381,6 @@ export class SceneManager {
       }
     });
     this.renderer?.dispose?.();
+    this.controls?.dispose?.();
   }
 }
