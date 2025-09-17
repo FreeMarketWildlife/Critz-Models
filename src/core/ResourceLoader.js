@@ -107,18 +107,9 @@ export class ResourceLoader {
   }
 
   _createPlaceholder() {
-    const geometry = new THREE.IcosahedronGeometry(0.8, 1);
-    const material = new THREE.MeshStandardMaterial({
-      color: 0x7a5dd1,
-      emissive: 0x140d2f,
-      metalness: 0.45,
-      roughness: 0.4,
-    });
-    const mesh = new THREE.Mesh(geometry, material);
-    mesh.name = 'placeholder-weapon';
-
     const group = new THREE.Group();
-    group.add(mesh);
+    group.name = 'missing-model-placeholder';
+    group.userData.isPlaceholder = true;
     return group;
   }
 }

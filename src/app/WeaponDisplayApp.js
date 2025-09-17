@@ -5,6 +5,7 @@ import { createEventBus } from '../utils/eventBus.js';
 import { critters } from '../data/critters.js';
 import { CritterSelector } from '../hud/components/CritterSelector.js';
 import { AnimationSelector } from '../hud/components/AnimationSelector.js';
+import { ViewportOverlay } from '../hud/components/ViewportOverlay.js';
 
 export class WeaponDisplayApp {
   constructor(rootElement) {
@@ -14,6 +15,7 @@ export class WeaponDisplayApp {
     this.hudController = null;
     this.critterSelector = null;
     this.animationSelector = null;
+    this.viewportOverlay = null;
 
     this.weapons = sampleWeapons;
     this.weaponMap = new Map();
@@ -32,8 +34,14 @@ export class WeaponDisplayApp {
     this.indexCritters();
     this.registerEventHandlers();
 
-    this.sceneManager = new SceneManager(layout.stageViewportElement);
+    this.sceneManager = new SceneManager(layout.stageViewportElement, { bus: this.eventBus });
     this.sceneManager.init();
+
+    this.viewportOverlay = new ViewportOverlay({
+      container: layout.stageViewportElement,
+      bus: this.eventBus,
+    });
+    this.viewportOverlay.init();
 
     this.hudController = new HUDController({
       bus: this.eventBus,
