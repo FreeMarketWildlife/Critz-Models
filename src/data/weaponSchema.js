@@ -2,6 +2,17 @@ export const WEAPON_CATEGORIES = ['primary', 'secondary', 'melee', 'utility'];
 
 export const RARITIES = ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythic'];
 
+const PLACEHOLDER_MODEL_PATHS = {
+  primary: 'placeholder:weapon-primary',
+  secondary: 'placeholder:weapon-secondary',
+  melee: 'placeholder:weapon-melee',
+  utility: 'placeholder:weapon-utility',
+  default: 'placeholder:weapon-generic',
+};
+
+export const getDefaultModelPathForCategory = (category) =>
+  PLACEHOLDER_MODEL_PATHS[category] ?? PLACEHOLDER_MODEL_PATHS.default;
+
 export const STAT_LABELS = {
   damage: 'Damage',
   headshotDamage: 'Headshot Damage',
@@ -104,7 +115,7 @@ export const createEmptyWeapon = () => ({
   category: WEAPON_CATEGORIES[0],
   rarity: RARITIES[0],
   description: '',
-  modelPath: null,
+  modelPath: getDefaultModelPathForCategory(WEAPON_CATEGORIES[0]),
   preview: {
     rotation: { x: 0, y: 0, z: 0 },
     scale: 1,
@@ -113,20 +124,27 @@ export const createEmptyWeapon = () => ({
   special: {},
 });
 
-export const normalizeWeapon = (weapon) => ({
-  ...createEmptyWeapon(),
-  ...weapon,
-  preview: {
-    ...createEmptyWeapon().preview,
-    ...(weapon.preview || {}),
-  },
-  stats: {
-    ...(weapon.stats || {}),
-  },
-  special: {
-    ...(weapon.special || {}),
-  },
-});
+export const normalizeWeapon = (weapon = {}) => {
+  const base = createEmptyWeapon();
+  const category = weapon.category || base.category;
+
+  return {
+    ...base,
+    ...weapon,
+    category,
+    modelPath: weapon.modelPath ?? getDefaultModelPathForCategory(category),
+    preview: {
+      ...base.preview,
+      ...(weapon.preview || {}),
+    },
+    stats: {
+      ...(weapon.stats || {}),
+    },
+    special: {
+      ...(weapon.special || {}),
+    },
+  };
+};
 
 export const deriveStatsList = (weapon) => {
   const normalized = normalizeWeapon(weapon);

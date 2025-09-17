@@ -1,4 +1,4 @@
-import { normalizeWeapon } from './weaponSchema.js';
+import { getDefaultModelPathForCategory, normalizeWeapon } from './weaponSchema.js';
 
 const RAW_GLOBALS = {
   base_health: 100,
@@ -1084,7 +1084,7 @@ const weapons = RAW_WEAPONS.map((weapon) => {
     category,
     rarity: legacy.rarity || FALLBACK_RARITY_BY_CATEGORY[category] || 'common',
     description: legacy.description || weapon.notes || 'Specification pending.',
-    modelPath: legacy.modelPath ?? null,
+    modelPath: legacy.modelPath ?? getDefaultModelPathForCategory(category),
     preview: legacy.preview || undefined,
     stats: buildStats(weapon, category),
     special: buildSpecial(weapon, legacy.special || {}, category),
