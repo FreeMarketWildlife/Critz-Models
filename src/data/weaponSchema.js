@@ -113,20 +113,35 @@ export const createEmptyWeapon = () => ({
   special: {},
 });
 
-export const normalizeWeapon = (weapon) => ({
-  ...createEmptyWeapon(),
-  ...weapon,
-  preview: {
-    ...createEmptyWeapon().preview,
-    ...(weapon.preview || {}),
-  },
-  stats: {
-    ...(weapon.stats || {}),
-  },
-  special: {
-    ...(weapon.special || {}),
-  },
-});
+export const normalizeWeapon = (weapon) => {
+  const base = createEmptyWeapon();
+  const originalPreview = weapon.preview || {};
+  const normalizedPreview = {
+    ...base.preview,
+    ...originalPreview,
+  };
+
+  if (originalPreview.rotation && typeof originalPreview.rotation === 'object') {
+    const axes = Object.keys(originalPreview.rotation).filter((axis) =>
+      Object.prototype.hasOwnProperty.call(originalPreview.rotation, axis)
+    );
+    if (axes.length > 0) {
+      normalizedPreview.__rotationProvidedAxes = axes;
+    }
+  }
+
+  return {
+    ...base,
+    ...weapon,
+    preview: normalizedPreview,
+    stats: {
+      ...(weapon.stats || {}),
+    },
+    special: {
+      ...(weapon.special || {}),
+    },
+  };
+};
 
 export const deriveStatsList = (weapon) => {
   const normalized = normalizeWeapon(weapon);
