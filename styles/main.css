@@ -142,6 +142,147 @@ body::after {
   color: var(--color-highlight);
 }
 
+.critter-selector {
+  position: relative;
+  padding: 1rem 1.1rem 1.15rem;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(46, 88, 64, 0.38);
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  overflow: hidden;
+}
+
+.critter-selector::before {
+  content: '';
+  position: absolute;
+  inset: -30% -20% 55% -25%;
+  background: radial-gradient(circle at 42% 32%, rgba(124, 200, 111, 0.35), transparent 65%);
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.critter-selector > * {
+  position: relative;
+  z-index: 1;
+}
+
+.critter-selector .selector-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-family: var(--font-display);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-size: 0.88rem;
+  color: var(--color-highlight);
+}
+
+.critter-selector .selector-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.critter-selector input[type='search'] {
+  width: 100%;
+  padding: 0.6rem 0.85rem;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(32, 64, 48, 0.55);
+  color: var(--color-text-primary);
+  font-size: 0.9rem;
+  font-family: var(--font-body);
+  outline: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.critter-selector input[type='search']::placeholder {
+  color: rgba(243, 248, 240, 0.5);
+}
+
+.critter-selector input[type='search']:focus-visible {
+  border-color: rgba(124, 200, 111, 0.65);
+  box-shadow: 0 0 0 3px rgba(124, 200, 111, 0.22);
+}
+
+.critter-selector select {
+  width: 100%;
+  min-height: 160px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(28, 56, 40, 0.6);
+  color: var(--color-text-secondary);
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  padding: 0.45rem 0.35rem;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.critter-selector select:focus-visible {
+  border-color: rgba(124, 200, 111, 0.65);
+  box-shadow: 0 0 0 3px rgba(124, 200, 111, 0.22);
+}
+
+.critter-selector option {
+  padding: 0.4rem 0.5rem;
+  background: rgba(32, 62, 46, 0.75);
+}
+
+.critter-selector option:checked {
+  background: rgba(124, 200, 111, 0.35);
+  color: var(--color-text-primary);
+}
+
+.spin-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(243, 248, 240, 0.72);
+  cursor: pointer;
+}
+
+.spin-toggle input[type='checkbox'] {
+  appearance: none;
+  width: 38px;
+  height: 20px;
+  border-radius: 999px;
+  background: rgba(124, 200, 111, 0.28);
+  border: 1px solid rgba(124, 200, 111, 0.3);
+  position: relative;
+  transition: background 0.2s ease, border-color 0.2s ease;
+  cursor: pointer;
+}
+
+.spin-toggle input[type='checkbox']::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 4px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--color-text-primary);
+  transform: translate(0, -50%);
+  transition: transform 0.2s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.28);
+}
+
+.spin-toggle input[type='checkbox']:checked {
+  background: rgba(124, 200, 111, 0.6);
+  border-color: rgba(124, 200, 111, 0.75);
+}
+
+.spin-toggle input[type='checkbox']:checked::after {
+  transform: translate(16px, -50%);
+}
+
 .nav-tabs {
   list-style: none;
   margin: 0;
@@ -632,8 +773,9 @@ dl dt {
     grid-column: 1;
     grid-row: 2;
     flex-direction: row;
-    align-items: center;
+    align-items: stretch;
     gap: 1.1rem;
+    flex-wrap: wrap;
   }
 
   .hud-nav h2 {
@@ -652,6 +794,11 @@ dl dt {
   .nav-tabs button {
     font-size: 0.85rem;
     padding: 0.75rem 0.9rem;
+  }
+
+  .critter-selector {
+    flex: 1 1 240px;
+    min-width: 220px;
   }
 
   .hud-list {
@@ -682,6 +829,10 @@ dl dt {
 
   .nav-tabs li {
     flex: 1 1 calc(50% - 0.5rem);
+  }
+
+  .critter-selector {
+    width: 100%;
   }
 
   .stage {
