@@ -520,6 +520,13 @@ const FALLBACK_RARITY_BY_CATEGORY = {
   utility: 'uncommon',
 };
 
+const PLACEHOLDER_MODEL_BY_CATEGORY = {
+  primary: 'assets/models/primary/placeholder.gltf',
+  secondary: 'assets/models/secondary/placeholder.gltf',
+  melee: 'assets/models/melee/placeholder.gltf',
+  utility: 'assets/models/utility/placeholder.gltf',
+};
+
 const HEADSHOT_MULTIPLIER = RAW_GLOBALS.headshot_multiplier ?? 3;
 
 const slugify = (value) =>
@@ -1084,7 +1091,7 @@ const weapons = RAW_WEAPONS.map((weapon) => {
     category,
     rarity: legacy.rarity || FALLBACK_RARITY_BY_CATEGORY[category] || 'common',
     description: legacy.description || weapon.notes || 'Specification pending.',
-    modelPath: legacy.modelPath ?? null,
+    modelPath: legacy.modelPath ?? PLACEHOLDER_MODEL_BY_CATEGORY[category] ?? null,
     preview: legacy.preview || undefined,
     stats: buildStats(weapon, category),
     special: buildSpecial(weapon, legacy.special || {}, category),
