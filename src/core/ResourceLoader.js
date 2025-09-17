@@ -1,4 +1,5 @@
 import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+import { SkeletonUtils } from 'https://unpkg.com/three@0.160.0/examples/jsm/utils/SkeletonUtils.js';
 
 export class ResourceLoader {
   constructor() {
@@ -12,7 +13,14 @@ export class ResourceLoader {
     }
 
     if (this.cache.has(path)) {
-      return this.cache.get(path).clone();
+      const cached = this.cache.get(path);
+      if (cached?.isObject3D) {
+        return SkeletonUtils.clone(cached);
+      }
+      if (typeof cached?.clone === 'function') {
+        return cached.clone();
+      }
+      return cached;
     }
 
     try {
@@ -21,7 +29,7 @@ export class ResourceLoader {
       const scene = gltf.scene || gltf.scenes?.[0];
       if (scene) {
         this.cache.set(path, scene);
-        return scene.clone(true);
+        return SkeletonUtils.clone(scene);
       }
     } catch (error) {
       console.warn(`Failed to load model at ${path}. Using fallback geometry instead.`, error);
@@ -29,7 +37,7 @@ export class ResourceLoader {
 
     const fallback = this._createPlaceholder();
     this.cache.set(path, fallback);
-    return fallback.clone();
+    return SkeletonUtils.clone(fallback);
   }
 
   async loadTexture(path) {
@@ -56,6 +64,28 @@ export class ResourceLoader {
       ).then((module) => new module.GLTFLoader());
     }
     return this.loaderPromise;
+  }
+
+  async loadAnimationClips(path) {
+    if (!path) return [];
+
+    if (this.cache.has(path)) {
+      const cached = this.cache.get(path);
+      if (Array.isArray(cached)) {
+        return cached.map((clip) => clip.clone());
+      }
+    }
+
+    try {
+      const loader = await this._getLoader();
+      const gltf = await loader.loadAsync(path);
+      const clips = gltf.animations || [];
+      this.cache.set(path, clips);
+      return clips.map((clip) => clip.clone());
+    } catch (error) {
+      console.warn(`Failed to load animation at ${path}.`, error);
+      return [];
+    }
   }
 
   _createPlaceholder() {
