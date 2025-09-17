@@ -53,7 +53,15 @@ export class ResourceLoader {
 
     const cached = this.cache.get(path);
     if (cached && cached.type === 'animation') {
-      return cached.clip.clone();
+      if (!cached.root) {
+        return { clip: cached.clip.clone(), root: null };
+      }
+
+      const { SkeletonUtils } = await this._getSkeletonUtils();
+      return {
+        clip: cached.clip.clone(),
+        root: SkeletonUtils.clone(cached.root),
+      };
     }
 
     try {
@@ -61,14 +69,46 @@ export class ResourceLoader {
       const gltf = await loader.loadAsync(path);
       const [clip] = gltf.animations || [];
       if (clip) {
-        this.cache.set(path, { type: 'animation', clip });
-        return clip.clone();
+        const scene = gltf.scene || gltf.scenes?.[0] || null;
+        let cachedRoot = null;
+        if (scene) {
+          const { SkeletonUtils } = await this._getSkeletonUtils();
+          cachedRoot = SkeletonUtils.clone(scene);
+        }
+
+        this.cache.set(path, { type: 'animation', clip, root: cachedRoot });
+
+        if (!cachedRoot) {
+          return { clip: clip.clone(), root: null };
+        }
+
+        const { SkeletonUtils } = await this._getSkeletonUtils();
+        return {
+          clip: clip.clone(),
+          root: SkeletonUtils.clone(cachedRoot),
+        };
       }
     } catch (error) {
       console.warn(`Failed to load animation at ${path}.`, error);
     }
 
     return null;
+  }
+
+  async retargetClip(target, source, clip, options = {}) {
+    if (!target || !source || !clip) {
+      return clip;
+    }
+
+    try {
+      const { SkeletonUtils } = await this._getSkeletonUtils();
+      const targetClone = SkeletonUtils.clone(target);
+      const sourceClone = SkeletonUtils.clone(source);
+      return SkeletonUtils.retargetClip(targetClone, sourceClone, clip, options);
+    } catch (error) {
+      console.warn('Failed to retarget animation clip.', error);
+      return clip;
+    }
   }
 
   async loadTexture(path) {
