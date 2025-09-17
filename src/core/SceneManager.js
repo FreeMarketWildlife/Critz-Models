@@ -265,32 +265,8 @@ export class SceneManager {
   }
 
   setupEnvironment() {
-    const platformGeometry = new THREE.CylinderGeometry(1.45, 1.45, 0.12, 48, 1, true);
-    const platformMaterial = new THREE.MeshStandardMaterial({
-      color: 0x20153f,
-      emissive: 0x0c0620,
-      metalness: 0.28,
-      roughness: 0.62,
-      transparent: true,
-      opacity: 0.95,
-    });
-    this.platform = new THREE.Mesh(platformGeometry, platformMaterial);
-    this.platform.rotation.x = Math.PI / 2;
-    this.platform.position.set(0, -0.7, 0);
-    this.platform.receiveShadow = false;
-
-    const ringGeometry = new THREE.TorusGeometry(1.55, 0.035, 16, 100);
-    const ringMaterial = new THREE.MeshBasicMaterial({
-      color: 0xff9de6,
-      transparent: true,
-      opacity: 0.65,
-    });
-    this.glowRing = new THREE.Mesh(ringGeometry, ringMaterial);
-    this.glowRing.rotation.x = Math.PI / 2;
-    this.glowRing.position.y = -0.35;
-
-    this.stageGroup.add(this.platform);
-    this.stageGroup.add(this.glowRing);
+    this.platform = null;
+    this.glowRing = null;
   }
 
   async loadWeapon(weapon) {
@@ -411,6 +387,32 @@ export class SceneManager {
 
     const clip = await this.resourceLoader.loadAnimationClip(animation.path);
     if (!clip) {
+      return;
+    }
+
+    const missingBindings = new Set();
+    clip.tracks.forEach((track) => {
+      const [rawNodeName] = track.name.split('.');
+      if (!rawNodeName) {
+        return;
+      }
+      const nodeName = rawNodeName.split('/').pop();
+      if (!nodeName) {
+        return;
+      }
+      const target = this.currentModel.getObjectByName(nodeName);
+      if (!target) {
+        missingBindings.add(nodeName);
+      }
+    });
+
+    if (missingBindings.size > 0) {
+      const missingList = [...missingBindings];
+      const preview = missingList.slice(0, 8).join(', ');
+      const suffix = missingList.length > 8 ? '…' : '';
+      console.warn(
+        `Animation "${animation.id}" could not be bound to the current model. Missing bones (${missingList.length}): ${preview}${suffix}.`
+      );
       return;
     }
 
