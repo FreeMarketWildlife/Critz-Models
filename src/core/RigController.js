@@ -291,19 +291,33 @@ export class RigController {
     }
 
     this.boneEntries.forEach((entry) => {
-      entry.baseQuaternion.copy(entry.bone.quaternion);
+      if (entry.hasOffset) {
+        entry.bone.quaternion.multiply(entry.inverseOffset);
+        entry.hasOffset = false;
+      }
     });
 
     this.boneEntries.forEach((entry) => {
-      const { bone, controls, baseQuaternion } = entry;
-      bone.quaternion.copy(baseQuaternion);
-      controls.forEach((control) => {
+      const { bone } = entry;
+      entry.baseQuaternion.copy(bone.quaternion);
+      entry.offsetQuaternion.identity();
+      entry.inverseOffset.identity();
+
+      let hasAdjustment = false;
+      entry.controls.forEach((control) => {
         if (Math.abs(control.value) < EPSILON) {
           return;
         }
         this.tempQuaternion.setFromAxisAngle(control.axisVector, control.value);
-        bone.quaternion.multiply(this.tempQuaternion);
+        entry.offsetQuaternion.multiply(this.tempQuaternion);
+        hasAdjustment = true;
       });
+
+      if (hasAdjustment) {
+        bone.quaternion.multiply(entry.offsetQuaternion);
+        entry.inverseOffset.copy(entry.offsetQuaternion).invert();
+        entry.hasOffset = true;
+      }
       bone.updateMatrixWorld(true);
     });
 
@@ -471,6 +485,9 @@ export class RigController {
         bone,
         controls: [],
         baseQuaternion: new THREE.Quaternion(),
+        offsetQuaternion: new THREE.Quaternion(),
+        inverseOffset: new THREE.Quaternion(),
+        hasOffset: false,
       };
       this.boneEntries.set(bone, entry);
     }

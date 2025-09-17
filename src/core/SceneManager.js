@@ -483,8 +483,7 @@ export class SceneManager {
 
     this.mixer.stopAllAction();
 
-    const actionRoot = targetMesh ?? this.currentModel;
-    const action = this.mixer.clipAction(clip, actionRoot);
+    const action = this.mixer.clipAction(clip, this.currentModel);
     if (!action) {
       return;
     }
@@ -500,6 +499,7 @@ export class SceneManager {
 
     action.play();
     this.activeAction = action;
+    this.rigController?.applyPoseAdjustments?.();
     this.pendingAnimationId = null;
   }
 

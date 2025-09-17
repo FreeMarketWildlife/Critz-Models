@@ -189,13 +189,31 @@ export class RigControlPanel {
     const slider = document.createElement('input');
     slider.type = 'range';
     slider.className = 'rig-control__slider';
-    slider.min = typeof control.min === 'number' ? control.min : 0;
-    slider.max = typeof control.max === 'number' ? control.max : 1;
-    slider.step = typeof control.step === 'number' ? control.step : 0.01;
-    slider.value = value;
+
+    const isBoneControl = control.type === 'bone';
+    const toSliderUnits = (raw) =>
+      isBoneControl ? (raw * 180) / Math.PI : raw;
+    const fromSliderUnits = (raw) =>
+      isBoneControl ? (raw * Math.PI) / 180 : raw;
+
+    if (isBoneControl) {
+      const min = typeof control.min === 'number' ? toSliderUnits(control.min) : -180;
+      const max = typeof control.max === 'number' ? toSliderUnits(control.max) : 180;
+      const step = typeof control.step === 'number' ? Math.max(toSliderUnits(control.step), 0.1) : 1;
+      slider.min = String(min);
+      slider.max = String(max);
+      slider.step = String(step);
+      slider.value = String(toSliderUnits(value));
+    } else {
+      slider.min = typeof control.min === 'number' ? control.min : 0;
+      slider.max = typeof control.max === 'number' ? control.max : 1;
+      slider.step = typeof control.step === 'number' ? control.step : 0.01;
+      slider.value = String(value);
+    }
 
     const handleInput = (event) => {
-      const nextValue = parseFloat(event.target.value);
+      const sliderValue = parseFloat(event.target.value);
+      const nextValue = fromSliderUnits(sliderValue);
       valueDisplay.textContent = this.formatValue(control.type, nextValue);
       this.bus?.emit?.('rig:pose-changed', { id: control.id, value: nextValue });
     };
@@ -210,6 +228,8 @@ export class RigControlPanel {
       input: slider,
       valueElement: valueDisplay,
       type: control.type,
+      toSliderUnits,
+      fromSliderUnits,
       handleInput,
     };
   }
@@ -220,7 +240,8 @@ export class RigControlPanel {
       return;
     }
 
-    entry.input.value = value;
+    const sliderValue = entry.toSliderUnits ? entry.toSliderUnits(value) : value;
+    entry.input.value = String(sliderValue);
     entry.valueElement.textContent = this.formatValue(entry.type, value);
   }
 
