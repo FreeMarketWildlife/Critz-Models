@@ -1,4 +1,5 @@
 import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+import { OrbitControls } from 'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
 import { createRenderer } from './RendererFactory.js';
 import { ResourceLoader } from './ResourceLoader.js';
 
@@ -21,10 +22,18 @@ export class SceneManager {
     this.animationFrame = null;
 
     this.stageGroup = new THREE.Group();
+    this.weaponGroup = new THREE.Group();
+    this.critterGroup = new THREE.Group();
     this.currentModel = null;
     this.platform = null;
     this.glowRing = null;
     this.pendingWeaponId = null;
+    this.pendingCritterId = null;
+    this.pendingAnimationId = null;
+    this.critterModel = null;
+    this.critterMixer = null;
+    this.currentAnimationAction = null;
+    this.controls = null;
 
     this.handleResize = this.handleResize.bind(this);
     this.animate = this.animate.bind(this);
@@ -35,6 +44,7 @@ export class SceneManager {
     this.camera = this.createCamera();
     this.setupLights();
     this.setupEnvironment();
+    this.setupControls();
     this.scene.add(this.stageGroup);
 
     window.addEventListener('resize', this.handleResize);
@@ -54,12 +64,16 @@ export class SceneManager {
   }
 
   update(delta) {
-    if (this.currentModel) {
-      this.currentModel.rotation.y += delta * 0.4;
-    }
-
     if (this.glowRing) {
       this.glowRing.rotation.z += delta * 0.2;
+    }
+
+    if (this.controls) {
+      this.controls.update();
+    }
+
+    if (this.critterMixer) {
+      this.critterMixer.update(delta);
     }
   }
 
@@ -110,6 +124,8 @@ export class SceneManager {
 
     this.stageGroup.add(this.platform);
     this.stageGroup.add(this.glowRing);
+    this.stageGroup.add(this.weaponGroup);
+    this.stageGroup.add(this.critterGroup);
   }
 
   async loadWeapon(weapon) {
@@ -126,8 +142,11 @@ export class SceneManager {
       return;
     }
 
+    this.disposeCurrentModel();
+
     if (!model) {
-      model = this.createPlaceholderModel();
+      this.applyRarityGlow(weapon.rarity);
+      return;
     }
 
     model.position.set(0, 0, 0);
@@ -136,16 +155,15 @@ export class SceneManager {
     const scale = weapon.preview?.scale ?? 1.2;
     model.scale.setScalar(scale);
 
-    this.disposeCurrentModel();
     this.currentModel = model;
-    this.stageGroup.add(model);
+    this.weaponGroup.add(model);
 
     this.applyRarityGlow(weapon.rarity);
   }
 
   disposeCurrentModel() {
     if (!this.currentModel) return;
-    this.stageGroup.remove(this.currentModel);
+    this.weaponGroup.remove(this.currentModel);
     this.currentModel.traverse?.((child) => {
       if (child.material) {
         if (Array.isArray(child.material)) {
@@ -166,6 +184,147 @@ export class SceneManager {
     if (this.glowRing) {
       this.glowRing.material.color = new THREE.Color(color);
     }
+  }
+
+  setupControls() {
+    if (!this.camera || !this.renderer) return;
+
+    this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+    this.controls.enableDamping = true;
+    this.controls.dampingFactor = 0.08;
+    this.controls.enablePan = false;
+    this.controls.minDistance = 1.8;
+    this.controls.maxDistance = 6.5;
+    this.controls.minPolarAngle = Math.PI / 6;
+    this.controls.maxPolarAngle = Math.PI - Math.PI / 12;
+    this.controls.target.set(0, 0.85, 0);
+    this.controls.update();
+  }
+
+  async loadCritter(critter) {
+    const critterId = critter?.id ?? null;
+    this.pendingCritterId = critterId;
+
+    if (!critter || !critter.modelPath) {
+      this.disposeCritter();
+      return;
+    }
+
+    const model = await this.resourceLoader.loadModel(critter.modelPath);
+    if (this.pendingCritterId !== critterId) {
+      return;
+    }
+
+    this.setCritterModel(model, critterId);
+  }
+
+  setCritterModel(model, critterId) {
+    this.disposeCritter();
+    if (!model) return;
+
+    model.name = `critter-${critterId}`;
+    model.position.set(0, 0, 0);
+    model.rotation.set(0, 0, 0);
+
+    const pivot = new THREE.Group();
+    pivot.name = `critter-pivot-${critterId}`;
+    pivot.add(model);
+    this.critterGroup.add(pivot);
+
+    this.critterModel = model;
+    this.critterMixer = new THREE.AnimationMixer(model);
+    this.currentAnimationAction = null;
+
+    const bounds = new THREE.Box3().setFromObject(model);
+    const size = bounds.getSize(new THREE.Vector3());
+    const center = bounds.getCenter(new THREE.Vector3());
+    const height = size.y || 1;
+
+    model.position.sub(center);
+    model.position.y += height / 2;
+
+    const targetY = Math.min(Math.max(height * 0.55, 0.6), 1.6);
+    if (this.controls) {
+      this.controls.target.set(0, targetY, 0);
+      this.controls.update();
+    }
+
+    if (this.camera) {
+      const distance = Math.min(Math.max(height * 1.6, 2.6), 4.8);
+      this.camera.position.set(0, targetY + 0.35, distance);
+      this.camera.lookAt(0, targetY, 0);
+    }
+  }
+
+  async playAnimation(animation) {
+    this.pendingAnimationId = animation?.id ?? null;
+
+    if (!animation || !this.critterMixer || !this.critterModel) {
+      this.stopAnimation();
+      return;
+    }
+
+    const clips = await this.resourceLoader.loadAnimationClips(animation.path);
+    if (this.pendingAnimationId !== animation.id) {
+      return;
+    }
+
+    if (!Array.isArray(clips) || clips.length === 0) {
+      this.stopAnimation();
+      return;
+    }
+
+    const clip = clips[0];
+    this.critterMixer.stopAllAction();
+    const action = this.critterMixer.clipAction(clip);
+    action.reset();
+    action.setLoop(THREE.LoopRepeat, Infinity);
+    action.clampWhenFinished = true;
+    action.fadeIn(0.2);
+    action.play();
+
+    this.currentAnimationAction = action;
+  }
+
+  stopAnimation() {
+    this.pendingAnimationId = null;
+    if (this.critterMixer) {
+      this.critterMixer.stopAllAction();
+    }
+    this.currentAnimationAction = null;
+  }
+
+  disposeCritter() {
+    this.pendingCritterId = null;
+    this.pendingAnimationId = null;
+
+    if (this.critterMixer) {
+      this.critterMixer.stopAllAction();
+      this.critterMixer = null;
+    }
+
+    this.currentAnimationAction = null;
+
+    if (this.critterGroup.children.length > 0) {
+      const nodes = [...this.critterGroup.children];
+      nodes.forEach((node) => {
+        this.critterGroup.remove(node);
+        node.traverse?.((child) => {
+          if (child.material) {
+            if (Array.isArray(child.material)) {
+              child.material.forEach((material) => material.dispose?.());
+            } else {
+              child.material.dispose?.();
+            }
+          }
+          if (child.geometry) {
+            child.geometry.dispose?.();
+          }
+        });
+      });
+    }
+
+    this.critterModel = null;
   }
 
   createPlaceholderModel() {
@@ -193,6 +352,9 @@ export class SceneManager {
   dispose() {
     cancelAnimationFrame(this.animationFrame);
     window.removeEventListener('resize', this.handleResize);
+    this.controls?.dispose?.();
+    this.disposeCurrentModel();
+    this.disposeCritter();
     this.scene.traverse((object) => {
       if (object.isMesh) {
         object.geometry?.dispose?.();
