@@ -15,8 +15,7 @@ export class ResourceLoader {
     const cached = this.cache.get(path);
     if (cached) {
       if (cached.type === 'model') {
-        const clone = await this._getCloneFunction();
-        return clone(cached.scene);
+
       }
 
       if (cached.type === 'placeholder') {
@@ -30,8 +29,6 @@ export class ResourceLoader {
       const scene = gltf.scene || gltf.scenes?.[0];
       if (scene) {
         this.cache.set(path, { type: 'model', scene });
-        const clone = await this._getCloneFunction();
-        return clone(scene);
       }
     } catch (error) {
       console.warn(`Failed to load model at ${path}. Using fallback geometry instead.`, error);
@@ -104,6 +101,23 @@ export class ResourceLoader {
       ).then((module) => module.clone);
     }
     return this.clonePromise;
+  }
+
+  async _cloneScene(scene) {
+    if (!scene) {
+      return null;
+    }
+
+    try {
+      const module = await this._getSkeletonUtils();
+      if (module?.clone) {
+        return module.clone(scene);
+      }
+    } catch (error) {
+      console.warn('Failed to clone model using SkeletonUtils. Falling back to basic clone.', error);
+    }
+
+    return scene.clone(true);
   }
 
   _createPlaceholder() {
