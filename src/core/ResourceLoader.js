@@ -9,7 +9,7 @@ export class ResourceLoader {
 
   async loadModel(path) {
     if (!path) {
-      return this._createPlaceholder();
+      return null;
     }
 
     const cached = this.cache.get(path);
@@ -19,8 +19,8 @@ export class ResourceLoader {
         return SkeletonUtils.clone(cached.scene);
       }
 
-      if (cached.type === 'placeholder') {
-        return cached.object.clone();
+      if (cached.type === 'missing') {
+        return null;
       }
     }
 
@@ -34,12 +34,11 @@ export class ResourceLoader {
         return SkeletonUtils.clone(scene);
       }
     } catch (error) {
-      console.warn(`Failed to load model at ${path}. Using fallback geometry instead.`, error);
+      console.warn(`Failed to load model at ${path}.`, error);
     }
 
-    const fallback = this._createPlaceholder();
-    this.cache.set(path, { type: 'placeholder', object: fallback });
-    return fallback.clone();
+    this.cache.set(path, { type: 'missing' });
+    return null;
   }
 
   async loadAnimationClip(path) {
@@ -106,19 +105,4 @@ export class ResourceLoader {
     return this.skeletonUtilsPromise;
   }
 
-  _createPlaceholder() {
-    const geometry = new THREE.IcosahedronGeometry(0.8, 1);
-    const material = new THREE.MeshStandardMaterial({
-      color: 0x7a5dd1,
-      emissive: 0x140d2f,
-      metalness: 0.45,
-      roughness: 0.4,
-    });
-    const mesh = new THREE.Mesh(geometry, material);
-    mesh.name = 'placeholder-weapon';
-
-    const group = new THREE.Group();
-    group.add(mesh);
-    return group;
-  }
 }
