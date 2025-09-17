@@ -22,7 +22,7 @@ export class AnimationSelector {
           <span>Animation</span>
           <select id="${this.animationLabelId}" data-role="animation-select"></select>
         </label>
-        <p class="animation-selector__hint">Drag to orbit • Scroll to zoom</p>
+        <p class="animation-selector__hint">Drag to orbit • Shift + drag to pan • Scroll to zoom</p>
       </div>
     `;
 

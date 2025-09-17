@@ -5,6 +5,7 @@ import { createEventBus } from '../utils/eventBus.js';
 import { critters } from '../data/critters.js';
 import { CritterSelector } from '../hud/components/CritterSelector.js';
 import { AnimationSelector } from '../hud/components/AnimationSelector.js';
+import { ViewportControls } from '../hud/components/ViewportControls.js';
 
 export class WeaponDisplayApp {
   constructor(rootElement) {
@@ -14,6 +15,9 @@ export class WeaponDisplayApp {
     this.hudController = null;
     this.critterSelector = null;
     this.animationSelector = null;
+    this.viewportControls = null;
+    this.viewportMessageElement = null;
+    this.defaultViewportMessage = 'Select a critter to preview.';
 
     this.weapons = sampleWeapons;
     this.weaponMap = new Map();
@@ -28,12 +32,25 @@ export class WeaponDisplayApp {
 
   init() {
     const layout = this.buildLayout();
+    this.viewportMessageElement = layout.viewportMessageElement;
+    if (this.viewportMessageElement) {
+      this.defaultViewportMessage =
+        this.viewportMessageElement.dataset.defaultMessage || this.defaultViewportMessage;
+      this.setViewportMessage(this.defaultViewportMessage, { level: 'info', visible: true });
+    }
+
     this.indexWeapons();
     this.indexCritters();
     this.registerEventHandlers();
 
-    this.sceneManager = new SceneManager(layout.stageViewportElement);
+    this.sceneManager = new SceneManager(layout.stageViewportElement, { bus: this.eventBus });
     this.sceneManager.init();
+
+    this.viewportControls = new ViewportControls({
+      element: layout.viewportControlsElement,
+      bus: this.eventBus,
+    });
+    this.viewportControls.init();
 
     this.hudController = new HUDController({
       bus: this.eventBus,
@@ -84,8 +101,8 @@ export class WeaponDisplayApp {
       const activeAnimationId = this.animationSelector.getActiveAnimationId();
       const activeAnimation = this.findAnimation(defaultCritter, activeAnimationId);
 
-      this.sceneManager.loadCritter(defaultCritter).then(() => {
-        if (activeAnimation) {
+      this.sceneManager.loadCritter(defaultCritter).then((result) => {
+        if (result?.success && activeAnimation) {
           this.sceneManager.playAnimation(activeAnimation);
         }
       });
@@ -136,7 +153,29 @@ export class WeaponDisplayApp {
             data-role="stage-viewport"
             aria-label="Critter viewer"
             tabindex="0"
-          ></div>
+          >
+            <div class="viewport-overlay" data-role="viewport-overlay">
+              <div class="viewport-overlay__row viewport-overlay__row--top">
+                <p
+                  class="viewport-message is-visible"
+                  data-role="viewport-message"
+                  data-default-message="Select a critter to preview."
+                  aria-live="polite"
+                >
+                  Select a critter to preview.
+                </p>
+              </div>
+              <div class="viewport-overlay__row viewport-overlay__row--bottom">
+                <div class="viewport-hints" aria-hidden="true">
+                  <span>Drag to orbit</span>
+                  <span>Shift + Drag to pan</span>
+                  <span>Scroll to zoom</span>
+                  <span>Double-click or press F to refocus</span>
+                </div>
+                <div class="viewport-controls" data-component="viewport-controls"></div>
+              </div>
+            </div>
+          </div>
         </section>
       </div>
     `;
@@ -144,6 +183,8 @@ export class WeaponDisplayApp {
     return {
       stageElement: this.root.querySelector('[data-component="stage"]'),
       stageViewportElement: this.root.querySelector('[data-role="stage-viewport"]'),
+      viewportMessageElement: this.root.querySelector('[data-role="viewport-message"]'),
+      viewportControlsElement: this.root.querySelector('[data-component="viewport-controls"]'),
       navTabsElement: this.root.querySelector('[data-component="nav-tabs"]'),
       critterSelectorElement: this.root.querySelector('[data-component="critter-selector"]'),
       weaponListPanel: this.root.querySelector('[data-component="weapon-list"]'),
@@ -184,9 +225,13 @@ export class WeaponDisplayApp {
       const activeAnimationId = this.animationSelector.getActiveAnimationId();
       const activeAnimation = this.findAnimation(critter, activeAnimationId);
 
-      this.sceneManager.loadCritter(critter).then(() => {
-        if (activeAnimation) {
-          this.sceneManager.playAnimation(activeAnimation);
+      this.sceneManager.loadCritter(critter).then((result) => {
+        if (result?.success) {
+          if (activeAnimation) {
+            this.sceneManager.playAnimation(activeAnimation);
+          } else {
+            this.sceneManager.stopAnimation();
+          }
         } else {
           this.sceneManager.stopAnimation();
         }
@@ -202,6 +247,22 @@ export class WeaponDisplayApp {
       if (animation) {
         this.sceneManager.playAnimation(animation);
       }
+    });
+
+    this.eventBus.on('viewport:reset-view', () => {
+      this.sceneManager.resetView();
+    });
+
+    this.eventBus.on('viewport:focus-model', () => {
+      this.sceneManager.focusCurrentModel({ fit: true });
+    });
+
+    this.eventBus.on('viewport:auto-rotate-toggle', () => {
+      this.sceneManager.toggleAutoRotate();
+    });
+
+    this.eventBus.on('viewport:model-changed', (state) => {
+      this.handleViewportModelStateChange(state);
     });
   }
 
@@ -236,6 +297,55 @@ export class WeaponDisplayApp {
 
   findDefaultCritter() {
     return this.critters[0] || null;
+  }
+
+  setViewportMessage(message, { level = 'info', visible = true } = {}) {
+    if (!this.viewportMessageElement) {
+      return;
+    }
+
+    if (typeof message === 'string') {
+      this.viewportMessageElement.textContent = message;
+    }
+
+    if (level) {
+      this.viewportMessageElement.dataset.level = level;
+    } else {
+      delete this.viewportMessageElement.dataset.level;
+    }
+
+    const normalized = typeof message === 'string' ? message.trim() : '';
+    const shouldShow = Boolean(visible) && normalized.length > 0;
+    this.viewportMessageElement.classList.toggle('is-visible', shouldShow);
+  }
+
+  handleViewportModelStateChange(state = {}) {
+    if (state?.hasModel) {
+      this.setViewportMessage('', { level: 'info', visible: false });
+      return;
+    }
+
+    let message = this.defaultViewportMessage;
+    let level = 'info';
+
+    if (state?.reason === 'load-failed') {
+      level = 'error';
+      message =
+        state?.type === 'critter'
+          ? 'We hit a snag loading this critter preview. Try a different animation or critter.'
+          : 'We hit a snag loading this preview. Please try again.';
+    } else if (state?.reason === 'missing-model') {
+      level = 'warning';
+      message =
+        state?.type === 'critter'
+          ? 'This critter preview is still on the way.'
+          : 'No 3D preview is available for this selection yet.';
+    } else if (state?.reason === 'no-selection' || state?.reason === 'cleared') {
+      level = 'info';
+      message = this.defaultViewportMessage;
+    }
+
+    this.setViewportMessage(message, { level, visible: true });
   }
 
   findAnimation(critter, animationId) {
