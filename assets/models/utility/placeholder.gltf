@@ -1,0 +1,105 @@
+{
+  "asset": {
+    "version": "2.0",
+    "generator": "placeholder-generator"
+  },
+  "scene": 0,
+  "scenes": [
+    {
+      "name": "utility-placeholder-scene",
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "name": "utility-placeholder-node",
+      "mesh": 0
+    }
+  ],
+  "materials": [
+    {
+      "name": "Utility Placeholder Material",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.937,
+          0.768,
+          0.341,
+          1.0
+        ],
+        "metallicFactor": 0.0,
+        "roughnessFactor": 0.6
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "name": "Utility Placeholder Mesh",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0,
+            "NORMAL": 1
+          },
+          "indices": 2,
+          "material": 0
+        }
+      ]
+    }
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "componentType": 5126,
+      "count": 5,
+      "type": "VEC3",
+      "max": [
+        0.3,
+        0.9,
+        0.3
+      ],
+      "min": [
+        -0.3,
+        0.0,
+        -0.3
+      ]
+    },
+    {
+      "bufferView": 1,
+      "componentType": 5126,
+      "count": 5,
+      "type": "VEC3"
+    },
+    {
+      "bufferView": 2,
+      "componentType": 5123,
+      "count": 18,
+      "type": "SCALAR"
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteOffset": 0,
+      "byteLength": 60
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 60,
+      "byteLength": 60
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 120,
+      "byteLength": 36,
+      "target": 34963
+    }
+  ],
+  "buffers": [
+    {
+      "byteLength": 156,
+      "uri": "data:application/octet-stream;base64,mpmZvgAAAACamZm+mpmZPgAAAACamZm+mpmZPgAAAACamZk+mpmZvgAAAACamZk+AAAAAGZmZj8AAAAAHWWkPvkVZL8dZaQ+EN/lvtDGRb8Q3+U+HWWkvvkVZL8dZaS+EN/lPtDGRb8Q3+W+AAAAAAAAgL8AAAAAAAABAAIAAAACAAMAAAABAAQAAQACAAQAAgADAAQAAwAAAAQA"
+    }
+  ]
+}

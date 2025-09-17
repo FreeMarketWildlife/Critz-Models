@@ -41,7 +41,7 @@ Critz-Models/
         └── eventBus.js
 ```
 
-> **Note**: Until real assets are available, `.glb` placeholders sit under `assets/models/<category>/placeholder.glb`. The `ResourceLoader` is designed to swap to production CDN/local pipeline later.
+> **Note**: Until real assets are available, `.gltf` placeholders sit under `assets/models/<category>/placeholder.gltf`. The `ResourceLoader` is designed to swap to production CDN/local pipeline later.
 
 ## Core Modules
 ### `WeaponDisplayApp`

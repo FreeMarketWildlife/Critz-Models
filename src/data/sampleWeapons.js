@@ -1,5 +1,12 @@
 import { normalizeWeapon } from './weaponSchema.js';
 
+const PLACEHOLDER_MODEL_PATHS = {
+  primary: 'assets/models/primary/placeholder.gltf',
+  secondary: 'assets/models/secondary/placeholder.gltf',
+  melee: 'assets/models/melee/placeholder.gltf',
+  utility: 'assets/models/utility/placeholder.gltf',
+};
+
 const RAW_GLOBALS = {
   base_health: 100,
   base_speed: 100,
@@ -1084,7 +1091,7 @@ const weapons = RAW_WEAPONS.map((weapon) => {
     category,
     rarity: legacy.rarity || FALLBACK_RARITY_BY_CATEGORY[category] || 'common',
     description: legacy.description || weapon.notes || 'Specification pending.',
-    modelPath: legacy.modelPath ?? null,
+    modelPath: legacy.modelPath ?? PLACEHOLDER_MODEL_PATHS[category] ?? null,
     preview: legacy.preview || undefined,
     stats: buildStats(weapon, category),
     special: buildSpecial(weapon, legacy.special || {}, category),
