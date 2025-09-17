@@ -109,12 +109,16 @@ export class SceneManager {
       this.orbitControls.update();
     }
 
+    if (this.rigController) {
+      this.rigController.prepareFrame();
+    }
+
     if (this.mixer) {
       this.mixer.update(delta);
     }
 
     if (this.rigController) {
-      this.rigController.applyPoseAdjustments();
+      this.rigController.applyPoseAdjustments({ fromUpdate: true });
     }
 
   }
@@ -184,6 +188,7 @@ export class SceneManager {
       return;
     }
 
+    this.rigController.prepareFrame();
     this.rigController.applyPoseAdjustments();
     this.emitStageEvent('stage:rig-pose-updated', { id: payload.id, value });
   }
@@ -194,6 +199,7 @@ export class SceneManager {
     }
 
     const result = this.rigController.resetPose();
+    this.rigController.prepareFrame();
     this.rigController.applyPoseAdjustments();
     this.emitStageEvent('stage:rig-pose-reset', result);
   }
