@@ -1,27 +1,3 @@
-# macOS
 .DS_Store
-.AppleDouble
-.Icon?
-.Spotlight-V100
-.Trashes
 
-# Archives/exports/backups
-*.zip
-*.7z
-*.rar
-*.bak
-*.tmp
-*.temp
-
-# Thumbnails & previews
-._*
-
-# Common DCC/editor caches
-.cache/
-Thumbs.db
-
-# If you later add an Unreal project here, keep these ignored:
-# /Binaries/
-# /DerivedDataCache/
-# /Intermediate/
-# /Saved/
+.DS_Store
