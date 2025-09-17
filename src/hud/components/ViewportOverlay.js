@@ -135,7 +135,7 @@ export class ViewportOverlay {
       }),
       this.bus.on('stage:model-ready', (payload) => {
         const name = payload?.name ?? 'Model';
-        this.setStatus('ready', `${name} ready for inspection.`);
+        this.setStatus('ready', `${name} ready.`);
         this.setLoading(false);
         this.setControlsAvailability({
           focus: true,
