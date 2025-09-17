@@ -112,7 +112,7 @@ export class ResourceLoader {
     if (!this.skeletonUtilsPromise) {
       this.skeletonUtilsPromise = import(
         'https://esm.sh/three@0.160.0/examples/jsm/utils/SkeletonUtils.js'
-      );
+      ).then((module) => module?.SkeletonUtils ?? module?.default ?? module);
     }
     return this.skeletonUtilsPromise;
   }

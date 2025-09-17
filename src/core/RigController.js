@@ -233,6 +233,20 @@ export class RigController {
     }
   }
 
+  prepareFrame() {
+    if (!this.model) {
+      return;
+    }
+
+    this.boneEntries.forEach((entry) => {
+      if (entry.baseQuaternion) {
+        entry.bone.quaternion.copy(entry.baseQuaternion);
+      } else if (entry.restQuaternion) {
+        entry.bone.quaternion.copy(entry.restQuaternion);
+      }
+    });
+  }
+
   getControls() {
     return this.orderedControls.map((control) => ({
       id: control.id,
@@ -275,6 +289,13 @@ export class RigController {
   }
 
   resetPose() {
+    this.boneEntries.forEach((entry) => {
+      if (entry.restQuaternion) {
+        entry.baseQuaternion.copy(entry.restQuaternion);
+        entry.bone.quaternion.copy(entry.restQuaternion);
+      }
+    });
+
     this.orderedControls.forEach((control) => {
       const next = clamp(control.defaultValue ?? 0, control.min, control.max);
       control.value = next;
@@ -291,11 +312,8 @@ export class RigController {
     }
 
     this.boneEntries.forEach((entry) => {
-      entry.baseQuaternion.copy(entry.bone.quaternion);
-    });
-
-    this.boneEntries.forEach((entry) => {
       const { bone, controls, baseQuaternion } = entry;
+      baseQuaternion.copy(bone.quaternion);
       bone.quaternion.copy(baseQuaternion);
       controls.forEach((control) => {
         if (Math.abs(control.value) < EPSILON) {
@@ -470,7 +488,8 @@ export class RigController {
       entry = {
         bone,
         controls: [],
-        baseQuaternion: new THREE.Quaternion(),
+        baseQuaternion: bone.quaternion.clone(),
+        restQuaternion: bone.quaternion.clone(),
       };
       this.boneEntries.set(bone, entry);
     }
