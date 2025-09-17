@@ -2,6 +2,7 @@ import * as THREE from 'https://esm.sh/three@0.160.0';
 import { createRenderer } from './RendererFactory.js';
 import { ResourceLoader } from './ResourceLoader.js';
 import { RigController } from './RigController.js';
+import { createBlasterRiflePlaceholder } from './placeholders/createBlasterRiflePlaceholder.js';
 
 const ORBIT_CONTROLS_MODULE =
   'https://esm.sh/three@0.160.0/examples/jsm/controls/OrbitControls.js';
@@ -360,13 +361,24 @@ export class SceneManager {
       model = await this.resourceLoader.loadModel(weapon.modelPath);
     }
 
+    const isMissingModel = !model || model.userData?.isPlaceholder;
+
+    if (isMissingModel && weapon) {
+      const placeholder = this.createWeaponPlaceholder(weapon);
+      if (placeholder) {
+        model = placeholder;
+      } else if (model?.userData?.isPlaceholder) {
+        model = null;
+      }
+    }
+
     if (this.pendingWeaponId !== requestId) {
       return;
     }
 
     this.disposeCurrentModel();
 
-    if (!model || model.userData?.isPlaceholder) {
+    if (!model) {
       this.emitStageEvent('stage:model-missing', {
         type: 'weapon',
         id: weapon.id,
@@ -548,6 +560,19 @@ export class SceneManager {
     group.name = 'scene-placeholder';
     group.userData.isPlaceholder = true;
     return group;
+  }
+
+  createWeaponPlaceholder(weapon) {
+    if (!weapon) {
+      return null;
+    }
+
+    const id = weapon.id || '';
+    if (id === 'assault-rifle' || /assault/i.test(weapon.name || '')) {
+      return createBlasterRiflePlaceholder();
+    }
+
+    return null;
   }
 
   handleResize() {

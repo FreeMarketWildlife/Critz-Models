@@ -191,6 +191,15 @@ export class WeaponDisplayApp {
       }
       this.activeWeapon = weapon;
       this.sceneManager.applyRarityGlow(weapon.rarity);
+      this.sceneManager.stopAnimation();
+      this.sceneManager.loadWeapon(weapon);
+
+      if (this.activeCritter) {
+        this.activeCritter = null;
+      }
+      this.animationSelector?.setCritterName?.('--');
+      this.animationSelector?.setAnimations?.([]);
+      this.critterSelector?.clearSelection?.();
     });
 
     this.eventBus.on('critter:selected', (critterId) => {
