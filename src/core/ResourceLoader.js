@@ -4,7 +4,7 @@ export class ResourceLoader {
   constructor() {
     this.cache = new Map();
     this.loaderPromise = null;
-    this.clonePromise = null;
+    this.skeletonUtilsPromise = null;
   }
 
   async loadModel(path) {
@@ -53,16 +53,23 @@ export class ResourceLoader {
 
     const cached = this.cache.get(path);
     if (cached && cached.type === 'animation') {
-      return cached.clip.clone();
+      const clip = cached.clip?.clone?.();
+      const source = cached.source ? await this._cloneScene(cached.source) : null;
+      if (clip) {
+        return { clip, source };
+      }
     }
 
     try {
       const loader = await this._getLoader();
       const gltf = await loader.loadAsync(path);
       const [clip] = gltf.animations || [];
+      const source = gltf.scene || gltf.scenes?.[0] || null;
       if (clip) {
-        this.cache.set(path, { type: 'animation', clip });
-        return clip.clone();
+        this.cache.set(path, { type: 'animation', clip, source });
+        const clone = clip.clone();
+        const sourceClone = source ? await this._cloneScene(source) : null;
+        return { clip: clone, source: sourceClone };
       }
     } catch (error) {
       console.warn(`Failed to load animation at ${path}.`, error);
@@ -101,13 +108,13 @@ export class ResourceLoader {
     return this.loaderPromise;
   }
 
-  async _getCloneFunction() {
-    if (!this.clonePromise) {
-      this.clonePromise = import(
+  async _getSkeletonUtils() {
+    if (!this.skeletonUtilsPromise) {
+      this.skeletonUtilsPromise = import(
         'https://esm.sh/three@0.160.0/examples/jsm/utils/SkeletonUtils.js'
-      ).then((module) => module.clone);
+      );
     }
-    return this.clonePromise;
+    return this.skeletonUtilsPromise;
   }
 
   async _cloneScene(scene) {
@@ -116,15 +123,48 @@ export class ResourceLoader {
     }
 
     try {
-      const cloneFn = await this._getCloneFunction();
-      if (cloneFn) {
-        return cloneFn(scene);
+      const utils = await this._getSkeletonUtils();
+      if (utils?.clone) {
+        return utils.clone(scene);
       }
     } catch (error) {
       console.warn('Failed to clone model using SkeletonUtils. Falling back to basic clone.', error);
     }
 
     return scene.clone(true);
+  }
+
+  async retargetClip(targetMesh, sourceScene, clip, options) {
+    if (!targetMesh || !sourceScene || !clip) {
+      return clip;
+    }
+
+    try {
+      const utils = await this._getSkeletonUtils();
+      if (!utils?.retargetClip) {
+        return clip;
+      }
+
+      const sourceMesh = this._findFirstSkinnedMesh(sourceScene);
+      if (!sourceMesh) {
+        return clip;
+      }
+
+      return utils.retargetClip(targetMesh, sourceMesh, clip, options ?? {});
+    } catch (error) {
+      console.warn('Failed to retarget animation clip.', error);
+      return clip;
+    }
+  }
+
+  _findFirstSkinnedMesh(root) {
+    let skinned = null;
+    root?.traverse?.((child) => {
+      if (!skinned && child.isSkinnedMesh) {
+        skinned = child;
+      }
+    });
+    return skinned;
   }
 
   _createPlaceholder() {
