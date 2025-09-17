@@ -2,6 +2,9 @@ import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
 import { createRenderer } from './RendererFactory.js';
 import { ResourceLoader } from './ResourceLoader.js';
 
+const ORBIT_CONTROLS_MODULE =
+  'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+
 const RARITY_GLOWS = {
   common: 0x7c6cff,
   rare: 0x7df0ff,
@@ -22,9 +25,14 @@ export class SceneManager {
 
     this.stageGroup = new THREE.Group();
     this.currentModel = null;
+    this.currentCritterId = null;
     this.platform = null;
     this.glowRing = null;
     this.pendingWeaponId = null;
+    this.pendingCritterId = null;
+    this.mixer = null;
+    this.activeAction = null;
+    this.orbitControls = null;
 
     this.handleResize = this.handleResize.bind(this);
     this.animate = this.animate.bind(this);
@@ -36,6 +44,7 @@ export class SceneManager {
     this.setupLights();
     this.setupEnvironment();
     this.scene.add(this.stageGroup);
+    this.setupControls();
 
     window.addEventListener('resize', this.handleResize);
     this.handleResize();
@@ -54,8 +63,12 @@ export class SceneManager {
   }
 
   update(delta) {
-    if (this.currentModel) {
-      this.currentModel.rotation.y += delta * 0.4;
+    if (this.orbitControls) {
+      this.orbitControls.update();
+    }
+
+    if (this.mixer) {
+      this.mixer.update(delta);
     }
 
     if (this.glowRing) {
@@ -69,6 +82,20 @@ export class SceneManager {
     camera.position.set(0, 1.1, 3.3);
     camera.lookAt(0, 0.4, 0);
     return camera;
+  }
+
+  async setupControls() {
+    if (!this.renderer || !this.camera) return;
+    const module = await import(ORBIT_CONTROLS_MODULE);
+    this.orbitControls = new module.OrbitControls(this.camera, this.renderer.domElement);
+    this.orbitControls.enableDamping = true;
+    this.orbitControls.dampingFactor = 0.08;
+    this.orbitControls.enablePan = false;
+    this.orbitControls.maxPolarAngle = Math.PI * 0.52;
+    this.orbitControls.minDistance = 2.0;
+    this.orbitControls.maxDistance = 6.0;
+    this.orbitControls.target.set(0, 0.65, 0);
+    this.orbitControls.update();
   }
 
   setupLights() {
@@ -143,6 +170,82 @@ export class SceneManager {
     this.applyRarityGlow(weapon.rarity);
   }
 
+  async loadCritter(critter) {
+    if (!critter) return;
+
+    const requestId = (this.pendingCritterId = critter.id);
+
+    let model = null;
+    if (critter.modelPath) {
+      model = await this.resourceLoader.loadModel(critter.modelPath);
+    }
+
+    if (this.pendingCritterId !== requestId) {
+      return;
+    }
+
+    if (!model) {
+      model = this.createPlaceholderModel();
+    }
+
+    this.disposeCurrentModel();
+
+    const offset = critter.offset ?? {};
+    const rotation = critter.rotation ?? {};
+    model.position.set(offset.x ?? 0, offset.y ?? 0, offset.z ?? 0);
+    model.rotation.set(rotation.x ?? 0, rotation.y ?? 0, rotation.z ?? 0);
+
+    const scale = critter.scale ?? 1;
+    model.scale.setScalar(scale);
+
+    this.currentModel = model;
+    this.currentCritterId = critter.id;
+    this.stageGroup.add(model);
+
+    this.mixer = new THREE.AnimationMixer(model);
+    this.activeAction = null;
+  }
+
+  async playAnimation(animation) {
+    if (!this.currentModel || !animation?.path) {
+      return;
+    }
+
+    if (!this.mixer) {
+      this.mixer = new THREE.AnimationMixer(this.currentModel);
+    }
+
+    const clip = await this.resourceLoader.loadAnimationClip(animation.path);
+    if (!clip) {
+      return;
+    }
+
+    const action = this.mixer.clipAction(clip);
+    action.reset();
+    action.clampWhenFinished = true;
+    if (animation.loop === 'once') {
+      action.setLoop(THREE.LoopOnce, 1);
+    } else {
+      action.setLoop(THREE.LoopRepeat, Infinity);
+    }
+
+    if (this.activeAction && this.activeAction !== action) {
+      this.activeAction.fadeOut(0.2);
+    }
+
+    action.fadeIn(0.2);
+    action.play();
+    this.activeAction = action;
+  }
+
+  stopAnimation() {
+    if (this.activeAction) {
+      this.activeAction.stop();
+      this.activeAction = null;
+    }
+    this.mixer?.stopAllAction?.();
+  }
+
   disposeCurrentModel() {
     if (!this.currentModel) return;
     this.stageGroup.remove(this.currentModel);
@@ -159,6 +262,10 @@ export class SceneManager {
       }
     });
     this.currentModel = null;
+    this.currentCritterId = null;
+    this.mixer?.stopAllAction?.();
+    this.mixer = null;
+    this.activeAction = null;
   }
 
   applyRarityGlow(rarity = 'common') {
@@ -204,5 +311,6 @@ export class SceneManager {
       }
     });
     this.renderer?.dispose?.();
+    this.orbitControls?.dispose?.();
   }
 }
