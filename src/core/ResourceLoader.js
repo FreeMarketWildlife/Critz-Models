@@ -16,7 +16,9 @@ export class ResourceLoader {
     if (cached) {
       if (cached.type === 'model') {
         const { SkeletonUtils } = await this._getSkeletonUtils();
-        return SkeletonUtils.clone(cached.scene);
+        const clone = SkeletonUtils.clone(cached.scene);
+        this._makeResourcesUnique(clone);
+        return clone;
       }
 
       if (cached.type === 'placeholder') {
@@ -31,7 +33,9 @@ export class ResourceLoader {
       if (scene) {
         this.cache.set(path, { type: 'model', scene });
         const { SkeletonUtils } = await this._getSkeletonUtils();
-        return SkeletonUtils.clone(scene);
+        const clone = SkeletonUtils.clone(scene);
+        this._makeResourcesUnique(clone);
+        return clone;
       }
     } catch (error) {
       console.warn(`Failed to load model at ${path}. Using fallback geometry instead.`, error);
@@ -111,5 +115,37 @@ export class ResourceLoader {
     group.name = 'missing-model-placeholder';
     group.userData.isPlaceholder = true;
     return group;
+  }
+
+  _makeResourcesUnique(object) {
+    if (!object) return;
+
+    const cloneMaterial = (material) => {
+      if (!material || typeof material.clone !== 'function') {
+        return material;
+      }
+      const cloned = material.clone();
+      cloned.userData = { ...material.userData, __resourceLoaderManaged: true };
+      return cloned;
+    };
+
+    object.traverse?.((child) => {
+      if (child.isMesh || child.isSkinnedMesh || child.isPoints || child.isLine) {
+        if (child.geometry && typeof child.geometry.clone === 'function') {
+          const originalGeometry = child.geometry;
+          const geometry = originalGeometry.clone();
+          geometry.userData = { ...originalGeometry.userData, __resourceLoaderManaged: true };
+          child.geometry = geometry;
+        }
+
+        if (child.material) {
+          if (Array.isArray(child.material)) {
+            child.material = child.material.map((mat) => cloneMaterial(mat));
+          } else {
+            child.material = cloneMaterial(child.material);
+          }
+        }
+      }
+    });
   }
 }
