@@ -18,7 +18,7 @@ export class RigControlPanel {
 
     this.build();
     this.bindBusEvents();
-    this.renderEmpty('Select a critter to unlock pose sliders.');
+    this.renderEmpty('Select a critter to view controls.');
   }
 
   build() {
@@ -28,8 +28,7 @@ export class RigControlPanel {
     this.root.innerHTML = `
       <div class="rig-panel__header">
         <div class="rig-panel__heading">
-          <span class="rig-panel__title">Pose Controls</span>
-          <p class="rig-panel__subtitle">Blend animations with direct rig offsets.</p>
+          <span class="rig-panel__title">Rig Controls</span>
         </div>
         <span class="rig-panel__status" data-role="rig-status">Idle</span>
       </div>
@@ -56,24 +55,24 @@ export class RigControlPanel {
       this.bus.on('stage:model-ready', (payload) => {
         if (payload?.type === 'critter') {
           this.currentCritterName = payload?.name ?? null;
-          this.setLoading(false, `${payload?.name ?? 'Critter'} ready to pose.`);
+          this.setLoading(false, `${payload?.name ?? 'Critter'} rig loaded.`);
         }
       }),
       this.bus.on('stage:model-missing', (payload) => {
         if (payload?.type === 'critter') {
           this.currentCritterName = null;
           this.setLoading(false, `Rig unavailable for ${payload?.name ?? 'this critter'}.`);
-          this.renderEmpty('We could not find pose controls for this critter.');
+          this.renderEmpty('We could not find rig controls for this critter.');
         }
       }),
       this.bus.on('stage:rig-controls-ready', (payload) => {
         const controls = payload?.controls ?? [];
         const values = payload?.values ?? {};
         this.renderControls(controls, values);
-        this.setStatus('ready', `${controls.length} control${controls.length === 1 ? '' : 's'} ready.`);
+        this.setStatus('ready', `${controls.length} control${controls.length === 1 ? '' : 's'} active.`);
       }),
       this.bus.on('stage:rig-controls-cleared', () => {
-        this.renderEmpty('Select a critter to unlock pose sliders.');
+        this.renderEmpty('Select a critter to view controls.');
       }),
       this.bus.on('stage:rig-pose-updated', (payload) => {
         if (!payload) return;
@@ -82,7 +81,7 @@ export class RigControlPanel {
       this.bus.on('stage:rig-pose-reset', (payload) => {
         const values = payload?.values ?? {};
         this.applyValues(values);
-        this.setStatus('ready', 'Pose sliders reset.');
+        this.setStatus('ready', 'Controls reset.');
       })
     );
   }
@@ -123,7 +122,7 @@ export class RigControlPanel {
   renderControls(controls, values) {
     this.clearControls({ keepContent: true });
     if (!controls || controls.length === 0) {
-      this.renderEmpty('This critter does not expose pose overrides yet.');
+      this.renderEmpty('This critter does not expose rig overrides yet.');
       return;
     }
 
@@ -147,7 +146,7 @@ export class RigControlPanel {
       this.controls.set(control.id, controlElements);
     });
 
-    this.setStatus('ready', `${controls.length} control${controls.length === 1 ? '' : 's'} ready.`);
+    this.setStatus('ready', `${controls.length} control${controls.length === 1 ? '' : 's'} active.`);
   }
 
   createGroup(name) {
