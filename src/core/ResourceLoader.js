@@ -4,7 +4,7 @@ export class ResourceLoader {
   constructor() {
     this.cache = new Map();
     this.loaderPromise = null;
-    this.clonePromise = null;
+    this.skeletonUtilsPromise = null;
   }
 
   async loadModel(path) {
@@ -46,29 +46,45 @@ export class ResourceLoader {
     return fallback.clone();
   }
 
-  async loadAnimationClip(path) {
+  async loadAnimationClip(path, target = null) {
     if (!path) {
       return null;
     }
 
-    const cached = this.cache.get(path);
-    if (cached && cached.type === 'animation') {
-      return cached.clip.clone();
-    }
-
-    try {
-      const loader = await this._getLoader();
-      const gltf = await loader.loadAsync(path);
-      const [clip] = gltf.animations || [];
-      if (clip) {
-        this.cache.set(path, { type: 'animation', clip });
-        return clip.clone();
+    let cached = this.cache.get(path);
+    if (!cached || cached.type !== 'animation') {
+      try {
+        const loader = await this._getLoader();
+        const gltf = await loader.loadAsync(path);
+        const clip = gltf.animations?.[0];
+        if (clip) {
+          cached = {
+            type: 'animation',
+            clip,
+            source: gltf.scene || gltf.scenes?.[0] || null,
+          };
+          this.cache.set(path, cached);
+        }
+      } catch (error) {
+        console.warn(`Failed to load animation at ${path}.`, error);
+        return null;
       }
-    } catch (error) {
-      console.warn(`Failed to load animation at ${path}.`, error);
     }
 
-    return null;
+    if (!cached || cached.type !== 'animation' || !cached.clip) {
+      return null;
+    }
+
+    let clipInstance = cached.clip.clone();
+
+    if (target && cached.source) {
+      const retargeted = await this._retargetClip(target, cached.source, clipInstance);
+      if (retargeted) {
+        clipInstance = retargeted;
+      }
+    }
+
+    return clipInstance;
   }
 
   async loadTexture(path) {
@@ -101,13 +117,13 @@ export class ResourceLoader {
     return this.loaderPromise;
   }
 
-  async _getCloneFunction() {
-    if (!this.clonePromise) {
-      this.clonePromise = import(
+  async _getSkeletonUtils() {
+    if (!this.skeletonUtilsPromise) {
+      this.skeletonUtilsPromise = import(
         'https://esm.sh/three@0.160.0/examples/jsm/utils/SkeletonUtils.js'
-      ).then((module) => module.clone);
+      );
     }
-    return this.clonePromise;
+    return this.skeletonUtilsPromise;
   }
 
   async _cloneScene(scene) {
@@ -116,15 +132,32 @@ export class ResourceLoader {
     }
 
     try {
-      const cloneFn = await this._getCloneFunction();
-      if (cloneFn) {
-        return cloneFn(scene);
+      const { clone } = await this._getSkeletonUtils();
+      if (clone) {
+        return clone(scene);
       }
     } catch (error) {
       console.warn('Failed to clone model using SkeletonUtils. Falling back to basic clone.', error);
     }
 
     return scene.clone(true);
+  }
+
+  async _retargetClip(target, source, clip) {
+    if (!target || !clip) {
+      return clip;
+    }
+
+    try {
+      const { retargetClip } = await this._getSkeletonUtils();
+      if (typeof retargetClip === 'function' && source) {
+        return retargetClip(target, source, clip);
+      }
+    } catch (error) {
+      console.warn('Failed to retarget animation clip to the current model.', error);
+    }
+
+    return clip;
   }
 
   _createPlaceholder() {

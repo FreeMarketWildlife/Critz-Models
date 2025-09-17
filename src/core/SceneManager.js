@@ -39,6 +39,7 @@ export class SceneManager {
     this.glowRing = null;
     this.pendingWeaponId = null;
     this.pendingCritterId = null;
+    this.pendingAnimationToken = null;
     this.mixer = null;
     this.activeAction = null;
     this.orbitControls = null;
@@ -265,32 +266,8 @@ export class SceneManager {
   }
 
   setupEnvironment() {
-    const platformGeometry = new THREE.CylinderGeometry(1.45, 1.45, 0.12, 48, 1, true);
-    const platformMaterial = new THREE.MeshStandardMaterial({
-      color: 0x20153f,
-      emissive: 0x0c0620,
-      metalness: 0.28,
-      roughness: 0.62,
-      transparent: true,
-      opacity: 0.95,
-    });
-    this.platform = new THREE.Mesh(platformGeometry, platformMaterial);
-    this.platform.rotation.x = Math.PI / 2;
-    this.platform.position.set(0, -0.7, 0);
-    this.platform.receiveShadow = false;
-
-    const ringGeometry = new THREE.TorusGeometry(1.55, 0.035, 16, 100);
-    const ringMaterial = new THREE.MeshBasicMaterial({
-      color: 0xff9de6,
-      transparent: true,
-      opacity: 0.65,
-    });
-    this.glowRing = new THREE.Mesh(ringGeometry, ringMaterial);
-    this.glowRing.rotation.x = Math.PI / 2;
-    this.glowRing.position.y = -0.35;
-
-    this.stageGroup.add(this.platform);
-    this.stageGroup.add(this.glowRing);
+    this.platform = null;
+    this.glowRing = null;
   }
 
   async loadWeapon(weapon) {
@@ -391,6 +368,7 @@ export class SceneManager {
 
     this.mixer = new THREE.AnimationMixer(model);
     this.activeAction = null;
+    this.pendingAnimationToken = null;
     this.focusOnCurrentModel({ immediate: false });
     this.emitStageEvent('stage:model-ready', {
       type: 'critter',
@@ -409,7 +387,20 @@ export class SceneManager {
       this.mixer = new THREE.AnimationMixer(this.currentModel);
     }
 
-    const clip = await this.resourceLoader.loadAnimationClip(animation.path);
+    const requestToken = Symbol('animation-request');
+    this.pendingAnimationToken = requestToken;
+
+    const clip = await this.resourceLoader.loadAnimationClip(
+      animation.path,
+      this.currentModel
+    );
+
+    if (this.pendingAnimationToken !== requestToken) {
+      return;
+    }
+
+    this.pendingAnimationToken = null;
+
     if (!clip) {
       return;
     }
@@ -438,6 +429,7 @@ export class SceneManager {
       this.activeAction = null;
     }
     this.mixer?.stopAllAction?.();
+    this.pendingAnimationToken = null;
   }
 
   disposeCurrentModel() {
@@ -460,6 +452,7 @@ export class SceneManager {
     this.mixer?.stopAllAction?.();
     this.mixer = null;
     this.activeAction = null;
+    this.pendingAnimationToken = null;
   }
 
   applyRarityGlow(rarity = 'common') {
