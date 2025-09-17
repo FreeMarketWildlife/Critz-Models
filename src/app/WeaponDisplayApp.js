@@ -32,8 +32,12 @@ export class WeaponDisplayApp {
     this.indexCritters();
     this.registerEventHandlers();
 
-    this.sceneManager = new SceneManager(layout.stageViewportElement);
+    this.sceneManager = new SceneManager(layout.stageViewportElement, {
+      overlayElement: layout.viewportOverlayElement,
+      statusElement: layout.viewportStatusElement,
+    });
     this.sceneManager.init();
+    this.sceneManager.setStatus('Select a critter to explore.', 'idle');
 
     this.hudController = new HUDController({
       bus: this.eventBus,
@@ -136,7 +140,49 @@ export class WeaponDisplayApp {
             data-role="stage-viewport"
             aria-label="Critter viewer"
             tabindex="0"
-          ></div>
+          >
+            <div class="viewport-overlay" data-component="viewport-overlay">
+              <div class="viewport-overlay__top">
+                <div
+                  class="viewport-status"
+                  data-role="viewport-status"
+                  data-state="idle"
+                  role="status"
+                  aria-live="polite"
+                >
+                  Select a critter to explore.
+                </div>
+              </div>
+              <div class="viewport-overlay__bottom">
+                <div class="viewport-shortcuts">
+                  <span><strong>Drag</strong> to orbit • <strong>Scroll</strong> to zoom • <strong>Shift + Drag</strong> to pan</span>
+                  <span>Use the arrow keys or buttons to nudge the view. Press <kbd>F</kbd> to refocus.</span>
+                </div>
+                <div class="viewport-controls" role="group" aria-label="Viewport controls">
+                  <button type="button" data-action="focus-model" aria-label="Focus on critter">
+                    <span class="viewport-controls__icon">◎</span>
+                    <span>Focus</span>
+                  </button>
+                  <button type="button" data-action="reset-view" aria-label="Reset view">
+                    <span class="viewport-controls__icon">↺</span>
+                    <span>Reset</span>
+                  </button>
+                  <div class="viewport-controls__cluster" role="group" aria-label="Rotate view">
+                    <button type="button" data-action="rotate-up" aria-label="Tilt up">▲</button>
+                    <div class="viewport-controls__row">
+                      <button type="button" data-action="rotate-left" aria-label="Rotate left">◀</button>
+                      <button type="button" data-action="rotate-right" aria-label="Rotate right">▶</button>
+                    </div>
+                    <button type="button" data-action="rotate-down" aria-label="Tilt down">▼</button>
+                  </div>
+                  <div class="viewport-controls__cluster" role="group" aria-label="Zoom controls">
+                    <button type="button" data-action="zoom-in" aria-label="Zoom in">＋</button>
+                    <button type="button" data-action="zoom-out" aria-label="Zoom out">－</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </section>
       </div>
     `;
@@ -144,6 +190,8 @@ export class WeaponDisplayApp {
     return {
       stageElement: this.root.querySelector('[data-component="stage"]'),
       stageViewportElement: this.root.querySelector('[data-role="stage-viewport"]'),
+      viewportOverlayElement: this.root.querySelector('[data-component="viewport-overlay"]'),
+      viewportStatusElement: this.root.querySelector('[data-role="viewport-status"]'),
       navTabsElement: this.root.querySelector('[data-component="nav-tabs"]'),
       critterSelectorElement: this.root.querySelector('[data-component="critter-selector"]'),
       weaponListPanel: this.root.querySelector('[data-component="weapon-list"]'),
