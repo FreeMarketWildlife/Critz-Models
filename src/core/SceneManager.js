@@ -35,14 +35,14 @@ export class SceneManager {
     this.stageGroup = new THREE.Group();
     this.currentModel = null;
     this.currentCritterId = null;
-    this.platform = null;
-    this.glowRing = null;
     this.pendingWeaponId = null;
     this.pendingCritterId = null;
+    this.pendingAnimationId = null;
     this.mixer = null;
     this.activeAction = null;
     this.orbitControls = null;
     this.autoRotateEnabled = false;
+    this.rarityLight = null;
 
     this.handleResize = this.handleResize.bind(this);
     this.animate = this.animate.bind(this);
@@ -109,9 +109,6 @@ export class SceneManager {
       this.mixer.update(delta);
     }
 
-    if (this.glowRing) {
-      this.glowRing.rotation.z += delta * 0.2;
-    }
   }
 
   createCamera() {
@@ -261,37 +258,12 @@ export class SceneManager {
     const bounceLight = new THREE.PointLight(0x8cf5ff, 0.6, 6, 2);
     bounceLight.position.set(0, 1.2, 0.8);
 
+    this.rarityLight = bounceLight;
+
     this.scene.add(ambient, rimLight, fillLight, bounceLight);
   }
 
-  setupEnvironment() {
-    const platformGeometry = new THREE.CylinderGeometry(1.45, 1.45, 0.12, 48, 1, true);
-    const platformMaterial = new THREE.MeshStandardMaterial({
-      color: 0x20153f,
-      emissive: 0x0c0620,
-      metalness: 0.28,
-      roughness: 0.62,
-      transparent: true,
-      opacity: 0.95,
-    });
-    this.platform = new THREE.Mesh(platformGeometry, platformMaterial);
-    this.platform.rotation.x = Math.PI / 2;
-    this.platform.position.set(0, -0.7, 0);
-    this.platform.receiveShadow = false;
-
-    const ringGeometry = new THREE.TorusGeometry(1.55, 0.035, 16, 100);
-    const ringMaterial = new THREE.MeshBasicMaterial({
-      color: 0xff9de6,
-      transparent: true,
-      opacity: 0.65,
-    });
-    this.glowRing = new THREE.Mesh(ringGeometry, ringMaterial);
-    this.glowRing.rotation.x = Math.PI / 2;
-    this.glowRing.position.y = -0.35;
-
-    this.stageGroup.add(this.platform);
-    this.stageGroup.add(this.glowRing);
-  }
+  setupEnvironment() {}
 
   async loadWeapon(weapon) {
     if (!weapon) return;
@@ -405,31 +377,37 @@ export class SceneManager {
       return;
     }
 
+    const requestId = animation.id ?? animation.path;
+    this.pendingAnimationId = requestId;
+
     if (!this.mixer) {
       this.mixer = new THREE.AnimationMixer(this.currentModel);
     }
 
     const clip = await this.resourceLoader.loadAnimationClip(animation.path);
-    if (!clip) {
+    if (!clip || this.pendingAnimationId !== requestId || !this.currentModel) {
       return;
     }
 
-    const action = this.mixer.clipAction(clip);
+    this.mixer.stopAllAction();
+
+    const action = this.mixer.clipAction(clip, this.currentModel);
+    if (!action) {
+      return;
+    }
+
     action.reset();
     action.clampWhenFinished = true;
+    action.enabled = true;
     if (animation.loop === 'once') {
       action.setLoop(THREE.LoopOnce, 1);
     } else {
       action.setLoop(THREE.LoopRepeat, Infinity);
     }
 
-    if (this.activeAction && this.activeAction !== action) {
-      this.activeAction.fadeOut(0.2);
-    }
-
-    action.fadeIn(0.2);
     action.play();
     this.activeAction = action;
+    this.pendingAnimationId = null;
   }
 
   stopAnimation() {
@@ -438,6 +416,7 @@ export class SceneManager {
       this.activeAction = null;
     }
     this.mixer?.stopAllAction?.();
+    this.pendingAnimationId = null;
   }
 
   disposeCurrentModel() {
@@ -460,12 +439,13 @@ export class SceneManager {
     this.mixer?.stopAllAction?.();
     this.mixer = null;
     this.activeAction = null;
+    this.pendingAnimationId = null;
   }
 
   applyRarityGlow(rarity = 'common') {
     const color = RARITY_GLOWS[rarity] ?? RARITY_GLOWS.common;
-    if (this.glowRing) {
-      this.glowRing.material.color = new THREE.Color(color);
+    if (this.rarityLight) {
+      this.rarityLight.color = new THREE.Color(color);
     }
   }
 
