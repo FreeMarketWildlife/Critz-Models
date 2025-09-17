@@ -1,10 +1,10 @@
-import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
+import * as THREE from 'https://esm.sh/three@0.160.0';
 
 export class ResourceLoader {
   constructor() {
     this.cache = new Map();
     this.loaderPromise = null;
-    this.skeletonUtilsPromise = null;
+    this.clonePromise = null;
   }
 
   async loadModel(path) {
@@ -15,8 +15,8 @@ export class ResourceLoader {
     const cached = this.cache.get(path);
     if (cached) {
       if (cached.type === 'model') {
-        const { SkeletonUtils } = await this._getSkeletonUtils();
-        return SkeletonUtils.clone(cached.scene);
+        const clone = await this._getCloneFunction();
+        return clone(cached.scene);
       }
 
       if (cached.type === 'placeholder') {
@@ -30,8 +30,8 @@ export class ResourceLoader {
       const scene = gltf.scene || gltf.scenes?.[0];
       if (scene) {
         this.cache.set(path, { type: 'model', scene });
-        const { SkeletonUtils } = await this._getSkeletonUtils();
-        return SkeletonUtils.clone(scene);
+        const clone = await this._getCloneFunction();
+        return clone(scene);
       }
     } catch (error) {
       console.warn(`Failed to load model at ${path}. Using fallback geometry instead.`, error);
@@ -91,19 +91,19 @@ export class ResourceLoader {
   async _getLoader() {
     if (!this.loaderPromise) {
       this.loaderPromise = import(
-        'https://unpkg.com/three@0.160.0/examples/jsm/loaders/GLTFLoader.js'
+        'https://esm.sh/three@0.160.0/examples/jsm/loaders/GLTFLoader.js'
       ).then((module) => new module.GLTFLoader());
     }
     return this.loaderPromise;
   }
 
-  async _getSkeletonUtils() {
-    if (!this.skeletonUtilsPromise) {
-      this.skeletonUtilsPromise = import(
-        'https://unpkg.com/three@0.160.0/examples/jsm/utils/SkeletonUtils.js'
-      );
+  async _getCloneFunction() {
+    if (!this.clonePromise) {
+      this.clonePromise = import(
+        'https://esm.sh/three@0.160.0/examples/jsm/utils/SkeletonUtils.js'
+      ).then((module) => module.clone);
     }
-    return this.skeletonUtilsPromise;
+    return this.clonePromise;
   }
 
   _createPlaceholder() {
