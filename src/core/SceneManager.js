@@ -481,7 +481,15 @@ export class SceneManager {
       return;
     }
 
+    if (animation.id && !clip.name) {
+      clip = clip.clone();
+      clip.name = animation.id;
+    }
+    clip.resetDuration();
+
     this.mixer.stopAllAction();
+    this.activeAction?.stop();
+    this.activeAction = null;
 
     const actionRoot = targetMesh ?? this.currentModel;
     const action = this.mixer.clipAction(clip, actionRoot);
@@ -492,6 +500,9 @@ export class SceneManager {
     action.reset();
     action.clampWhenFinished = true;
     action.enabled = true;
+    action.paused = false;
+    action.setEffectiveWeight(1);
+    action.setEffectiveTimeScale(1);
     if (animation.loop === 'once') {
       action.setLoop(THREE.LoopOnce, 1);
     } else {
