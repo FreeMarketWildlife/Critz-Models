@@ -1,3 +1,112 @@
+const toTitle = (value) =>
+  value
+    .split('_')
+    .filter((segment) => segment.length > 0)
+    .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1).toLowerCase())
+    .join(' ');
+
+const normalizeKey = (value) =>
+  value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '_')
+    .replace(/_{2,}/g, '_')
+    .replace(/^_|_$/g, '');
+
+const createAnimations = (speciesId, filePrefix, entries) =>
+  entries.map((entry) => {
+    const config = typeof entry === 'string' ? { key: entry } : entry;
+    const key = config.key;
+    const idSuffix = normalizeKey(config.id ?? key);
+    const label = config.label ?? toTitle(key);
+    const pathKey = config.file ?? key;
+
+    const animation = {
+      id: `${speciesId}_${idSuffix}`,
+      label,
+      path: `assets/models/critters/animations/TH_${filePrefix}_${pathKey}.glb`,
+    };
+
+    if (config.loop) {
+      animation.loop = config.loop;
+    }
+
+    return animation;
+  });
+
+const frogAnimationEntries = [
+  'Idle',
+  'Walk',
+  'Walk_Forward',
+  'Walk_Back',
+  'Walk_Backward',
+  'Run',
+  'Run_Forward',
+  'Hop',
+  'Hop_Forward',
+  'Jump',
+  'Clap',
+  'Wave',
+  'Victory',
+  'Frustration',
+  'Sad_Walk',
+  'Sad_Walk_Forward',
+  'Finger_Wag',
+  'One_Thumb_Up',
+  'One_Thumb_Down',
+  'Two_Thumbs_Up',
+  'Two_Thumbs_Down',
+  'Sit_01',
+  'Sit_02',
+  'Sit_Raise_Hand_01_A',
+  'Sit_Raise_Hand_01_B',
+  'Sit_Raise_Hand_02_A',
+  'Sit_Raise_Hand_02_B',
+  { key: 'Sleep', loop: 'once' },
+  { key: 'Take_Hit', loop: 'once' },
+  { key: 'Death', loop: 'once' },
+  'Strike',
+  'Push_Up',
+  'Turn_Left_90',
+  'Turn_Right_90',
+];
+
+const lizardAnimationEntries = [
+  'Idle',
+  'Walk',
+  'Walk_Forward',
+  'Walk_Back',
+  'Walk_Backward',
+  'Run',
+  'Run_Forward',
+  'Hop',
+  'Hop_Forward',
+  'Jump',
+  'Clap',
+  'Wave',
+  'Victory',
+  'Frustration',
+  'Sad_Walk',
+  'Sad_Walk_Forward',
+  'Finger_Wag',
+  'One_Thumb_Up',
+  'One_Thumb_Down',
+  'Two_Thumbs_Up',
+  'Two_Thumbs_Down',
+  'Sit_01',
+  'Sit_02',
+  'Sit_Raise_Hand_01_A',
+  'Sit_Raise_Hand_01_B',
+  'Sit_Raise_Hand_02_A',
+  'Sit_Raise_Hand_02_B',
+  { key: 'Sleep', loop: 'once' },
+  { key: 'Take_Hit', loop: 'once' },
+  { key: 'Death', loop: 'once' },
+  'Strike',
+  'Push_Up',
+  'Turn_Left_90',
+  'Turn_Right_90',
+];
+
 export const critters = [
   {
     id: 'frog',
@@ -6,73 +115,7 @@ export const critters = [
     scale: 1.15,
     offset: { y: -0.6 },
     defaultAnimationId: 'frog_idle',
-    animations: [
-      { id: 'frog_idle', label: 'Idle', path: 'assets/models/critters/animations/TH_Frog_Idle.glb' },
-      {
-        id: 'frog_walk_forward',
-        label: 'Walk Forward',
-        path: 'assets/models/critters/animations/TH_Frog_Walk_Forward.glb',
-      },
-      {
-        id: 'frog_run_forward',
-        label: 'Run Forward',
-        path: 'assets/models/critters/animations/TH_Frog_Run_Forward.glb',
-      },
-      { id: 'frog_hop', label: 'Hop', path: 'assets/models/critters/animations/TH_Frog_Hop.glb' },
-      {
-        id: 'frog_clap',
-        label: 'Clap',
-        path: 'assets/models/critters/animations/TH_Frog_Clap.glb',
-      },
-      {
-        id: 'frog_wave',
-        label: 'Wave',
-        path: 'assets/models/critters/animations/TH_Frog_Wave.glb',
-      },
-      {
-        id: 'frog_victory',
-        label: 'Victory',
-        path: 'assets/models/critters/animations/TH_Frog_Victory.glb',
-      },
-      {
-        id: 'frog_frustration',
-        label: 'Frustration',
-        path: 'assets/models/critters/animations/TH_Frog_Frustration.glb',
-      },
-      {
-        id: 'frog_sleep',
-        label: 'Sleep',
-        path: 'assets/models/critters/animations/TH_Frog_Sleep.glb',
-        loop: 'once',
-      },
-      {
-        id: 'frog_sit',
-        label: 'Sit',
-        path: 'assets/models/critters/animations/TH_Frog_Sit_01.glb',
-      },
-      {
-        id: 'frog_take_hit',
-        label: 'Take Hit',
-        path: 'assets/models/critters/animations/TH_Frog_Take_Hit.glb',
-        loop: 'once',
-      },
-      {
-        id: 'frog_death',
-        label: 'Death',
-        path: 'assets/models/critters/animations/TH_Frog_Death.glb',
-        loop: 'once',
-      },
-      {
-        id: 'frog_strike',
-        label: 'Strike',
-        path: 'assets/models/critters/animations/TH_Frog_Strike.glb',
-      },
-      {
-        id: 'frog_push_up',
-        label: 'Push Up',
-        path: 'assets/models/critters/animations/TH_Frog_Push_Up.glb',
-      },
-    ],
+    animations: createAnimations('frog', 'Frog', frogAnimationEntries),
   },
   {
     id: 'lizard',
@@ -81,72 +124,6 @@ export const critters = [
     scale: 1.25,
     offset: { y: -0.6 },
     defaultAnimationId: 'lizard_idle',
-    animations: [
-      { id: 'lizard_idle', label: 'Idle', path: 'assets/models/critters/animations/TH_Lizard_Idle.glb' },
-      {
-        id: 'lizard_walk_forward',
-        label: 'Walk Forward',
-        path: 'assets/models/critters/animations/TH_Lizard_Walk_Forward.glb',
-      },
-      {
-        id: 'lizard_run_forward',
-        label: 'Run Forward',
-        path: 'assets/models/critters/animations/TH_Lizard_Run_Forward.glb',
-      },
-      { id: 'lizard_hop', label: 'Hop', path: 'assets/models/critters/animations/TH_Lizard_Hop.glb' },
-      {
-        id: 'lizard_clap',
-        label: 'Clap',
-        path: 'assets/models/critters/animations/TH_Lizard_Clap.glb',
-      },
-      {
-        id: 'lizard_wave',
-        label: 'Wave',
-        path: 'assets/models/critters/animations/TH_Lizard_Wave.glb',
-      },
-      {
-        id: 'lizard_victory',
-        label: 'Victory',
-        path: 'assets/models/critters/animations/TH_Lizard_Victory.glb',
-      },
-      {
-        id: 'lizard_frustration',
-        label: 'Frustration',
-        path: 'assets/models/critters/animations/TH_Lizard_Frustration.glb',
-      },
-      {
-        id: 'lizard_sleep',
-        label: 'Sleep',
-        path: 'assets/models/critters/animations/TH_Lizard_Sleep.glb',
-        loop: 'once',
-      },
-      {
-        id: 'lizard_sit',
-        label: 'Sit',
-        path: 'assets/models/critters/animations/TH_Lizard_Sit_01.glb',
-      },
-      {
-        id: 'lizard_take_hit',
-        label: 'Take Hit',
-        path: 'assets/models/critters/animations/TH_Lizard_Take_Hit.glb',
-        loop: 'once',
-      },
-      {
-        id: 'lizard_death',
-        label: 'Death',
-        path: 'assets/models/critters/animations/TH_Lizard_Death.glb',
-        loop: 'once',
-      },
-      {
-        id: 'lizard_strike',
-        label: 'Strike',
-        path: 'assets/models/critters/animations/TH_Lizard_Strike.glb',
-      },
-      {
-        id: 'lizard_push_up',
-        label: 'Push Up',
-        path: 'assets/models/critters/animations/TH_Lizard_Push_Up.glb',
-      },
-    ],
+    animations: createAnimations('lizard', 'Lizard', lizardAnimationEntries),
   },
 ];

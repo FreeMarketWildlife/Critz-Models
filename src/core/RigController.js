@@ -285,25 +285,59 @@ export class RigController {
     return { values: this.getPoseValues() };
   }
 
-  applyPoseAdjustments() {
+  prepareFrame() {
     if (!this.model) {
       return;
     }
 
     this.boneEntries.forEach((entry) => {
-      entry.baseQuaternion.copy(entry.bone.quaternion);
+      if (!entry || !entry.bone) {
+        return;
+      }
+      if (entry.hasAppliedAdjustments) {
+        entry.bone.quaternion.copy(entry.baseQuaternion);
+        entry.bone.updateMatrixWorld(true);
+        entry.hasAppliedAdjustments = false;
+      }
     });
+  }
+
+  applyPoseAdjustments(options = {}) {
+    if (!this.model) {
+      return;
+    }
+
+    const fromUpdate = Boolean(options.fromUpdate);
 
     this.boneEntries.forEach((entry) => {
-      const { bone, controls, baseQuaternion } = entry;
-      bone.quaternion.copy(baseQuaternion);
+      const { bone, controls } = entry;
+      if (!bone || !controls.length) {
+        return;
+      }
+
+      if (!fromUpdate && entry.hasAppliedAdjustments) {
+        bone.quaternion.copy(entry.baseQuaternion);
+        entry.hasAppliedAdjustments = false;
+      }
+
+      entry.baseQuaternion.copy(bone.quaternion);
+
+      let hasAdjustment = false;
+      bone.quaternion.copy(entry.baseQuaternion);
       controls.forEach((control) => {
         if (Math.abs(control.value) < EPSILON) {
           return;
         }
+        hasAdjustment = true;
         this.tempQuaternion.setFromAxisAngle(control.axisVector, control.value);
         bone.quaternion.multiply(this.tempQuaternion);
       });
+
+      if (!hasAdjustment) {
+        bone.quaternion.copy(entry.baseQuaternion);
+      }
+
+      entry.hasAppliedAdjustments = hasAdjustment;
       bone.updateMatrixWorld(true);
     });
 
@@ -470,7 +504,8 @@ export class RigController {
       entry = {
         bone,
         controls: [],
-        baseQuaternion: new THREE.Quaternion(),
+        baseQuaternion: bone.quaternion.clone(),
+        hasAppliedAdjustments: false,
       };
       this.boneEntries.set(bone, entry);
     }
