@@ -15,8 +15,7 @@ export class ResourceLoader {
     const cached = this.cache.get(path);
     if (cached) {
       if (cached.type === 'model') {
-        const { SkeletonUtils } = await this._getSkeletonUtils();
-        return SkeletonUtils.clone(cached.scene);
+        return this._cloneModel(cached.scene);
       }
 
       if (cached.type === 'placeholder') {
@@ -30,8 +29,7 @@ export class ResourceLoader {
       const scene = gltf.scene || gltf.scenes?.[0];
       if (scene) {
         this.cache.set(path, { type: 'model', scene });
-        const { SkeletonUtils } = await this._getSkeletonUtils();
-        return SkeletonUtils.clone(scene);
+        return this._cloneModel(scene);
       }
     } catch (error) {
       console.warn(`Failed to load model at ${path}. Using fallback geometry instead.`, error);
@@ -111,5 +109,26 @@ export class ResourceLoader {
     group.name = 'missing-model-placeholder';
     group.userData.isPlaceholder = true;
     return group;
+  }
+
+  async _cloneModel(scene) {
+    const { SkeletonUtils } = await this._getSkeletonUtils();
+    const clone = SkeletonUtils.clone(scene);
+    clone.traverse?.((child) => {
+      if (!child.isMesh) return;
+
+      if (child.geometry?.isBufferGeometry) {
+        child.geometry = child.geometry.clone();
+      }
+
+      if (Array.isArray(child.material)) {
+        child.material = child.material.map((material) =>
+          material?.isMaterial ? material.clone() : material
+        );
+      } else if (child.material?.isMaterial) {
+        child.material = child.material.clone();
+      }
+    });
+    return clone;
   }
 }
