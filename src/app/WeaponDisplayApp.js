@@ -32,6 +32,7 @@ export class WeaponDisplayApp {
 
   init() {
     const layout = this.buildLayout();
+    this.bindStageToolbar(layout);
     this.indexWeapons();
     this.indexCritters();
     this.registerEventHandlers();
@@ -147,7 +148,17 @@ export class WeaponDisplayApp {
         </section>
         <section class="stage" data-component="stage">
           <div class="stage-toolbar" data-component="stage-toolbar">
-            <div class="stage-tool-grid">
+            <button
+              type="button"
+              class="stage-toolbar__toggle"
+              data-action="stage-tools-toggle"
+              aria-expanded="true"
+              aria-controls="stage-tool-drawer"
+              title="Toggle animation and pose controls"
+            >
+              Show Pose Tools
+            </button>
+            <div class="stage-tool-grid" id="stage-tool-drawer" data-role="stage-tool-grid">
               <div class="stage-tool-panel stage-tool-panel--selector" data-component="animation-selector"></div>
               <div class="stage-tool-panel stage-tool-panel--rig" data-component="rig-controls"></div>
             </div>
@@ -175,7 +186,36 @@ export class WeaponDisplayApp {
       detailFooter: this.root.querySelector('[data-role="detail-footer"]'),
       animationSelectorElement: this.root.querySelector('[data-component="animation-selector"]'),
       rigControlsElement: this.root.querySelector('[data-component="rig-controls"]'),
+      stageToolbarElement: this.root.querySelector('[data-component="stage-toolbar"]'),
+      stageToolbarToggle: this.root.querySelector('[data-action="stage-tools-toggle"]'),
     };
+  }
+
+  bindStageToolbar(layout) {
+    const stageElement = layout.stageElement;
+    const toggle = layout.stageToolbarToggle;
+
+    if (!stageElement || !toggle) {
+      return;
+    }
+
+    let isExpanded = false;
+
+    const applyState = () => {
+      stageElement.classList.toggle('stage--tools-collapsed', !isExpanded);
+      if (layout.stageToolbarElement) {
+        layout.stageToolbarElement.dataset.state = isExpanded ? 'expanded' : 'collapsed';
+      }
+      toggle.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+      toggle.textContent = isExpanded ? 'Hide Pose Tools' : 'Show Pose Tools';
+    };
+
+    toggle.addEventListener('click', () => {
+      isExpanded = !isExpanded;
+      applyState();
+    });
+
+    applyState();
   }
 
   registerEventHandlers() {

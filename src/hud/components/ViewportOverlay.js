@@ -10,6 +10,10 @@ export class ViewportOverlay {
     this.resetButton = null;
     this.resetPoseButton = null;
     this.refreshButton = null;
+    this.instructionsElement = null;
+    this.instructionsToggle = null;
+    this.instructionsCloseButton = null;
+    this.instructionsVisible = false;
     this.autoRotateEnabled = false;
     this.state = 'idle';
     this.unsubscribe = [];
@@ -45,16 +49,6 @@ export class ViewportOverlay {
           <span class="viewport-status__indicator" data-role="viewport-status-indicator"></span>
           <span class="viewport-status__text" data-role="viewport-status-text"></span>
         </div>
-      </div>
-      <div class="viewport-ui__bottom">
-        <div class="viewport-instructions">
-          <p class="viewport-instructions__title">Camera Tips</p>
-          <ul class="viewport-instructions__list" aria-label="Viewport camera controls">
-            <li><span>Drag</span> Orbit around</li>
-            <li><span>Right-drag</span> Pan the view</li>
-            <li><span>Scroll</span> Zoom in or out</li>
-          </ul>
-        </div>
         <div class="viewport-controls" role="group" aria-label="Viewport controls">
           <button type="button" class="viewport-button" data-action="focus">Focus Model</button>
           <button type="button" class="viewport-button" data-action="reset">Reset View</button>
@@ -70,6 +64,36 @@ export class ViewportOverlay {
           </button>
         </div>
       </div>
+      <div class="viewport-ui__bottom">
+        <button
+          type="button"
+          class="viewport-chip"
+          data-action="toggle-instructions"
+          aria-expanded="false"
+        >
+          Show Camera Tips
+        </button>
+        <div
+          class="viewport-instructions"
+          data-role="viewport-instructions"
+          aria-hidden="true"
+        >
+          <div class="viewport-instructions__header">
+            <p class="viewport-instructions__title">Camera Tips</p>
+            <button
+              type="button"
+              class="viewport-instructions__close"
+              data-action="close-instructions"
+              aria-label="Hide camera tips"
+            ></button>
+          </div>
+          <ul class="viewport-instructions__list" aria-label="Viewport camera controls">
+            <li><span>Drag</span> Orbit around</li>
+            <li><span>Right-drag</span> Pan the view</li>
+            <li><span>Scroll</span> Zoom in or out</li>
+          </ul>
+        </div>
+      </div>
     `;
 
     this.container.appendChild(this.root);
@@ -80,6 +104,10 @@ export class ViewportOverlay {
     this.resetButton = this.root.querySelector('[data-action="reset"]');
     this.resetPoseButton = this.root.querySelector('[data-action="reset-pose"]');
     this.refreshButton = this.root.querySelector('[data-action="refresh"]');
+    this.instructionsElement = this.root.querySelector('[data-role="viewport-instructions"]');
+    this.instructionsToggle = this.root.querySelector('[data-action="toggle-instructions"]');
+    this.instructionsCloseButton = this.root.querySelector('[data-action="close-instructions"]');
+    this.setInstructionsVisibility(false);
   }
 
   bindControls() {
@@ -118,6 +146,19 @@ export class ViewportOverlay {
       this.autoRotateButton.addEventListener('click', () => {
         const next = !this.autoRotateEnabled;
         this.bus.emit('stage:auto-rotate-requested', { enabled: next });
+      });
+    }
+
+    if (this.instructionsToggle) {
+      this.instructionsToggle.addEventListener('click', () => {
+        this.setInstructionsVisibility(!this.instructionsVisible);
+      });
+    }
+
+    if (this.instructionsCloseButton) {
+      this.instructionsCloseButton.addEventListener('click', () => {
+        this.setInstructionsVisibility(false);
+        this.instructionsToggle?.focus?.();
       });
     }
   }
@@ -198,6 +239,22 @@ export class ViewportOverlay {
     this.autoRotateButton.classList.toggle('is-active', this.autoRotateEnabled);
   }
 
+  setInstructionsVisibility(isVisible) {
+    this.instructionsVisible = Boolean(isVisible);
+    if (this.instructionsElement) {
+      this.instructionsElement.hidden = !this.instructionsVisible;
+      this.instructionsElement.setAttribute('aria-hidden', this.instructionsVisible ? 'false' : 'true');
+      this.instructionsElement.classList.toggle('is-visible', this.instructionsVisible);
+    }
+
+    if (this.instructionsToggle) {
+      this.instructionsToggle.setAttribute('aria-expanded', this.instructionsVisible ? 'true' : 'false');
+      this.instructionsToggle.textContent = this.instructionsVisible ? 'Hide Camera Tips' : 'Show Camera Tips';
+    }
+
+    this.root?.classList.toggle('viewport-ui--tips-open', this.instructionsVisible);
+  }
+
   flashStatus() {
     if (!this.statusElement) {
       return;
@@ -266,6 +323,15 @@ export class ViewportOverlay {
       this.refreshButton.replaceWith(this.refreshButton.cloneNode(true));
       this.refreshButton = null;
     }
+    if (this.instructionsToggle) {
+      this.instructionsToggle.replaceWith(this.instructionsToggle.cloneNode(true));
+      this.instructionsToggle = null;
+    }
+    if (this.instructionsCloseButton) {
+      this.instructionsCloseButton.replaceWith(this.instructionsCloseButton.cloneNode(true));
+      this.instructionsCloseButton = null;
+    }
+    this.instructionsElement = null;
     if (this.root?.parentNode) {
       this.root.parentNode.removeChild(this.root);
     }
