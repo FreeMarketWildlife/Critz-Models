@@ -54,7 +54,13 @@ export class WeaponDisplayApp {
   buildLayout() {
     this.root.innerHTML = `
       <div class="app-shell">
-        <div class="hud-brand">Crtiz Armory</div>
+        <div class="hud-brand">
+          <span class="hud-brand__icon" aria-hidden="true"></span>
+          <div class="hud-brand__text" aria-label="Crtiz Armory">
+            <span class="hud-brand__title">Crtiz Armory</span>
+            <span class="hud-brand__tagline">Fieldcrafted Arsenal</span>
+          </div>
+        </div>
         <nav class="hud-nav" aria-label="Weapon categories">
           <h2>Categories</h2>
           <ul class="nav-tabs" data-component="nav-tabs"></ul>

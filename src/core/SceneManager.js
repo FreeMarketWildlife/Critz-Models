@@ -3,11 +3,11 @@ import { createRenderer } from './RendererFactory.js';
 import { ResourceLoader } from './ResourceLoader.js';
 
 const RARITY_GLOWS = {
-  common: 0x7c6cff,
-  rare: 0x7df0ff,
-  epic: 0xff9af5,
-  legendary: 0xffe37d,
-  mythic: 0xffb7ff,
+  common: 0x8ebd85,
+  rare: 0x6ed4d1,
+  epic: 0xb7a7f1,
+  legendary: 0xf3c978,
+  mythic: 0xe5f3b8,
 };
 
 export class SceneManager {
@@ -72,24 +72,25 @@ export class SceneManager {
   }
 
   setupLights() {
-    const ambient = new THREE.AmbientLight(0xffe6ff, 0.4);
-    const rimLight = new THREE.DirectionalLight(0xa7c9ff, 1.15);
-    rimLight.position.set(-3, 4, 2);
-    const fillLight = new THREE.SpotLight(0xffc3f7, 1.25, 20, Math.PI / 4, 0.85, 2);
-    fillLight.position.set(2.6, 3.8, 1.4);
-    const bounceLight = new THREE.PointLight(0x8cf5ff, 0.6, 6, 2);
-    bounceLight.position.set(0, 1.2, 0.8);
+    const ambient = new THREE.AmbientLight(0xe6f7e8, 0.55);
+    const rimLight = new THREE.DirectionalLight(0xf1d8aa, 0.68);
+    rimLight.position.set(-3.2, 4.4, 2.2);
+    const fillLight = new THREE.SpotLight(0x8ccfb6, 1.1, 20, Math.PI / 4, 0.85, 2);
+    fillLight.position.set(2.4, 3.6, 1.6);
+    const bounceLight = new THREE.PointLight(0xa9f2c3, 0.62, 7, 2);
+    bounceLight.position.set(0.1, 1.1, 1.1);
+    const canopyLight = new THREE.HemisphereLight(0xcfead9, 0x112218, 0.42);
 
-    this.scene.add(ambient, rimLight, fillLight, bounceLight);
+    this.scene.add(ambient, canopyLight, rimLight, fillLight, bounceLight);
   }
 
   setupEnvironment() {
     const platformGeometry = new THREE.CylinderGeometry(1.45, 1.45, 0.12, 48, 1, true);
     const platformMaterial = new THREE.MeshStandardMaterial({
-      color: 0x20153f,
-      emissive: 0x0c0620,
-      metalness: 0.28,
-      roughness: 0.62,
+      color: 0x2a3a2f,
+      emissive: 0x122217,
+      metalness: 0.18,
+      roughness: 0.64,
       transparent: true,
       opacity: 0.95,
     });
@@ -100,9 +101,9 @@ export class SceneManager {
 
     const ringGeometry = new THREE.TorusGeometry(1.55, 0.035, 16, 100);
     const ringMaterial = new THREE.MeshBasicMaterial({
-      color: 0xff9de6,
+      color: 0x9ad5b2,
       transparent: true,
-      opacity: 0.65,
+      opacity: 0.55,
     });
     this.glowRing = new THREE.Mesh(ringGeometry, ringMaterial);
     this.glowRing.rotation.x = Math.PI / 2;
@@ -171,11 +172,11 @@ export class SceneManager {
   createPlaceholderModel() {
     const geometry = new THREE.TorusKnotGeometry(0.65, 0.18, 128, 16);
     const material = new THREE.MeshStandardMaterial({
-      color: 0xff9dce,
-      emissive: 0x2b0f35,
-      metalness: 0.28,
-      roughness: 0.28,
-      emissiveIntensity: 0.6,
+      color: 0xa8e4c1,
+      emissive: 0x1f3a29,
+      metalness: 0.2,
+      roughness: 0.32,
+      emissiveIntensity: 0.55,
     });
     const mesh = new THREE.Mesh(geometry, material);
     mesh.castShadow = false;
