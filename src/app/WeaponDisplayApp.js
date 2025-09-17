@@ -190,6 +190,11 @@ export class WeaponDisplayApp {
         return;
       }
       this.activeWeapon = weapon;
+      this.activeCritter = null;
+      this.animationSelector?.setCritterName?.('--');
+      this.animationSelector?.setAnimations?.([]);
+      this.sceneManager.stopAnimation();
+      this.sceneManager.loadWeapon(weapon);
       this.sceneManager.applyRarityGlow(weapon.rarity);
     });
 
