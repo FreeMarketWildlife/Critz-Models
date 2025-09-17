@@ -1,6 +1,8 @@
 import { SceneManager } from '../core/SceneManager.js';
 import { HUDController } from '../hud/HUDController.js';
 import { sampleWeapons } from '../data/sampleWeapons.js';
+import { critters, findCritterById } from '../data/critters.js';
+import { CritterSelector } from '../hud/components/CritterSelector.js';
 import { createEventBus } from '../utils/eventBus.js';
 
 export class WeaponDisplayApp {
@@ -9,12 +11,16 @@ export class WeaponDisplayApp {
     this.eventBus = createEventBus();
     this.sceneManager = null;
     this.hudController = null;
+    this.critterSelector = null;
 
     this.weapons = sampleWeapons;
     this.weaponMap = new Map();
     this.categories = ['primary', 'secondary', 'melee', 'utility'];
     this.activeCategory = 'primary';
     this.activeWeapon = null;
+    this.critters = critters;
+    this.activeCritterId = null;
+    this.autoSpinEnabled = true;
   }
 
   init() {
@@ -22,8 +28,20 @@ export class WeaponDisplayApp {
     this.indexWeapons();
     this.registerEventHandlers();
 
+    this.critterSelector = new CritterSelector({
+      container: layout.critterSelectorElement,
+      critters: this.critters,
+      defaultCritterId: this.activeCritterId,
+      autoSpinEnabled: this.autoSpinEnabled,
+      onSelect: (critterId) => this.handleCritterSelection(critterId),
+      onSpinToggle: (enabled) => this.handleAutoSpinToggle(enabled),
+      onResetView: () => this.sceneManager?.resetFocus(),
+    });
+    this.critterSelector.render();
+
     this.sceneManager = new SceneManager(layout.stageElement);
     this.sceneManager.init();
+    this.sceneManager.setAutoSpin(this.autoSpinEnabled);
 
     this.hudController = new HUDController({
       bus: this.eventBus,
@@ -47,7 +65,16 @@ export class WeaponDisplayApp {
 
     if (defaultWeapon) {
       this.activeWeapon = defaultWeapon;
-      this.sceneManager.loadWeapon(defaultWeapon);
+      if (!this.activeCritterId) {
+        this.sceneManager.loadWeapon(defaultWeapon);
+      }
+    }
+
+    if (this.activeCritterId) {
+      const critter = findCritterById(this.activeCritterId);
+      if (critter) {
+        this.sceneManager.loadCritter(critter);
+      }
     }
   }
 
@@ -56,6 +83,7 @@ export class WeaponDisplayApp {
       <div class="app-shell">
         <div class="hud-brand">Crtiz Armory</div>
         <nav class="hud-nav" aria-label="Weapon categories">
+          <div data-component="critter-selector"></div>
           <h2>Categories</h2>
           <ul class="nav-tabs" data-component="nav-tabs"></ul>
         </nav>
@@ -84,6 +112,7 @@ export class WeaponDisplayApp {
     return {
       stageElement: this.root.querySelector('[data-component="stage"]'),
       navTabsElement: this.root.querySelector('[data-component="nav-tabs"]'),
+      critterSelectorElement: this.root.querySelector('[data-component="critter-selector"]'),
       weaponListPanel: this.root.querySelector('[data-component="weapon-list"]'),
       weaponDetailPanel: this.root.querySelector('[data-component="weapon-detail"]'),
       listContextLabel: this.root.querySelector('[data-role="list-context"]'),
@@ -105,7 +134,9 @@ export class WeaponDisplayApp {
         return;
       }
       this.activeWeapon = weapon;
-      this.sceneManager.loadWeapon(weapon);
+      if (!this.activeCritterId) {
+        this.sceneManager.loadWeapon(weapon);
+      }
     });
   }
 
@@ -129,5 +160,34 @@ export class WeaponDisplayApp {
     const byCategory = this.groupWeaponsByCategory();
     const defaultList = byCategory[this.activeCategory];
     return defaultList && defaultList.length > 0 ? defaultList[0] : null;
+  }
+
+  handleCritterSelection(critterId) {
+    const nextId = critterId || null;
+    this.activeCritterId = nextId;
+    this.critterSelector?.setSelectedCritter(nextId);
+
+    if (!nextId) {
+      if (this.activeWeapon) {
+        this.sceneManager.loadWeapon(this.activeWeapon);
+      } else {
+        this.sceneManager.clearStageModel();
+      }
+      return;
+    }
+
+    const critter = findCritterById(nextId);
+    if (!critter) {
+      console.warn(`Critter with id "${nextId}" was not found.`);
+      return;
+    }
+
+    this.sceneManager.loadCritter(critter);
+  }
+
+  handleAutoSpinToggle(enabled) {
+    this.autoSpinEnabled = enabled;
+    this.sceneManager.setAutoSpin(enabled);
+    this.critterSelector?.setAutoSpinState(enabled);
   }
 }

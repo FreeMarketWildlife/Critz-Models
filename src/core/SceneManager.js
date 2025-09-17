@@ -1,6 +1,7 @@
 import * as THREE from 'https://unpkg.com/three@0.160.0/build/three.module.js';
 import { createRenderer } from './RendererFactory.js';
 import { ResourceLoader } from './ResourceLoader.js';
+import { OrbitControls } from 'https://unpkg.com/three@0.160.0/examples/jsm/controls/OrbitControls.js';
 
 const RARITY_GLOWS = {
   common: 0x7c6cff,
@@ -24,7 +25,15 @@ export class SceneManager {
     this.currentModel = null;
     this.platform = null;
     this.glowRing = null;
-    this.pendingWeaponId = null;
+    this.controls = null;
+
+    this.defaultFocus = new THREE.Vector3(0, 0.6, 0);
+    this.defaultCameraPosition = new THREE.Vector3(0, 1.1, 3.3);
+    this.focusTarget = this.defaultFocus.clone();
+    this.autoSpinEnabled = true;
+    this.defaultSpinSpeed = 0.4;
+    this.currentSpinSpeed = this.defaultSpinSpeed;
+    this.modelRequestToken = 0;
 
     this.handleResize = this.handleResize.bind(this);
     this.animate = this.animate.bind(this);
@@ -32,10 +41,13 @@ export class SceneManager {
 
   init() {
     this.renderer = createRenderer(this.container);
+    this.renderer.domElement.tabIndex = 0;
+    this.renderer.domElement.setAttribute('aria-label', 'Critter and gear stage preview');
     this.camera = this.createCamera();
     this.setupLights();
     this.setupEnvironment();
     this.scene.add(this.stageGroup);
+    this.controls = this.createControls(this.camera, this.renderer.domElement);
 
     window.addEventListener('resize', this.handleResize);
     this.handleResize();
@@ -49,13 +61,14 @@ export class SceneManager {
   animate() {
     const delta = this.clock.getDelta();
     this.update(delta);
+    this.controls?.update();
     this.renderer.render(this.scene, this.camera);
     this.animationFrame = requestAnimationFrame(this.animate);
   }
 
   update(delta) {
-    if (this.currentModel) {
-      this.currentModel.rotation.y += delta * 0.4;
+    if (this.currentModel && this.autoSpinEnabled) {
+      this.currentModel.rotation.y += delta * this.currentSpinSpeed;
     }
 
     if (this.glowRing) {
@@ -66,9 +79,23 @@ export class SceneManager {
   createCamera() {
     const aspect = this.container.clientWidth / Math.max(this.container.clientHeight, 1);
     const camera = new THREE.PerspectiveCamera(40, aspect, 0.1, 100);
-    camera.position.set(0, 1.1, 3.3);
-    camera.lookAt(0, 0.4, 0);
+    camera.position.copy(this.defaultCameraPosition);
+    camera.lookAt(this.focusTarget);
     return camera;
+  }
+
+  createControls(camera, domElement) {
+    const controls = new OrbitControls(camera, domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.08;
+    controls.enablePan = false;
+    controls.enableZoom = true;
+    controls.minDistance = 1.4;
+    controls.maxDistance = 6;
+    controls.maxPolarAngle = Math.PI * 0.48;
+    controls.target.copy(this.focusTarget);
+    controls.update();
+    return controls;
   }
 
   setupLights() {
@@ -115,14 +142,48 @@ export class SceneManager {
   async loadWeapon(weapon) {
     if (!weapon) return;
 
-    const requestId = (this.pendingWeaponId = weapon.id);
+    await this.loadStageModel({
+      id: weapon.id,
+      modelPath: weapon.modelPath,
+      scale: weapon.preview?.scale ?? 1.2,
+      rotation: weapon.preview?.rotation ?? { x: 0, y: Math.PI / 4, z: 0 },
+      position: weapon.preview?.position ?? { x: 0, y: 0, z: 0 },
+      focus: weapon.preview?.focus,
+      spinSpeed: weapon.preview?.spinSpeed ?? this.defaultSpinSpeed,
+    });
+
+    this.applyRarityGlow(weapon.rarity);
+  }
+
+  async loadCritter(critter) {
+    if (!critter) return;
+
+    await this.loadStageModel({
+      id: `critter-${critter.id}`,
+      modelPath: critter.modelPath,
+      scale: critter.preview?.scale ?? 1,
+      rotation: critter.preview?.rotation ?? { x: 0, y: Math.PI, z: 0 },
+      position: critter.preview?.position ?? { x: 0, y: -0.9, z: 0 },
+      focus: critter.preview?.focus ?? { x: 0, y: 1, z: 0 },
+      spinSpeed: critter.preview?.spinSpeed ?? 0.25,
+    });
+
+    if (critter.preview?.glowColor != null) {
+      this.setGlowColor(critter.preview.glowColor);
+    } else {
+      this.setGlowColor(0x7cc86f);
+    }
+  }
+
+  async loadStageModel({ id, modelPath, scale, rotation, position, focus, spinSpeed }) {
+    const requestId = ++this.modelRequestToken;
 
     let model = null;
-    if (weapon.modelPath) {
-      model = await this.resourceLoader.loadModel(weapon.modelPath);
+    if (modelPath) {
+      model = await this.resourceLoader.loadModel(modelPath);
     }
 
-    if (this.pendingWeaponId !== requestId) {
+    if (this.modelRequestToken !== requestId) {
       return;
     }
 
@@ -130,17 +191,130 @@ export class SceneManager {
       model = this.createPlaceholderModel();
     }
 
-    model.position.set(0, 0, 0);
-    model.rotation.set(0, Math.PI / 4, 0);
-
-    const scale = weapon.preview?.scale ?? 1.2;
-    model.scale.setScalar(scale);
+    const resolvedRotation = this.resolveEuler(rotation);
+    const resolvedPosition = this.resolveVector(position);
+    model.rotation.copy(resolvedRotation);
+    model.position.copy(resolvedPosition);
+    this.applyScale(model, scale);
+    if (id) {
+      model.name = id;
+      model.userData.stageId = id;
+    }
 
     this.disposeCurrentModel();
     this.currentModel = model;
     this.stageGroup.add(model);
 
-    this.applyRarityGlow(weapon.rarity);
+    const focusTarget = this.resolveVector(focus, this.defaultFocus);
+    this.setFocusTarget(focusTarget);
+    this.setSpinSpeed(spinSpeed);
+  }
+
+  setAutoSpin(enabled) {
+    this.autoSpinEnabled = Boolean(enabled);
+  }
+
+  setSpinSpeed(speed) {
+    if (typeof speed === 'number' && Number.isFinite(speed)) {
+      this.currentSpinSpeed = speed;
+    } else {
+      this.currentSpinSpeed = this.defaultSpinSpeed;
+    }
+  }
+
+  setGlowColor(color) {
+    if (!this.glowRing || color == null) return;
+    this.glowRing.material.color = new THREE.Color(color);
+  }
+
+  setFocusTarget(target) {
+    if (!target) return;
+    this.focusTarget.copy(target);
+    this.camera?.lookAt(this.focusTarget);
+    if (this.controls) {
+      this.controls.target.copy(this.focusTarget);
+      this.controls.update();
+    }
+  }
+
+  clearStageModel() {
+    this.disposeCurrentModel();
+    this.resetFocus();
+    this.setSpinSpeed(this.defaultSpinSpeed);
+    this.setGlowColor(RARITY_GLOWS.common);
+  }
+
+  resetFocus() {
+    if (this.camera) {
+      this.camera.position.copy(this.defaultCameraPosition);
+    }
+    this.setFocusTarget(this.defaultFocus);
+  }
+
+  resolveVector(value, fallback) {
+    if (value?.isVector3) {
+      return value.clone();
+    }
+
+    if (value && typeof value === 'object') {
+      const { x = 0, y = 0, z = 0 } = value;
+      return new THREE.Vector3(x, y, z);
+    }
+
+    if (fallback?.isVector3) {
+      return fallback.clone();
+    }
+
+    if (fallback && typeof fallback === 'object') {
+      const { x = 0, y = 0, z = 0 } = fallback;
+      return new THREE.Vector3(x, y, z);
+    }
+
+    return new THREE.Vector3(0, 0, 0);
+  }
+
+  resolveEuler(value, fallback) {
+    if (value?.isEuler) {
+      return value.clone();
+    }
+
+    if (value && typeof value === 'object') {
+      const { x = 0, y = 0, z = 0 } = value;
+      return new THREE.Euler(x, y, z);
+    }
+
+    if (fallback?.isEuler) {
+      return fallback.clone();
+    }
+
+    if (fallback && typeof fallback === 'object') {
+      const { x = 0, y = 0, z = 0 } = fallback;
+      return new THREE.Euler(x, y, z);
+    }
+
+    return new THREE.Euler(0, 0, 0);
+  }
+
+  applyScale(model, scale) {
+    if (!model) return;
+
+    if (scale?.isVector3) {
+      model.scale.copy(scale);
+      return;
+    }
+
+    if (typeof scale === 'number') {
+      model.scale.setScalar(scale);
+      return;
+    }
+
+    if (scale && typeof scale === 'object') {
+      const { x = 1, y = 1, z = 1 } = scale;
+      model.scale.set(x, y, z);
+      return;
+    }
+
+    model.scale.setScalar(1);
   }
 
   disposeCurrentModel() {
@@ -188,11 +362,13 @@ export class SceneManager {
     this.renderer.setSize(clientWidth, clientHeight, false);
     this.camera.aspect = clientWidth / Math.max(clientHeight, 1);
     this.camera.updateProjectionMatrix();
+    this.controls?.update();
   }
 
   dispose() {
     cancelAnimationFrame(this.animationFrame);
     window.removeEventListener('resize', this.handleResize);
+    this.controls?.dispose?.();
     this.scene.traverse((object) => {
       if (object.isMesh) {
         object.geometry?.dispose?.();
