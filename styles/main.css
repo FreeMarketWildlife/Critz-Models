@@ -713,31 +713,8 @@ dl dt {
 
 .rig-panel__header {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 0.9rem;
-}
-
-.rig-panel__heading {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.rig-panel__title {
-  font-family: var(--font-display);
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  font-size: 0.85rem;
-  color: var(--color-highlight);
-}
-
-.rig-panel__subtitle {
-  margin: 0;
-  font-size: 0.72rem;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: rgba(243, 248, 240, 0.62);
+  justify-content: flex-end;
+  align-items: center;
 }
 
 .rig-panel__status {
