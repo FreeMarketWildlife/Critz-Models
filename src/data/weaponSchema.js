@@ -105,9 +105,11 @@ export const createEmptyWeapon = () => ({
   rarity: RARITIES[0],
   description: '',
   modelPath: null,
+  placeholderModelId: null,
   preview: {
+    position: { x: 0, y: 0, z: 0 },
     rotation: { x: 0, y: 0, z: 0 },
-    scale: 1,
+    scale: null,
   },
   stats: {},
   special: {},
@@ -119,6 +121,18 @@ export const normalizeWeapon = (weapon) => ({
   preview: {
     ...createEmptyWeapon().preview,
     ...(weapon.preview || {}),
+    rotation: {
+      ...createEmptyWeapon().preview.rotation,
+      ...(weapon.preview?.rotation || {}),
+    },
+    position: {
+      ...createEmptyWeapon().preview.position,
+      ...(weapon.preview?.position || {}),
+    },
+    scale:
+      typeof weapon.preview?.scale === 'number' || typeof weapon.preview?.scale === 'object'
+        ? weapon.preview.scale
+        : createEmptyWeapon().preview.scale,
   },
   stats: {
     ...(weapon.stats || {}),

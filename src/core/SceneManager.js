@@ -2,6 +2,7 @@ import * as THREE from 'https://esm.sh/three@0.160.0';
 import { createRenderer } from './RendererFactory.js';
 import { ResourceLoader } from './ResourceLoader.js';
 import { RigController } from './RigController.js';
+import { createWeaponPlaceholder } from './placeholders/weaponPlaceholders.js';
 
 const ORBIT_CONTROLS_MODULE =
   'https://esm.sh/three@0.160.0/examples/jsm/controls/OrbitControls.js';
@@ -360,6 +361,10 @@ export class SceneManager {
       model = await this.resourceLoader.loadModel(weapon.modelPath);
     }
 
+    if (!model && weapon.placeholderModelId) {
+      model = createWeaponPlaceholder(weapon.placeholderModelId) ?? null;
+    }
+
     if (this.pendingWeaponId !== requestId) {
       return;
     }
@@ -377,11 +382,40 @@ export class SceneManager {
       return;
     }
 
-    model.position.set(0, 0, 0);
-    model.rotation.set(0, Math.PI / 4, 0);
+    const preview = weapon.preview ?? {};
+    const previewPosition = preview.position ?? {};
+    const previewRotation = preview.rotation ?? {};
 
-    const scale = weapon.preview?.scale ?? 1.2;
-    model.scale.setScalar(scale);
+    model.position.set(
+      previewPosition.x ?? 0,
+      previewPosition.y ?? 0,
+      previewPosition.z ?? 0
+    );
+
+    const defaultRotationY = Math.PI / 4;
+    model.rotation.set(
+      previewRotation.x ?? 0,
+      previewRotation.y ?? defaultRotationY,
+      previewRotation.z ?? 0
+    );
+
+    const previewScale = preview.scale;
+    if (typeof previewScale === 'number') {
+      model.scale.setScalar(previewScale);
+    } else if (
+      previewScale &&
+      typeof previewScale === 'object' &&
+      (previewScale.x !== undefined || previewScale.y !== undefined || previewScale.z !== undefined)
+    ) {
+      const baseScale = 1.2;
+      model.scale.set(
+        previewScale.x ?? baseScale,
+        previewScale.y ?? baseScale,
+        previewScale.z ?? baseScale
+      );
+    } else {
+      model.scale.setScalar(1.2);
+    }
 
     this.currentModel = model;
     this.stageGroup.add(model);
