@@ -713,8 +713,8 @@ dl dt {
 
 .rig-panel__header {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
+  justify-content: flex-end;
+  align-items: center;
   gap: 0.9rem;
 }
 
