@@ -15,498 +15,640 @@ const RAW_GLOBALS = {
   },
 };
 
+const BASE_HEALTH = RAW_GLOBALS.base_health ?? 100;
+
+const rpmToRps = (rpm) => {
+  if (rpm === null || rpm === undefined) return null;
+  return rpm / 60;
+};
+
+const computeShotsToKill = (damage) => {
+  if (typeof damage !== 'number' || !Number.isFinite(damage) || damage <= 0) {
+    return null;
+  }
+  return Math.ceil(BASE_HEALTH / damage);
+};
+
+const computeTtk = (shotsToKill, rps) => {
+  if (typeof shotsToKill !== 'number' || !Number.isFinite(shotsToKill) || shotsToKill <= 0) {
+    return null;
+  }
+  if (typeof rps !== 'number' || !Number.isFinite(rps) || rps <= 0) {
+    return null;
+  }
+  if (shotsToKill === 1) {
+    return 0;
+  }
+  return (shotsToKill - 1) / rps;
+};
+
+const defineWeapon = (config) => {
+  const { rpm = null, ...rest } = config;
+  const damage = typeof rest.damage_body === 'number' ? rest.damage_body : null;
+  const rps = rest.rps ?? rpmToRps(rpm);
+  const shotsToKill = rest.shots_to_kill_body ?? computeShotsToKill(damage);
+  const ttk = rest.ttk_body_s ?? computeTtk(shotsToKill, rps);
+
+  return {
+    ...rest,
+    rps,
+    shots_to_kill_body: shotsToKill,
+    ttk_body_s: ttk,
+  };
+};
+
 const RAW_WEAPONS = [
-  {
+  defineWeapon({
     name: 'Assault Rifle',
     category: 'Primary',
-    damage_body: 4,
-    headshot_allowed: true,
-    rps: 10,
-    magazine: 30,
-    reload_s: 1.8,
-    range_cm: null,
+    damage_body: 10,
+    headshot_allowed: false,
+    rpm: 500,
+    magazine: 20,
+    reload_s: 0.5,
+    draw_time_s: 0.2,
+    range_cm: 300,
     projectile: 'hitscan',
-    notes: 'Mid-range auto, moderate recoil',
-    ttk_body_s: 2.4,
-    shots_to_kill_body: 25,
-  },
-  {
+    notes: 'Standard issue rifle tuned for consistent full-auto fire.',
+    extra_stats: {
+      damage: '10',
+      fireMode: 'Full-Auto',
+      rpm: '500 RPM',
+      ammo: '20 / 100',
+      reloadSpeed: '0.5 s',
+      drawSpeed: '0.2 s',
+      range: '300 cm',
+    },
+  }),
+  defineWeapon({
     name: 'Sniper Rifle',
     category: 'Primary',
-    damage_body: 32,
-    headshot_allowed: true,
-    rps: 0.9,
-    magazine: 5,
-    reload_s: 2.8,
-    range_cm: null,
-    projectile: 'hitscan',
-    notes: '1 head + 1 body = kill (96+32)',
-    ttk_body_s: 3.33,
-    shots_to_kill_body: 4,
-  },
-  {
+    damage_body: 50,
+    headshot_allowed: false,
+    rpm: 60,
+    magazine: 4,
+    reload_s: 2,
+    draw_time_s: 0.5,
+    range_cm: 1000,
+    projectile: 'projectile',
+    notes: 'Precision rifle built to land high-impact semi-auto shots.',
+    extra_stats: {
+      damage: '50',
+      fireMode: 'Semi-Auto',
+      rpm: '60 RPM',
+      ammo: '4 / 16',
+      reloadSpeed: '2 s',
+      drawSpeed: '0.5 s',
+      range: '1000 cm',
+    },
+  }),
+  defineWeapon({
     name: 'Rocket Launcher',
     category: 'Primary',
-    damage_body: 80,
+    damage_body: 100,
     headshot_allowed: false,
-    rps: 0.6,
+    rpm: 50,
     magazine: 1,
-    reload_s: 2.2,
-    range_cm: null,
+    reload_s: 1,
+    draw_time_s: 0.5,
+    range_cm: 300,
     projectile: 'projectile',
-    splash: {
-      center_damage: 60,
-      edge_damage: 20,
-      radius_cm: null,
-      falloff: 'linear',
+    notes: 'Single-shot launcher delivering heavy explosive payloads.',
+    extra_stats: {
+      damage: '100',
+      fireMode: 'Manual',
+      rpm: '50 RPM',
+      ammo: '1 / 6',
+      reloadSpeed: '1 s',
+      drawSpeed: '0.5 s',
+      range: '300 cm',
     },
-    self_damage: 50,
-    notes: 'AOE; slow ADS',
-  },
-  {
+  }),
+  defineWeapon({
     name: 'Bow',
     category: 'Primary',
-    damage_body: 18,
-    headshot_allowed: true,
-    rps: 1.3,
-    magazine: 30,
-    reload_s: 0.0,
-    draw_time_s: 0.77,
-    range_cm: null,
+    damage_body: 15,
+    headshot_allowed: false,
+    rpm: 200,
+    magazine: 1,
+    reload_s: 0.3,
+    draw_time_s: 0.2,
+    range_cm: 300,
     projectile: 'projectile',
-    notes: 'Arcing projectile; 2 headshots to kill',
-    ttk_body_s: 3.85,
-    shots_to_kill_body: 6,
-  },
-  {
+    notes: 'Drawn bow with flexible range and quick follow-up shots.',
+    extra_stats: {
+      damage: '15',
+      fireMode: 'Drawn',
+      rpm: '200 RPM',
+      ammo: '1 / 30',
+      reloadSpeed: '0.3 s',
+      drawSpeed: '0.2 s',
+      range: '100-300 cm',
+    },
+  }),
+  defineWeapon({
     name: 'Crossbow',
     category: 'Primary',
-    damage_body: 28,
-    headshot_allowed: true,
-    rps: 0.7,
+    damage_body: 30,
+    headshot_allowed: false,
+    rpm: 120,
     magazine: 1,
-    reload_s: 1.4,
-    range_cm: null,
+    reload_s: 0.5,
+    draw_time_s: 0.5,
+    range_cm: 200,
     projectile: 'projectile',
-    notes: 'Pinpoint; 1 head + 1 body = kill',
-    ttk_body_s: 4.29,
-    shots_to_kill_body: 4,
-  },
-  {
+    notes: 'Manual crossbow for deliberate, high-impact bolts.',
+    extra_stats: {
+      damage: '30',
+      fireMode: 'Manual',
+      rpm: '120 RPM',
+      ammo: '1 / 14',
+      reloadSpeed: '0.5 s',
+      drawSpeed: '0.5 s',
+      range: '200 cm',
+    },
+  }),
+  defineWeapon({
     name: 'Wizard Staff',
     category: 'Primary',
-    damage_body: 8,
+    damage_body: 10,
     headshot_allowed: false,
-    rps: 6,
-    magazine: null,
-    reload_s: 0.0,
-    range_cm: null,
+    rpm: 120,
+    magazine: 10,
+    draw_time_s: 0.5,
+    range_cm: 100,
     projectile: 'aoe_pulse',
-    aoe: {
-      radius_cm: 250,
-      edge_damage: 4,
-      falloff: 'linear',
-    },
     overheat: {
-      shots_before_overheat: 36,
-      cooldown_s: 2.0,
+      shots_before_overheat: 100,
+      cooldown_s: 2,
     },
-    notes: 'AOE pulses; strong at center',
-    ttk_body_s: 2.0,
-    shots_to_kill_body: 13,
-  },
-  {
+    notes: 'Channelled staff that unleashes continuous splash fire.',
+    extra_stats: {
+      damage: '10',
+      fireMode: 'Full-Auto Splash',
+      rpm: '120 RPM',
+      ammo: '10 / 100',
+      cooldown: '2 s',
+      drawSpeed: '0.5 s',
+      range: '100 cm',
+    },
+  }),
+  defineWeapon({
     name: 'Blaster Pistol',
     category: 'Secondary',
-    damage_body: 4,
-    headshot_allowed: true,
-    rps: 8,
-    magazine: 15,
-    reload_s: 1.2,
-    range_cm: null,
+    damage_body: 5,
+    headshot_allowed: false,
+    rpm: 300,
+    draw_time_s: 0.1,
+    range_cm: 100,
     projectile: 'hitscan',
-    notes: 'Reliable sidearm',
-    ttk_body_s: 3.0,
-    shots_to_kill_body: 25,
-  },
-  {
+    overheat: {
+      shots_before_overheat: 20,
+      cooldown_s: 2,
+    },
+    notes: 'Compact sidearm built for rapid close-quarters bursts.',
+    extra_stats: {
+      damage: '5',
+      fireMode: '—',
+      rpm: '300 RPM',
+      overheat: '20 / 100',
+      cooldown: '2 s',
+      drawSpeed: '0.1 s',
+      range: '100 cm',
+    },
+  }),
+  defineWeapon({
     name: 'Slingshot',
     category: 'Secondary',
-    damage_body: 6,
-    headshot_allowed: true,
-    rps: 3,
-    magazine: 12,
-    reload_s: 0.8,
-    range_cm: null,
+    damage_body: 5,
+    headshot_allowed: false,
+    rpm: 150,
+    magazine: 1,
+    reload_s: 0.4,
+    draw_time_s: 0.1,
+    range_cm: 100,
     projectile: 'projectile',
-    notes: 'Arc; cheap ammo; starter',
-    ttk_body_s: 5.33,
-    shots_to_kill_body: 17,
-  },
-  {
+    notes: 'Drawn slingshot suited for quick arcing shots.',
+    extra_stats: {
+      damage: '5',
+      fireMode: 'Drawn',
+      rpm: '150 RPM',
+      ammo: '—',
+      reloadSpeed: '0.4 s',
+      drawSpeed: '0.1 s',
+      range: '50-100 cm',
+    },
+  }),
+  defineWeapon({
     name: 'Splash Blaster',
     category: 'Secondary',
     damage_body: 10,
     headshot_allowed: false,
-    rps: 3,
+    rpm: 300,
     magazine: 8,
-    reload_s: 1.0,
-    range_cm: null,
+    reload_s: 0.2,
+    draw_time_s: 0.2,
+    range_cm: 100,
     projectile: 'projectile',
-    aoe: {
-      radius_cm: 200,
-      edge_damage: 5,
-      falloff: 'linear',
+    notes: 'Semi-auto splash sidearm for tight-area control.',
+    extra_stats: {
+      damage: '10',
+      fireMode: 'Semi-Auto Splash',
+      rpm: '300 RPM',
+      ammo: '8 / 16',
+      reloadSpeed: '0.2 s',
+      drawSpeed: '0.2 s',
+      range: '100 cm',
     },
-    notes: '2 m (200 cm) splash',
-    ttk_body_s: 3.0,
-    shots_to_kill_body: 10,
-  },
-  {
+  }),
+  defineWeapon({
     name: 'Fey Wand',
     category: 'Secondary',
-    damage_body: 5,
+    damage_body: 15,
     headshot_allowed: false,
-    rps: 9,
-    magazine: null,
-    reload_s: 0.0,
-    range_cm: null,
+    rpm: 120,
+    draw_time_s: 0.1,
+    range_cm: 100,
     projectile: 'aoe_beam',
-    aoe: {
-      radius_cm: 120,
-      edge_damage: 5,
-      falloff: 'none',
-    },
     overheat: {
-      shots_before_overheat: 45,
-      cooldown_s: 1.5,
+      shots_before_overheat: 20,
+      cooldown_s: 3,
     },
-    notes: 'Micro-splash beam',
-    ttk_body_s: 2.11,
-    shots_to_kill_body: 20,
-  },
-  {
+    notes: 'Continuous splash wand that pressures clustered foes.',
+    extra_stats: {
+      damage: '15',
+      fireMode: 'Fully-Auto Splash',
+      rpm: '120 RPM',
+      overheat: '20 / 100',
+      cooldown: '3 s',
+      drawSpeed: '0.1 s',
+      range: '100 cm',
+    },
+  }),
+  defineWeapon({
     name: 'Flamethrower',
     category: 'Secondary',
-    damage_body: 0,
+    damage_body: null,
     headshot_allowed: false,
-    rps: null,
-    magazine: null,
-    reload_s: 0.0,
-    range_cm: 400,
+    rpm: 1000,
+    draw_time_s: 0.4,
+    range_cm: 10,
     projectile: 'continuous_cone',
-    dps: 16,
-    ignite: {
-      dps: 6,
-      duration_s: 3,
-    },
     overheat: {
-      active_time_s: 4.0,
-      cooldown_s: 2.0,
+      shots_before_overheat: 2,
+      cooldown_s: 2,
     },
-    notes: 'Stream within ~400 cm; DPS + ignite',
-  },
-  {
+    notes: 'Close-range flame stream that saturates short corridors.',
+    extra_stats: {
+      damage: 'Fire (10/s for 3s)',
+      fireMode: 'Full-Auto AOE',
+      rpm: '1000 RPM',
+      overheat: '2 / 100',
+      cooldown: '2 s',
+      drawSpeed: '0.4 s',
+      range: '10 cm',
+    },
+  }),
+  defineWeapon({
     name: 'Hands',
     category: 'Melee',
-    damage_body: 8,
+    damage_body: 3,
     headshot_allowed: false,
-    rps: 2.0,
-    magazine: null,
-    reload_s: 0.0,
-    range_cm: 50,
+    rpm: 300,
+    draw_time_s: 0.1,
+    range_cm: 2,
     projectile: 'melee',
-    grapple: {
-      max_hold_s: 2.0,
-      interaction: 'mash_space_to_hold_or_escape',
+    notes: 'Bare-knuckle strikes with quick follow-up grapples.',
+    extra_stats: {
+      damage: '3',
+      rpm: '300 RPM',
+      stamina: '5 / 15',
+      drawSpeed: '0.1 s',
+      range: '2 cm',
     },
-    ttk_body_s: 6.0,
-    shots_to_kill_body: 13,
-  },
-  {
+    special_entries: {
+      ability: 'Grapple: Hold on to Enemy',
+      abilityCooldown: '5 s',
+    },
+  }),
+  defineWeapon({
     name: 'Knife',
+    category: 'Melee',
+    damage_body: 15,
+    headshot_allowed: false,
+    rpm: 120,
+    draw_time_s: 0.1,
+    range_cm: 2,
+    projectile: 'melee',
+    notes: 'Lightweight blade built for quick eliminations.',
+    extra_stats: {
+      damage: '15',
+      rpm: '120 RPM',
+      stamina: '10 / 5',
+      drawSpeed: '0.1 s',
+      range: '2 cm',
+    },
+    special_entries: {
+      ability: 'Assassinate: Kill from Behind',
+      abilityCooldown: '10 s',
+    },
+  }),
+  defineWeapon({
+    name: 'Tomahawk',
     category: 'Melee',
     damage_body: 20,
     headshot_allowed: false,
-    rps: 1.7,
-    magazine: null,
-    reload_s: 0.0,
-    range_cm: 60,
+    rpm: 60,
+    draw_time_s: 0.3,
+    range_cm: 3,
     projectile: 'melee',
-    abilities: {
-      backstab_damage: 75,
-      backstab_cooldown_s: 1.0,
+    notes: 'Hefty throwing axe that doubles as a melee finisher.',
+    extra_stats: {
+      damage: '20',
+      rpm: '60 RPM',
+      stamina: '15 / 10',
+      drawSpeed: '0.3 s',
+      range: '3 cm',
     },
-    ttk_body_s: 2.35,
-    shots_to_kill_body: 5,
-  },
-  {
-    name: 'Tomahawk',
-    category: 'Melee',
-    damage_body: 24,
-    headshot_allowed: false,
-    rps: 1.4,
-    magazine: null,
-    reload_s: 0.0,
-    range_cm: 70,
-    projectile: 'melee',
-    throw: {
-      damage: 32,
-      pickup: true,
+    special_entries: {
+      ability: 'Throw: Throw Tomahawk (Tomahawks are Able to be Picked Up)',
+      abilityCooldown: '0.1 s',
     },
-    on_hit: {
-      slow_percent: 20,
-      duration_s: 1.0,
-    },
-    ttk_body_s: 2.86,
-    shots_to_kill_body: 5,
-  },
-  {
+  }),
+  defineWeapon({
     name: 'Katana',
     category: 'Melee',
-    damage_body: 18,
+    damage_body: 15,
     headshot_allowed: false,
-    rps: 2.2,
-    magazine: null,
-    reload_s: 0.0,
-    range_cm: 80,
+    rpm: 120,
+    draw_time_s: 0.2,
+    range_cm: 4,
     projectile: 'melee',
-    abilities: {
-      deflect_window_s: 0.8,
-      deflect_cooldown_s: 6.0,
+    notes: 'Precision blade favoring swift slashes and deflects.',
+    extra_stats: {
+      damage: '15',
+      rpm: '120 RPM',
+      stamina: '10 / 25-100',
+      drawSpeed: '0.2 s',
+      range: '4 cm',
     },
-    ttk_body_s: 2.27,
-    shots_to_kill_body: 6,
-  },
-  {
+    special_entries: {
+      ability: 'Deflect: Returns Enemy Shots for 1s (Stamina Spent Scales with Hypothetical Damage Dealt; Excludes Arrows)',
+      abilityCooldown: '5 s',
+    },
+  }),
+  defineWeapon({
     name: 'Shield',
     category: 'Melee',
-    damage_body: 24,
+    damage_body: 5,
     headshot_allowed: false,
-    rps: 1.1,
-    magazine: null,
-    reload_s: 0.0,
-    range_cm: 50,
+    rpm: 90,
+    draw_time_s: 0.5,
+    range_cm: 2,
     projectile: 'melee',
-    block: {
-      frontal_reduction_percent: 70,
+    notes: 'Defensive shield capable of staggering bash attacks.',
+    extra_stats: {
+      damage: '5',
+      rpm: '90 RPM',
+      stamina: '10 / 30',
+      drawSpeed: '0.5 s',
+      range: '2 cm',
     },
-    bash: {
-      cooldown_s: 2.0,
-      knockback: 'high',
+    special_entries: {
+      ability: 'Bash: Knock Back Enemy Units',
+      abilityCooldown: '5 s',
     },
-    ttk_body_s: 3.64,
-    shots_to_kill_body: 5,
-  },
-  {
+  }),
+  defineWeapon({
     name: 'Warhammer',
     category: 'Melee',
-    damage_body: 34,
+    damage_body: 30,
     headshot_allowed: false,
-    rps: 0.9,
-    magazine: null,
-    reload_s: 0.0,
-    range_cm: 80,
+    rpm: 60,
+    draw_time_s: 1,
+    range_cm: 4,
     projectile: 'melee',
-    abilities: {
-      ground_slam_damage: 20,
-      ground_slam_cooldown_s: 6.0,
-      ground_slam_radius_cm: null,
+    notes: 'Slow but devastating hammer for splash impacts.',
+    extra_stats: {
+      damage: '30',
+      rpm: '60 RPM',
+      stamina: '30 / 50 Splash',
+      drawSpeed: '1 s',
+      range: '4 cm',
     },
-    ttk_body_s: 2.22,
-    shots_to_kill_body: 3,
-  },
-  {
+    special_entries: {
+      ability: 'Ground Pound: Swing the Warhammer at the Ground',
+      abilityCooldown: '10 s',
+    },
+  }),
+  defineWeapon({
     name: 'Bo Staff',
     category: 'Melee',
-    damage_body: 12,
+    damage_body: 5,
     headshot_allowed: false,
-    rps: 2.0,
-    magazine: null,
-    reload_s: 0.0,
-    range_cm: 90,
+    rpm: 180,
+    draw_time_s: 0.1,
+    range_cm: 3,
     projectile: 'melee',
-    abilities: {
-      spin_duration_s: 1.0,
-      spin_cooldown_s: 8.0,
-      spin_effects: ['block_arrows', 'aoe_knockback'],
+    notes: 'Balanced staff offering sustained defensive control.',
+    extra_stats: {
+      damage: '5',
+      rpm: '180 RPM',
+      stamina: '2 / 10',
+      drawSpeed: '0.1 s',
+      range: '3 cm',
     },
-    ttk_body_s: 4.0,
-    shots_to_kill_body: 9,
-  },
-  {
+    special_entries: {
+      ability: 'Spin: Blows Self & Enemies Back; Disarms Enemy Arrows',
+      abilityCooldown: '5 s',
+    },
+  }),
+  defineWeapon({
     name: 'Grenade',
     category: 'Utility',
-    damage_body: 60,
+    damage_body: 50,
     headshot_allowed: false,
-    rps: null,
     magazine: 2,
-    reload_s: 0.0,
-    range_cm: null,
+    range_cm: 50,
     projectile: 'throwable',
-    fuse_s: 1.5,
-    aoe: {
-      radius_cm: null,
-      edge_damage: 20,
-      falloff: 'linear',
+    notes: 'Standard explosive grenade with friendly knockback.',
+    extra_stats: {
+      damage: '50 Splash',
+      deploy: 'Throw',
+      capacity: '2',
+      range: '50 cm',
     },
-  },
-  {
+    special_entries: {
+      info: 'Grenades Push Enemies & Self Back; Grenades Cannot be Cooked',
+    },
+  }),
+  defineWeapon({
     name: 'Smoke Grenade',
     category: 'Utility',
-    damage_body: 0,
+    damage_body: null,
     headshot_allowed: false,
     magazine: 2,
+    range_cm: 50,
     projectile: 'throwable',
-    smoke: {
-      duration_s: 5.0,
-      radius_cm: null,
-      extinguish_fire: true,
+    notes: 'Smoke canister for quick area denial and cover.',
+    extra_stats: {
+      deploy: 'Throw',
+      capacity: '2',
+      range: '50 cm',
     },
-  },
-  {
+    special_entries: {
+      info: 'Creates Sphere of Smoke On Hit; Smoke Distinguishes Fire',
+    },
+  }),
+  defineWeapon({
     name: 'Resource Pack',
     category: 'Utility',
-    damage_body: 0,
+    damage_body: null,
     headshot_allowed: false,
     magazine: 4,
+    range_cm: 2,
     projectile: 'deployable',
-    effects: {
-      heal: 35,
-      ammo_restore_percent: 25,
+    notes: 'Supply drop that restores reserves for any unit.',
+    extra_stats: {
+      deploy: 'Drop',
+      capacity: '4',
+      range: '2 cm',
+      restores: '50% Ammo & Health',
     },
-  },
-  {
-    name: 'Mine',
+    special_entries: {
+      info: 'Resource Packs can be picked up by any Unit (Friendly or Enemy)',
+    },
+  }),
+  defineWeapon({
+    name: 'Mines',
     category: 'Utility',
-    damage_body: 85,
+    damage_body: 150,
     headshot_allowed: false,
     magazine: 4,
+    range_cm: 2,
     projectile: 'deployable',
-    arm_time_s: 0.2,
-    aoe: {
-      radius_cm: null,
-      edge_damage: 20,
-      falloff: 'linear',
+    notes: 'Proximity mines that punish careless advances.',
+    extra_stats: {
+      damage: '150 damage',
+      deploy: 'Drop',
+      capacity: '4',
+      range: '2 cm',
     },
-    team_safe: true,
-  },
-  {
+    special_entries: {
+      info: 'Mines are triggered when an Enemy Unit steps on them, or shoots them (50 health)',
+    },
+  }),
+  defineWeapon({
     name: 'Glider',
     category: 'Utility',
-    damage_body: 0,
+    damage_body: null,
     headshot_allowed: false,
     projectile: 'equipment',
-    stamina_cost: 0,
-    notes: 'Traversal; escape; no vertical gain',
-  },
-  {
+    notes: 'Personal glider enabling controlled forward falls.',
+    extra_stats: {
+      deploy: 'Hold',
+    },
+    special_entries: {
+      info: 'Units Can Glide by Equipping Glider and Falling, Units will be Forced to Move Forward',
+    },
+  }),
+  defineWeapon({
     name: 'Bottle o’ Gas',
     category: 'Utility',
-    damage_body: 0,
+    damage_body: null,
     headshot_allowed: false,
+    magazine: 2,
+    range_cm: 50,
     projectile: 'throwable',
-    pool: {
-      type: 'gas',
-      duration_s: 4,
-      radius_cm: null,
-      dps: 10,
-      slow_percent: 20,
-      ignitable: true,
+    notes: 'Volatile gas bottle that blankets zones in fumes.',
+    extra_stats: {
+      damage: 'Gas (5/s for 5s)',
+      deploy: 'Throw',
+      capacity: '2',
+      range: '50 cm',
     },
-  },
-  {
+    special_entries: {
+      info: 'Create a Pool of Gas on Hit; Gas can be lit on fire by any team to deal damage to the enemy team.',
+    },
+  }),
+  defineWeapon({
     name: 'Bottle o’ Fire',
     category: 'Utility',
-    damage_body: 0,
+    damage_body: null,
     headshot_allowed: false,
+    magazine: 2,
+    range_cm: 50,
     projectile: 'throwable',
-    pool: {
-      type: 'fire',
-      duration_s: 5,
-      radius_cm: null,
-      dps: 8,
-      ignite_on_contact: {
-        dps: 6,
-        duration_s: 3,
-      },
+    notes: 'Alchemical fire bottle that spreads persistent flames.',
+    extra_stats: {
+      damage: 'Fire (10/s for 3s)',
+      deploy: 'Throw',
+      capacity: '2',
+      range: '50 cm',
     },
-  },
-  {
+    special_entries: {
+      info: 'Create a Pool of Fire on Hit',
+    },
+  }),
+  defineWeapon({
     name: 'Bottle o’ Lightning',
     category: 'Utility',
-    damage_body: 0,
+    damage_body: null,
     headshot_allowed: false,
+    magazine: 2,
+    range_cm: 50,
     projectile: 'throwable',
-    field: {
-      type: 'stun',
-      duration_s: 6,
-      radius_cm: null,
-      stun_pattern: {
-        stun_s: 1,
-        interval_s: 2,
-      },
+    notes: 'Crackling lightning bottle that paralyzes intruders.',
+    extra_stats: {
+      effect: 'Lightning (Paralyzes Enemy Units for 0.5s every 1s)',
+      deploy: 'Throw',
+      capacity: '2',
+      range: '50 cm',
     },
-  },
-  {
+    special_entries: {
+      info: 'Create a Pool of Electricity on Hit',
+    },
+  }),
+  defineWeapon({
     name: 'Bottle o’ Ice',
     category: 'Utility',
-    damage_body: 0,
+    damage_body: null,
     headshot_allowed: false,
+    magazine: 2,
+    range_cm: 50,
     projectile: 'throwable',
-    field: {
-      type: 'ice',
-      duration_s: 5,
-      radius_cm: null,
-      movement_control_penalty_percent: 35,
-      friction: 'low',
+    notes: 'Icy bottle that reduces traction across the impact zone.',
+    extra_stats: {
+      effect: 'Ice (All Units Have 50% Less Friction)',
+      deploy: 'Throw',
+      capacity: '2',
+      range: '50 cm',
     },
-  },
-  {
+    special_entries: {
+      info: 'Create a Pool of Ice on Hit',
+    },
+  }),
+  defineWeapon({
     name: 'Bottle o’ Air',
     category: 'Utility',
-    damage_body: 0,
+    damage_body: null,
     headshot_allowed: false,
+    magazine: 2,
+    range_cm: 50,
     projectile: 'throwable',
-    aoe: {
-      type: 'knockback',
-      radius_cm: null,
-      scaling: 'proximity',
+    notes: 'Compressed air bottle that blasts anything nearby away.',
+    extra_stats: {
+      deploy: 'Throw',
+      capacity: '2',
+      range: '50 cm',
     },
-    notes: 'Spherical knockback; ragdoll on close direct hit',
-  },
+    special_entries: {
+      info: 'Create a Blast of Air that Pushes Enemies & Self Away',
+    },
+  }),
 ];
 
-const LEGACY_DETAILS = new Map([
-  ['Assault Rifle', { rarity: 'rare', description: 'Arc-bloom assault blaster that channels prismatic bolts without ever singeing allies.', special: { perk: 'Prism rounds mark targets so allies deal +10% damage for 3s.' } }],
-  ['Sniper Rifle', { rarity: 'epic', description: 'A crystalline long-range blaster that threads starlight lances across the battlefield.', special: { perk: 'Fully-charged shots reveal struck enemies to the squad for 4s.' } }],
-  ['Rocket Launcher', { rarity: 'legendary', description: 'Launches humming comets that burst into friendly-safe shockwaves of glittering force.', special: { perk: 'Blast shields grant the wielder 1s stagger immunity on detonation.' } }],
-  ['Bow', { rarity: 'uncommon', description: 'Fey-grown limbs launch luminous arrows that leave a sparkling trail for teammates to follow.', special: { perk: 'Holding the draw for 1.5s adds +25 damage and a guidance shimmer for allies.' } }],
-  ['Crossbow', { rarity: 'rare', description: 'Clockwork limbs weave bolts of condensed mana that pin foes without ricocheting into friends.', special: { perk: 'Bolts pin targets for 1s while staying harmless to nearby teammates.' } }],
-  ['Wizard Staff', { rarity: 'epic', description: 'A living focus that overchannels starfire into sweeping volleys before venting into safety bubbles.', special: { perk: 'Venting overheats cleanse nearby allies of debuffs while leaving foes exposed.' } }],
-  ['Blaster Pistol', { rarity: 'uncommon', description: 'Pocket starcaster with an overheat dial that keeps squadmates perfectly safe.', special: { perk: 'Maintains accuracy while sprinting; overheats never scorch teammates.' } }],
-  ['Splash Blaster', { rarity: 'rare', description: 'Launches glittering globes that burst in soft radiance, showering enemies without hurting allies.', special: { perk: 'Direct hits grant nearby allies a 10 health sparkle shield.' } }],
-  ['Slingshot', { rarity: 'common', description: 'A playful rune-slinger that pelts foes with pebble meteors while dazzling spectators.', special: { perk: 'Headshots daze foes for 0.6s without causing friendly grief.' } }],
-  ['Fey Wand', { rarity: 'epic', description: 'Channel faelight motes that slow enemies into a glittery trance.', special: { perk: 'Every third bolt grants nearby allies +15 stamina bloom.' } }],
-  ['Flamethrower', { rarity: 'rare', description: 'Handheld dragonet that sprays short cones of team-safe flame.', special: { perk: "Ignites Bottle o' Gas while leaving the caster's team unharmed." } }],
-  ['Fists', { rarity: 'common', description: 'Gauntleted knuckles woven with grappling ribbons for playful takedowns.', special: { ability: 'Grapple: Leap and bind a foe for 1.5s, dealing 12 bonus damage.', perk: 'Grappled targets cannot swing and grant you 20% damage resist.' } }],
-  ['Knife', { rarity: 'rare', description: 'Slim arcblade for elegant close-quarters flourishes.', special: { ability: 'Backstab: Striking from behind deals 150 damage and silences for 1s.', perk: 'Backstab refunds the stamina cost instead of draining it.' } }],
-  ['Tomahawk', { rarity: 'uncommon', description: 'Feathered hatchet balanced for looping throws that always find home.', special: { ability: 'Returning Throw: Toss up to 18 m for 70 damage and recall automatically.', perk: 'Thrown strikes mark targets so allies deal +15% damage for 4s.' } }],
-  ['Katana', { rarity: 'epic', description: 'Wind-cutting blade that sings with every graceful parry.', special: { ability: 'Wind Deflect: Reflect projectiles for 1s then counter-cut for bonus damage.', perk: 'Successful deflect restores 20 stamina to nearby allies.' } }],
-  ['Shield', { rarity: 'rare', description: 'Radiant bulwark for bash-happy guardians.', special: { ability: 'Shield Bash: Lunge forward, knocking enemies back 4 m and stunning 0.8s.', perk: 'Holding guard grants allies behind you 5% damage reduction.' } }],
-  ['Warhammer', { rarity: 'legendary', description: 'Meteor-headed maul that paints impact circles of friendly boons.', special: { ability: 'Starfall Slam: Crash down for 90 AoE damage and launch foes skyward.', perk: 'Impact zone grants allies +20 stamina over 3s.' } }],
-  ['Bo Staff', { rarity: 'epic', description: 'Celestial staff that twirls into a protective whirlwind.', special: { ability: 'Cyclone Spin: Deflect bolts, push foes 3 m, and propel yourself 4 m back.', perk: 'Spin clears projectiles embedded in allies.' } }],
-  ['Grenade', { rarity: 'rare', description: 'Sparkburst charge that pops with a friendly nudge instead of friendly fire.', special: { perk: 'Outer blast nudges allies instead of harming them.' } }],
-  ['Smoke Grenade', { rarity: 'common', description: 'Billows of lilac smoke that hide movement and calm wildfires.', special: { perk: "Smoke extinguishes flames and shields Bottle o' Gas from ignition for 5s." } }],
-  ['Resource Pack', { rarity: 'uncommon', description: 'Friendly courier bundle that rains snacks, ammo, and stamina confetti.', special: { perk: 'Opening grants 25 stamina to teammates.' } }],
-  ['Mines', { rarity: 'epic', description: 'Crystal petals that only blossom under enemy footsteps.', special: { perk: 'Mines ignore friendly footsteps and glow for allies.' } }],
-  ['Glider', { rarity: 'rare', description: 'Whimsical wingpack that lets the squad float without stamina strain.', special: { perk: 'Activating negates fall damage for nearby allies for 2s.' } }],
-  ["Bottle o' Gas", { rarity: 'uncommon', description: "Breaks into a shimmering vapor pool begging for a friendly spark.", special: { perk: "Ignite with allied flames to create enemy-only fire for 45 damage per second." } }],
-  ["Bottle o' Fire", { rarity: 'rare', description: "Splashes into a dancing ring of flame that loves foes and ignores friends.", special: { perk: "Fire respects the thrower's team, letting allies dance through safely." } }],
-  ["Bottle o' Lightning", { rarity: 'epic', description: "Crackling storm bottled for paralyzing surprise parties.", special: { perk: "Paralyzed enemies take +15% ranged damage from your squad." } }],
-  ["Bottle o' Ice", { rarity: 'uncommon', description: "Frosty slick that sends foes skating while allies glide with style.", special: { perk: "Allies sliding gain +20% speed; enemies skid without control." } }],
-  ["Bottle o' Air", { rarity: 'uncommon', description: "A giggling gust in a jar, perfect for repositioning friends and foes alike.", special: { perk: 'Self-knockback refunds 20 stamina and never harms friends.' } }],
-]);
+const LEGACY_DETAILS = new Map();
 
 const NAME_ALIASES = new Map([
   ['Hands', 'Fists'],
@@ -939,6 +1081,13 @@ const buildStats = (weapon, category) => {
     baseStats.range = formatMeters(weapon.range_cm);
   }
 
+  if (weapon.extra_stats && typeof weapon.extra_stats === 'object') {
+    Object.entries(weapon.extra_stats).forEach(([key, value]) => {
+      if (value === null || value === undefined) return;
+      baseStats[key] = value;
+    });
+  }
+
   return removeEmpty(baseStats);
 };
 
@@ -1069,6 +1218,14 @@ const buildSpecial = (weapon, legacySpecial = {}, category) => {
 
   if (category === 'utility' && weapon.projectile === 'equipment') {
     special.usage = 'Traversal equipment';
+  }
+
+  if (weapon.special_entries && typeof weapon.special_entries === 'object') {
+    Object.entries(weapon.special_entries).forEach(([key, value]) => {
+      if (value === null || value === undefined) return;
+      if (typeof value === 'string' && value.trim() === '') return;
+      special[key] = value;
+    });
   }
 
   return removeEmpty(special);
