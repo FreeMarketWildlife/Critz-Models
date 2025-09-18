@@ -582,9 +582,17 @@ const buildSpecial = (weapon, legacySpecial = {}, category) => {
   return removeEmpty(special);
 };
 
+const CATEGORY_PLACEHOLDER_MODELS = {
+  primary: 'assets/models/primary/placeholder-primary.gltf',
+  secondary: 'assets/models/secondary/placeholder-secondary.gltf',
+  melee: 'assets/models/melee/placeholder-melee.gltf',
+  utility: 'assets/models/utility/placeholder-utility.gltf',
+};
+
 const weapons = RAW_WEAPONS.map((weapon) => {
   const category = weapon.category.toLowerCase();
   const legacy = getLegacyDetails(weapon.name) || {};
+  const placeholderModelPath = CATEGORY_PLACEHOLDER_MODELS[category] ?? null;
 
   return normalizeWeapon({
     id: slugify(weapon.name),
@@ -592,7 +600,7 @@ const weapons = RAW_WEAPONS.map((weapon) => {
     category,
     rarity: legacy.rarity || FALLBACK_RARITY_BY_CATEGORY[category] || 'common',
     description: legacy.description || weapon.notes || 'Specification pending.',
-    modelPath: legacy.modelPath ?? null,
+    modelPath: legacy.modelPath ?? placeholderModelPath,
     preview: legacy.preview || undefined,
     stats: buildStats(weapon, category),
     special: buildSpecial(weapon, legacy.special || {}, category),
