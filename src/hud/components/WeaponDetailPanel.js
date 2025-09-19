@@ -80,7 +80,7 @@ function collectStatBarData(weapon) {
       hasValue,
       fill,
     };
-  });
+  }).filter((stat) => stat.hasValue);
 }
 
 function createStatBarMarkup(stat) {
@@ -128,13 +128,13 @@ function parseStatValue(raw) {
 
 function formatDisplayValue(raw) {
   if (raw === null || raw === undefined || raw === '') {
-    return 'N/A';
+    return '';
   }
 
   if (typeof raw === 'number') {
     return Number.isFinite(raw)
       ? Number(raw).toLocaleString(undefined, { maximumFractionDigits: 2 })
-      : 'N/A';
+      : '';
   }
 
   return String(raw);
