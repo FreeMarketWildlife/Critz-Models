@@ -15,7 +15,455 @@ const RAW_GLOBALS = {
   },
 };
 
-const RAW_WEAPONS = [];
+const RAW_WEAPONS = [
+  // Primaries
+  {
+    name: 'Assault Rifle',
+    category: 'primary',
+    description: 'Standard issue rifle offering controllable automatic fire.',
+    damage_body: 10,
+    headshot_allowed: true,
+    fire_mode: 'full-auto',
+    rps: 500 / 60,
+    magazine: 20,
+    reserve_ammo: 100,
+    reload_s: 0.5,
+    draw_time_s: 0.2,
+    range_cm: 300,
+    projectile: 'bullet',
+  },
+  {
+    name: 'Sniper Rifle',
+    category: 'primary',
+    description: 'Precision rifle built for long-range eliminations.',
+    damage_body: 50,
+    headshot_allowed: true,
+    fire_mode: 'semi-auto',
+    rps: 60 / 60,
+    magazine: 4,
+    reserve_ammo: 16,
+    reload_s: 2,
+    draw_time_s: 0.5,
+    range_cm: 1000,
+    projectile: 'bullet',
+  },
+  {
+    name: 'Rocket Launcher',
+    category: 'primary',
+    description: 'Heavy launcher delivering high splash damage.',
+    damage_body: 100,
+    headshot_allowed: false,
+    fire_mode: 'manual',
+    rps: 50 / 60,
+    magazine: 1,
+    reserve_ammo: 6,
+    reload_s: 1,
+    draw_time_s: 0.5,
+    range_cm: 300,
+    projectile: 'rocket',
+    splash: {
+      center_damage: 100,
+      edge_damage: 25,
+    },
+    notes: 'Splash damage drops to 50 on the inner ring and 25 on the outer ring.',
+  },
+  {
+    name: 'Bow',
+    category: 'primary',
+    description: 'Lightweight bow with flexible draw strength.',
+    damage_body: 15,
+    headshot_allowed: true,
+    fire_mode: 'drawn',
+    rps: 200 / 60,
+    magazine: 1,
+    reserve_ammo: 30,
+    reload_s: 0.3,
+    draw_time_s: 0.2,
+    range_cm: [100, 300],
+    projectile: 'arrow',
+  },
+  {
+    name: 'Crossbow',
+    category: 'primary',
+    description: 'Precision bolt thrower with high per-shot impact.',
+    damage_body: 30,
+    headshot_allowed: true,
+    fire_mode: 'manual',
+    rps: 120 / 60,
+    magazine: 1,
+    reserve_ammo: 14,
+    reload_s: 0.5,
+    draw_time_s: 0.5,
+    range_cm: 200,
+    projectile: 'bolt',
+  },
+  {
+    name: 'Wizard Staff',
+    category: 'primary',
+    description: 'Channelled staff that spits arcane splash bolts.',
+    damage_body: 10,
+    headshot_allowed: false,
+    fire_mode: 'full-auto splash',
+    rps: 120 / 60,
+    magazine: 10,
+    reserve_ammo: 100,
+    draw_time_s: 0.5,
+    range_cm: 100,
+    projectile: 'magic',
+    overheat: {
+      shots_before_overheat: 10,
+      cooldown_s: 2,
+    },
+  },
+
+  // Secondaries
+  {
+    name: 'Blaster Pistol',
+    category: 'secondary',
+    description: 'Reliable sidearm that vents heat between bursts.',
+    damage_body: 5,
+    headshot_allowed: true,
+    fire_mode: 'semi-auto',
+    rps: 300 / 60,
+    magazine: 20,
+    reserve_ammo: 100,
+    draw_time_s: 0.1,
+    range_cm: 100,
+    projectile: 'energy bolt',
+    overheat: {
+      shots_before_overheat: 20,
+      cooldown_s: 2,
+    },
+  },
+  {
+    name: 'Slingshot',
+    category: 'secondary',
+    description: 'Elastic launcher for quick pebbles and seeds.',
+    damage_body: 5,
+    headshot_allowed: true,
+    fire_mode: 'drawn',
+    rps: 150 / 60,
+    reload_s: 0.4,
+    draw_time_s: 0.1,
+    range_cm: [50, 100],
+    projectile: 'pellet',
+  },
+  {
+    name: 'Splash Blaster',
+    category: 'secondary',
+    description: 'Burst sidearm that saturates tight spaces.',
+    damage_body: 10,
+    headshot_allowed: false,
+    fire_mode: 'semi-auto splash',
+    rps: 300 / 60,
+    magazine: 8,
+    reserve_ammo: 16,
+    reload_s: 0.2,
+    draw_time_s: 0.2,
+    range_cm: 100,
+    projectile: 'splash projectile',
+    splash: {
+      center_damage: 10,
+      edge_damage: 2.5,
+    },
+    notes: 'Splash damage falls to 5 on the inner ring and 2.5 on the outer ring.',
+  },
+  {
+    name: 'Fey Wand',
+    category: 'secondary',
+    description: 'Full-auto wand that bathes targets in fae energy.',
+    damage_body: 15,
+    headshot_allowed: false,
+    fire_mode: 'full-auto splash',
+    rps: 120 / 60,
+    magazine: 20,
+    reserve_ammo: 100,
+    draw_time_s: 0.1,
+    range_cm: 100,
+    projectile: 'magic',
+    overheat: {
+      shots_before_overheat: 20,
+      cooldown_s: 3,
+    },
+  },
+  {
+    name: 'Flamethrower',
+    category: 'secondary',
+    description: 'Close-range burner that drenches foes in flame.',
+    headshot_allowed: false,
+    fire_mode: 'full-auto aoe',
+    rps: 1000 / 60,
+    magazine: 2,
+    reserve_ammo: 100,
+    draw_time_s: 0.4,
+    range_cm: 10,
+    projectile: 'flame',
+    overheat: {
+      active_time_s: 2,
+      cooldown_s: 2,
+    },
+    ignite: {
+      dps: 10,
+      duration_s: 3,
+    },
+  },
+
+  // Melee
+  {
+    name: 'Hands',
+    category: 'melee',
+    description: 'Basic close-quarters strikes powered by stamina.',
+    damage_body: 3,
+    headshot_allowed: false,
+    rps: 300 / 60,
+    stamina_cost: 5,
+    stamina_pool: 15,
+    draw_time_s: 0.1,
+    range_cm: 2,
+    projectile: 'melee',
+    abilities: {
+      grapple: 'Hold on to enemy (5s cooldown)',
+    },
+  },
+  {
+    name: 'Knife',
+    category: 'melee',
+    description: 'Light blade tuned for stealth eliminations.',
+    damage_body: 15,
+    headshot_allowed: false,
+    rps: 120 / 60,
+    stamina_cost: 10,
+    stamina_pool: 5,
+    draw_time_s: 0.1,
+    range_cm: 2,
+    projectile: 'melee',
+    abilities: {
+      assassinate: 'Kill from behind (10s cooldown)',
+    },
+  },
+  {
+    name: 'Tomahawk',
+    category: 'melee',
+    description: 'Hefty blade built for brutal swings or throws.',
+    damage_body: 20,
+    headshot_allowed: false,
+    rps: 60 / 60,
+    stamina_cost: 15,
+    stamina_pool: 10,
+    draw_time_s: 0.3,
+    range_cm: 3,
+    projectile: 'melee',
+    abilities: {
+      throw: 'Throw tomahawk; can be picked up (0.1s cooldown)',
+    },
+    throw: {
+      damage: 20,
+      pickup: true,
+    },
+  },
+  {
+    name: 'Katana',
+    category: 'melee',
+    description: 'Balanced blade suited for agile duels.',
+    damage_body: 15,
+    headshot_allowed: false,
+    rps: 120 / 60,
+    stamina_cost: 10,
+    stamina_pool: [25, 100],
+    draw_time_s: 0.2,
+    range_cm: 4,
+    projectile: 'melee',
+    abilities: {
+      deflect_window_s: 1,
+      deflect_cooldown_s: 5,
+    },
+    notes:
+      'Deflect returns enemy shots for 1 second; stamina spend scales with blocked damage and excludes arrows.',
+  },
+  {
+    name: 'Shield',
+    category: 'melee',
+    description: 'Protective barrier that can drive foes back.',
+    damage_body: 5,
+    headshot_allowed: false,
+    rps: 90 / 60,
+    stamina_cost: 10,
+    stamina_pool: 30,
+    draw_time_s: 0.5,
+    range_cm: 2,
+    projectile: 'melee',
+    bash: {
+      cooldown_s: 5,
+      knockback: 'enemy units',
+    },
+    notes: 'Shield bash knocks enemy units backward.',
+  },
+  {
+    name: 'Warhammer',
+    category: 'melee',
+    description: 'Massive hammer that crushes targets with splash.',
+    damage_body: 30,
+    headshot_allowed: false,
+    rps: 60 / 60,
+    stamina_cost: 30,
+    stamina_pool: '50 (splash)',
+    draw_time_s: 1,
+    range_cm: 4,
+    projectile: 'melee',
+    abilities: {
+      ground_pound: 'Swing the warhammer at the ground (10s cooldown)',
+    },
+  },
+  {
+    name: 'Bo Staff',
+    category: 'melee',
+    description: 'Swift staff ideal for crowd control.',
+    damage_body: 5,
+    headshot_allowed: false,
+    rps: 180 / 60,
+    stamina_cost: 2,
+    stamina_pool: 10,
+    draw_time_s: 0.1,
+    range_cm: 3,
+    projectile: 'melee',
+    abilities: {
+      spin: 'Blows self and enemies back; disarms enemy arrows (5s cooldown)',
+    },
+  },
+
+  // Utilities
+  {
+    name: 'Grenade',
+    category: 'utility',
+    description: 'Standard grenade for clearing clustered foes.',
+    damage_body: 50,
+    fire_mode: 'throw',
+    magazine: 2,
+    range_cm: 50,
+    projectile: 'grenade',
+    splash: {
+      center_damage: 50,
+      edge_damage: 12.5,
+    },
+    notes: 'Pushes enemies and the user back; cannot be cooked. Splash damage tapers to 25 and 12.5 on the blast rings.',
+  },
+  {
+    name: 'Smoke Grenade',
+    category: 'utility',
+    description: 'Obscures sightlines with a dense smoke field.',
+    fire_mode: 'throw',
+    magazine: 2,
+    range_cm: 50,
+    projectile: 'grenade',
+    notes: 'Creates a sphere of smoke on impact and extinguishes fire.',
+  },
+  {
+    name: 'Resource Pack',
+    category: 'utility',
+    description: 'Support drop that refreshes health and ammunition.',
+    fire_mode: 'drop',
+    magazine: 4,
+    range_cm: 2,
+    projectile: 'supply pack',
+    effects: {
+      heal: 50,
+      ammo_restore_percent: 50,
+    },
+    notes: 'Can be picked up by any unit, friendly or enemy.',
+  },
+  {
+    name: 'Mines',
+    category: 'utility',
+    description: 'Area denial charges triggered by contact.',
+    damage_body: 150,
+    fire_mode: 'drop',
+    magazine: 4,
+    range_cm: 2,
+    projectile: 'mine',
+    notes: 'Triggered when an enemy steps on them or shoots them (50 health).',
+  },
+  {
+    name: 'Glider',
+    category: 'utility',
+    description: 'Traversal tool that lets units ride the air.',
+    fire_mode: 'hold',
+    magazine: 1,
+    projectile: 'equipment',
+    notes: 'Allows gliding when falling but forces forward movement.',
+  },
+  {
+    name: "Bottle o' Gas",
+    category: 'utility',
+    description: 'Volatile gas bomb for area denial.',
+    fire_mode: 'throw',
+    magazine: 2,
+    range_cm: 50,
+    projectile: 'bottle',
+    pool: {
+      type: 'gas',
+      dps: 5,
+      duration_s: 5,
+      ignitable: true,
+    },
+    notes: 'Creates a pool of gas on impact; any team can ignite it to damage foes.',
+  },
+  {
+    name: "Bottle o' Fire",
+    category: 'utility',
+    description: 'Ignites ground targets with lingering flames.',
+    fire_mode: 'throw',
+    magazine: 2,
+    range_cm: 50,
+    projectile: 'bottle',
+    pool: {
+      type: 'fire',
+      dps: 10,
+      duration_s: 3,
+    },
+    notes: 'Creates a pool of fire on impact.',
+  },
+  {
+    name: "Bottle o' Lightning",
+    category: 'utility',
+    description: 'Crackling vial that paralyzes anything within.',
+    fire_mode: 'throw',
+    magazine: 2,
+    range_cm: 50,
+    projectile: 'bottle',
+    field: {
+      type: 'lightning',
+      stun_pattern: {
+        stun_s: 0.5,
+        interval_s: 1,
+      },
+    },
+    notes: 'Creates a pool of electricity that paralyzes enemies on a rhythm.',
+  },
+  {
+    name: "Bottle o' Ice",
+    category: 'utility',
+    description: 'Chilling vial that strips traction from the ground.',
+    fire_mode: 'throw',
+    magazine: 2,
+    range_cm: 50,
+    projectile: 'bottle',
+    field: {
+      type: 'ice',
+      friction: 'reduced by 50%',
+    },
+    notes: 'Creates a pool of ice on impact that halves friction for all units.',
+  },
+  {
+    name: "Bottle o' Air",
+    category: 'utility',
+    description: 'Compressed gust that shoves everything outward.',
+    fire_mode: 'throw',
+    magazine: 2,
+    range_cm: 50,
+    projectile: 'bottle',
+    notes: 'Creates a blast of air that pushes enemies and the user away.',
+  },
+];
 
 const LEGACY_DETAILS = new Map();
 
@@ -73,7 +521,39 @@ const formatMeters = (centimeters) => {
   if (centimeters === null || centimeters === undefined) {
     return null;
   }
-  const formatted = formatNumber(centimeters / 100);
+
+  const formatSingle = (value) => {
+    if (value === null || value === undefined) {
+      return null;
+    }
+    if (typeof value !== 'number' || Number.isNaN(value)) {
+      return null;
+    }
+    const formattedValue = formatNumber(value / 100);
+    return formattedValue || null;
+  };
+
+  if (Array.isArray(centimeters)) {
+    const formattedValues = centimeters.map(formatSingle).filter(Boolean);
+    if (!formattedValues.length) {
+      return null;
+    }
+    return `${formattedValues.join(' - ')} m`;
+  }
+
+  if (typeof centimeters === 'object') {
+    const formattedValues = [formatSingle(centimeters.min), formatSingle(centimeters.max)].filter(Boolean);
+    if (!formattedValues.length) {
+      return null;
+    }
+    return `${formattedValues.join(' - ')} m`;
+  }
+
+  if (typeof centimeters === 'string') {
+    return centimeters;
+  }
+
+  const formatted = formatSingle(centimeters);
   return formatted ? `${formatted} m` : null;
 };
 
@@ -368,6 +848,23 @@ const buildStats = (weapon, category) => {
     baseStats.drawSpeed = formatSeconds(weapon.draw_time_s);
   }
 
+  if (
+    weapon.magazine !== null &&
+    weapon.magazine !== undefined &&
+    weapon.reserve_ammo !== null &&
+    weapon.reserve_ammo !== undefined
+  ) {
+    const magazine = formatNumber(weapon.magazine, { maximumFractionDigits: 0 });
+    const reserve =
+      typeof weapon.reserve_ammo === 'number'
+        ? formatNumber(weapon.reserve_ammo, { maximumFractionDigits: 0 })
+        : String(weapon.reserve_ammo);
+    if (magazine && reserve) {
+      baseStats.ammo = `${magazine}/${reserve}`;
+      baseStats.magazineSize = null;
+    }
+  }
+
   if (weapon.dps !== null && weapon.dps !== undefined) {
     baseStats.dps = `${formatNumber(weapon.dps)} DPS`;
   }
@@ -457,6 +954,10 @@ const buildSpecial = (weapon, legacySpecial = {}, category) => {
     special.combatNotes = weapon.notes;
   }
 
+  if (weapon.fire_mode) {
+    special.fireMode = prettify(weapon.fire_mode);
+  }
+
   if (weapon.headshot_allowed !== undefined) {
     special.headshotRule = weapon.headshot_allowed
       ? `Headshots enabled (×${formatNumber(HEADSHOT_MULTIPLIER)})`
@@ -465,6 +966,31 @@ const buildSpecial = (weapon, legacySpecial = {}, category) => {
 
   if (weapon.headshot_allowed && weapon.damage_body !== null && weapon.damage_body !== undefined) {
     special.headshotDamage = `${formatNumber(weapon.damage_body * HEADSHOT_MULTIPLIER)} damage on headshots`;
+  }
+
+  if (weapon.stamina_pool !== undefined && weapon.stamina_pool !== null) {
+    const cost =
+      weapon.stamina_cost !== undefined && weapon.stamina_cost !== null
+        ? formatNumber(weapon.stamina_cost, { maximumFractionDigits: 0 })
+        : null;
+
+    let reserve;
+    if (typeof weapon.stamina_pool === 'number') {
+      reserve = formatNumber(weapon.stamina_pool, { maximumFractionDigits: 0 });
+    } else if (Array.isArray(weapon.stamina_pool)) {
+      const parts = weapon.stamina_pool
+        .map((value) =>
+          typeof value === 'number' ? formatNumber(value, { maximumFractionDigits: 0 }) : value
+        )
+        .filter(Boolean);
+      reserve = parts.join(' - ');
+    } else {
+      reserve = String(weapon.stamina_pool);
+    }
+
+    if (reserve) {
+      special.staminaProfile = cost ? `${cost}/${reserve}` : reserve;
+    }
   }
 
   // Time-to-kill and shots-to-kill are surfaced in the core stat list.
@@ -591,7 +1117,7 @@ const weapons = RAW_WEAPONS.map((weapon) => {
     name: weapon.name,
     category,
     rarity: legacy.rarity || FALLBACK_RARITY_BY_CATEGORY[category] || 'common',
-    description: legacy.description || weapon.notes || 'Specification pending.',
+    description: legacy.description || weapon.description || weapon.notes || 'Specification pending.',
     modelPath: legacy.modelPath ?? null,
     preview: legacy.preview || undefined,
     stats: buildStats(weapon, category),
