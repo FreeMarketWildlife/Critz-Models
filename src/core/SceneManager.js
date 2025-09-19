@@ -360,6 +360,10 @@ export class SceneManager {
       model = await this.resourceLoader.loadModel(weapon.modelPath);
     }
 
+    if (!model && weapon.id === 'assault-rifle') {
+      model = this.createAssaultRiflePlaceholder();
+    }
+
     if (this.pendingWeaponId !== requestId) {
       return;
     }
@@ -541,6 +545,127 @@ export class SceneManager {
     if (this.rarityLight) {
       this.rarityLight.color = new THREE.Color(color);
     }
+  }
+
+  createAssaultRiflePlaceholder() {
+    const group = new THREE.Group();
+    group.name = 'assault-rifle-blaster-placeholder';
+    group.userData = {
+      ...group.userData,
+      weaponId: 'assault-rifle',
+      isGeneratedPlaceholder: true,
+    };
+
+    const createBodyMaterial = () =>
+      new THREE.MeshStandardMaterial({
+        color: 0x3841c7,
+        metalness: 0.7,
+        roughness: 0.32,
+        emissive: new THREE.Color(0x0f1444),
+        emissiveIntensity: 0.45,
+      });
+
+    const createAccentMaterial = () =>
+      new THREE.MeshStandardMaterial({
+        color: 0xff6fec,
+        metalness: 0.75,
+        roughness: 0.25,
+        emissive: new THREE.Color(0x330421),
+        emissiveIntensity: 0.7,
+      });
+
+    const createEnergyMaterial = () =>
+      new THREE.MeshStandardMaterial({
+        color: 0xa7fff4,
+        metalness: 0.25,
+        roughness: 0.08,
+        emissive: new THREE.Color(0x4dc6ff),
+        emissiveIntensity: 1.15,
+        transparent: true,
+        opacity: 0.88,
+      });
+
+    const addMesh = (geometryFactory, materialFactory, position = [0, 0, 0], rotation = [0, 0, 0]) => {
+      const geometry = geometryFactory();
+      const material = materialFactory();
+      const mesh = new THREE.Mesh(geometry, material);
+      mesh.position.set(position[0] ?? 0, position[1] ?? 0, position[2] ?? 0);
+      mesh.rotation.set(rotation[0] ?? 0, rotation[1] ?? 0, rotation[2] ?? 0);
+      mesh.castShadow = false;
+      mesh.receiveShadow = false;
+      group.add(mesh);
+      return mesh;
+    };
+
+    const addMirrored = (
+      geometryFactory,
+      materialFactory,
+      basePosition,
+      rotation = [0, 0, 0]
+    ) => {
+      addMesh(geometryFactory, materialFactory, basePosition, rotation);
+      addMesh(
+        geometryFactory,
+        materialFactory,
+        [basePosition[0] ?? 0, basePosition[1] ?? 0, -(basePosition[2] ?? 0)],
+        [rotation[0] ?? 0, -(rotation[1] ?? 0), -(rotation[2] ?? 0)]
+      );
+    };
+
+    // Core body plating
+    addMesh(() => new THREE.BoxGeometry(1.6, 0.3, 0.36), createBodyMaterial, [0.12, 0, 0]);
+    addMesh(() => new THREE.BoxGeometry(1.08, 0.18, 0.28), createAccentMaterial, [0.32, -0.18, 0]);
+    addMesh(() => new THREE.BoxGeometry(0.6, 0.32, 0.3), createBodyMaterial, [-1.0, -0.08, 0], [0, 0, 0.26]);
+    addMesh(() => new THREE.BoxGeometry(0.96, 0.08, 0.22), createAccentMaterial, [0.28, 0.22, 0]);
+
+    // Energy spine and vents
+    addMesh(
+      () => new THREE.CylinderGeometry(0.13, 0.13, 0.9, 24, 1, false),
+      createEnergyMaterial,
+      [0.2, 0, 0],
+      [0, 0, Math.PI / 2]
+    );
+    addMesh(() => new THREE.BoxGeometry(0.78, 0.06, 0.08), createEnergyMaterial, [0.32, -0.04, 0]);
+    addMirrored(() => new THREE.BoxGeometry(0.34, 0.06, 0.08), createEnergyMaterial, [0.08, -0.02, 0.22]);
+
+    // Barrel assembly
+    addMesh(
+      () => new THREE.CylinderGeometry(0.09, 0.09, 1.2, 32, 1, false),
+      createBodyMaterial,
+      [0.96, 0.05, 0],
+      [0, 0, Math.PI / 2]
+    );
+    addMesh(() => new THREE.ConeGeometry(0.14, 0.32, 24), createAccentMaterial, [1.54, 0.05, 0], [0, 0, Math.PI / 2]);
+    addMesh(() => new THREE.TorusGeometry(0.14, 0.025, 16, 32), createEnergyMaterial, [1.28, 0.05, 0], [0, Math.PI / 2, 0]);
+    addMirrored(() => new THREE.BoxGeometry(0.28, 0.06, 0.14), createAccentMaterial, [1.06, 0.08, 0.2], [0, Math.PI / 5, 0]);
+
+    // Grip cluster
+    addMesh(() => new THREE.BoxGeometry(0.24, 0.42, 0.22), createBodyMaterial, [-0.22, -0.36, 0], [Math.PI / 5, 0, 0]);
+    addMesh(() => new THREE.TorusGeometry(0.16, 0.03, 12, 24), createBodyMaterial, [-0.05, -0.32, 0], [Math.PI / 2, 0, 0]);
+    addMesh(() => new THREE.BoxGeometry(0.26, 0.48, 0.18), createAccentMaterial, [0.32, -0.42, 0.06], [Math.PI / 4, 0, Math.PI / 18]);
+
+    // Scope and upper finery
+    addMesh(() => new THREE.CylinderGeometry(0.1, 0.1, 0.62, 18), createBodyMaterial, [0.16, 0.34, 0], [0, 0, Math.PI / 2]);
+    addMesh(() => new THREE.CylinderGeometry(0.13, 0.13, 0.14, 18), createEnergyMaterial, [0.52, 0.34, 0], [0, 0, Math.PI / 2]);
+    addMesh(() => new THREE.BoxGeometry(0.46, 0.08, 0.2), createAccentMaterial, [-0.04, 0.28, 0]);
+
+    // Side fins and floating crystals
+    addMirrored(() => new THREE.BoxGeometry(0.5, 0.08, 0.18), createAccentMaterial, [0.55, 0.06, 0.26], [0, Math.PI / 7, 0]);
+    addMirrored(() => new THREE.IcosahedronGeometry(0.08, 0), createEnergyMaterial, [0.78, 0.14, 0.28]);
+    addMirrored(
+      () => new THREE.ConeGeometry(0.08, 0.22, 12),
+      createEnergyMaterial,
+      [0.62, -0.12, 0.26],
+      [Math.PI, 0, Math.PI / 2]
+    );
+
+    // Rear thruster halo
+    addMesh(() => new THREE.TorusGeometry(0.22, 0.03, 12, 28), createEnergyMaterial, [-1.24, 0.02, 0], [Math.PI / 2, 0, 0]);
+
+    group.position.set(0, 0.05, 0);
+    group.scale.setScalar(0.95);
+
+    return group;
   }
 
   createPlaceholderModel() {

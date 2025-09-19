@@ -190,6 +190,12 @@ export class WeaponDisplayApp {
       }
       this.activeWeapon = weapon;
       this.sceneManager.applyRarityGlow(weapon.rarity);
+      this.sceneManager?.loadWeapon?.(weapon);
+      this.activeCritter = null;
+      if (this.animationSelector) {
+        this.animationSelector.setCritterName('--');
+        this.animationSelector.setAnimations([]);
+      }
     });
 
     this.eventBus.on('critter:selected', (critterId) => {
@@ -199,6 +205,7 @@ export class WeaponDisplayApp {
       }
 
       this.activeCritter = critter;
+      this.activeWeapon = null;
       this.animationSelector.setCritterName(critter.name);
       this.animationSelector.setAnimations(critter.animations, critter.defaultAnimationId);
 
