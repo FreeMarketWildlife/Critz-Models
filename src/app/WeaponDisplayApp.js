@@ -116,7 +116,7 @@ export class WeaponDisplayApp {
   buildLayout() {
     this.root.innerHTML = `
       <div class="app-shell">
-        <div class="hud-brand">Crtiz Armory</div>
+        <div class="hud-brand">Critz</div>
         <nav class="hud-nav" aria-label="Interface options">
           <div class="nav-section nav-section--critters">
             <h2>Critters</h2>
