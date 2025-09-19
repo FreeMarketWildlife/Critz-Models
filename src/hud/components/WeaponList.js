@@ -42,10 +42,11 @@ export class WeaponList {
     const count = this.weapons?.length ?? 0;
     if (count === 0) {
       this.footerElement.textContent = 'No gear catalogued yet.';
+      this.footerElement.classList.remove('is-hidden');
       return;
     }
-    const label = count === 1 ? 'choice' : 'choices';
-    this.footerElement.textContent = `${count} ${label} available`;
+    this.footerElement.textContent = '';
+    this.footerElement.classList.add('is-hidden');
   }
 
   createCard(weapon) {

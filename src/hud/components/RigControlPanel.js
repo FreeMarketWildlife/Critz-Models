@@ -29,7 +29,6 @@ export class RigControlPanel {
       <div class="rig-panel__header">
         <div class="rig-panel__heading">
           <span class="rig-panel__title">Pose Controls</span>
-          <p class="rig-panel__subtitle">Blend animations with direct rig offsets.</p>
         </div>
         <span class="rig-panel__status" data-role="rig-status">Idle</span>
       </div>
@@ -56,7 +55,7 @@ export class RigControlPanel {
       this.bus.on('stage:model-ready', (payload) => {
         if (payload?.type === 'critter') {
           this.currentCritterName = payload?.name ?? null;
-          this.setLoading(false, `${payload?.name ?? 'Critter'} ready to pose.`);
+          this.setLoading(false, 'Pose controls ready.');
         }
       }),
       this.bus.on('stage:model-missing', (payload) => {
