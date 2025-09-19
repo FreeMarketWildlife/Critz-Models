@@ -4,7 +4,6 @@ export const RARITIES = ['common', 'uncommon', 'rare', 'epic', 'legendary', 'myt
 
 export const STAT_LABELS = {
   damage: 'Damage',
-  headshotDamage: 'Headshot Damage',
   splashDamage: 'Splash Damage',
   dotDamage: 'Damage over Time',
   dps: 'Damage per Second',
@@ -52,7 +51,6 @@ export const STAT_LABELS = {
 
 export const DEFAULT_STATS_ORDER = [
   'damage',
-  'headshotDamage',
   'splashDamage',
   'dotDamage',
   'dps',
