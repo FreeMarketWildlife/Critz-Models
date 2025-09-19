@@ -15,7 +15,472 @@ const RAW_GLOBALS = {
   },
 };
 
-const RAW_WEAPONS = [];
+const BASE_HEALTH = RAW_GLOBALS.base_health ?? 100;
+
+const rpmToRps = (rpm) => (typeof rpm === 'number' ? rpm / 60 : null);
+
+const computeShotsToKill = (damage) => {
+  if (damage === null || damage === undefined) return null;
+  if (typeof damage !== 'number') return null;
+  if (damage <= 0) return null;
+  return Math.ceil(BASE_HEALTH / damage);
+};
+
+const computeTtk = (shots, rps) => {
+  if (shots === null || shots === undefined) return null;
+  if (rps === null || rps === undefined) return null;
+  if (typeof shots !== 'number' || typeof rps !== 'number') return null;
+  if (shots <= 0 || rps <= 0) return null;
+  if (shots <= 1) return 0;
+  return (shots - 1) / rps;
+};
+
+const applyCombatMetrics = (weapon) => {
+  const result = { ...weapon };
+  const computedShots =
+    result.shots_to_kill_body ?? computeShotsToKill(result.damage_body);
+  if (computedShots !== null && computedShots !== undefined) {
+    result.shots_to_kill_body = computedShots;
+  }
+  const computedTtk = result.ttk_body_s ?? computeTtk(computedShots, result.rps);
+  if (computedTtk !== null && computedTtk !== undefined) {
+    result.ttk_body_s = computedTtk;
+  }
+  return result;
+};
+
+const RAW_WEAPONS = [
+  applyCombatMetrics({
+    name: 'Assault Rifle',
+    category: 'primary',
+    fire_mode: 'Full-Auto',
+    damage_body: 10,
+    rps: rpmToRps(500),
+    magazine: 20,
+    reserve_ammo: 100,
+    reload_s: 0.5,
+    draw_time_s: 0.2,
+    range_cm: 300,
+    projectile: 'bullet',
+    headshot_allowed: true,
+    notes: 'Reliable lizard-scale assault platform with a 20-round mag and 100 rounds in reserve.',
+  }),
+  applyCombatMetrics({
+    name: 'Sniper Rifle',
+    category: 'primary',
+    fire_mode: 'Semi-Auto',
+    damage_body: 50,
+    rps: rpmToRps(60),
+    magazine: 4,
+    reserve_ammo: 16,
+    reload_s: 2,
+    draw_time_s: 0.5,
+    range_cm: 1000,
+    projectile: 'bullet',
+    headshot_allowed: true,
+    notes: 'Precision semi-auto rifle built for long sight lines with a 4-round clip and 16 spare rounds.',
+  }),
+  applyCombatMetrics({
+    name: 'Rocket Launcher',
+    category: 'primary',
+    fire_mode: 'Manual',
+    damage_body: 100,
+    rps: rpmToRps(50),
+    magazine: 1,
+    reserve_ammo: 6,
+    reload_s: 1,
+    draw_time_s: 0.5,
+    range_cm: 300,
+    projectile: 'explosive',
+    headshot_allowed: false,
+    splash: {
+      center_damage: 100,
+    },
+    notes: 'Manually cycled tube with single-shot reloads and a six-rocket reserve.',
+  }),
+  applyCombatMetrics({
+    name: 'Bow',
+    category: 'primary',
+    fire_mode: 'Drawn',
+    damage_body: 15,
+    rps: rpmToRps(200),
+    magazine: 1,
+    reserve_ammo: 30,
+    reload_s: 0.3,
+    draw_time_s: 0.2,
+    range_cm: 300,
+    projectile: 'arrow',
+    headshot_allowed: true,
+    notes: 'Hand-drawn bow effective between 100-300cm with a quiver of 30 arrows.',
+  }),
+  applyCombatMetrics({
+    name: 'Crossbow',
+    category: 'primary',
+    fire_mode: 'Manual',
+    damage_body: 30,
+    rps: rpmToRps(120),
+    magazine: 1,
+    reserve_ammo: 14,
+    reload_s: 0.5,
+    draw_time_s: 0.5,
+    range_cm: 200,
+    projectile: 'bolt',
+    headshot_allowed: true,
+    notes: 'Lever-loaded crossbow with one-bolt magazine and fourteen spare bolts.',
+  }),
+  applyCombatMetrics({
+    name: 'Wizard Staff',
+    category: 'primary',
+    fire_mode: 'Full-Auto Splash',
+    damage_body: 10,
+    rps: rpmToRps(120),
+    magazine: 10,
+    draw_time_s: 0.5,
+    range_cm: 100,
+    projectile: 'magic',
+    headshot_allowed: false,
+    overheat: {
+      shots_before_overheat: 10,
+      cooldown_s: 2,
+    },
+    splash: {
+      center_damage: 10,
+    },
+    notes: 'Arcane staff vents after ten rapid shots; powered by a 100-point heat core.',
+  }),
+  applyCombatMetrics({
+    name: 'Blaster Pistol',
+    category: 'secondary',
+    fire_mode: 'Semi-Auto',
+    damage_body: 5,
+    rps: rpmToRps(300),
+    draw_time_s: 0.1,
+    range_cm: 100,
+    projectile: 'energy',
+    headshot_allowed: true,
+    overheat: {
+      shots_before_overheat: 20,
+      cooldown_s: 2,
+    },
+    notes: 'Compact energy sidearm rated for 300 RPM with a 20-shot heat sink (100 total heat).',
+  }),
+  applyCombatMetrics({
+    name: 'Slingshot',
+    category: 'secondary',
+    fire_mode: 'Drawn',
+    damage_body: 5,
+    rps: rpmToRps(150),
+    reload_s: 0.4,
+    draw_time_s: 0.1,
+    range_cm: 100,
+    projectile: 'kinetic',
+    headshot_allowed: true,
+    notes: 'Hand-pulled pouch launcher effective from 50-100cm; reloads single pebbles at a time.',
+  }),
+  applyCombatMetrics({
+    name: 'Splash Blaster',
+    category: 'secondary',
+    fire_mode: 'Semi-Auto Splash',
+    damage_body: 10,
+    rps: rpmToRps(300),
+    magazine: 8,
+    reserve_ammo: 16,
+    reload_s: 0.2,
+    draw_time_s: 0.2,
+    range_cm: 100,
+    projectile: 'aoe',
+    headshot_allowed: false,
+    splash: {
+      center_damage: 10,
+    },
+    notes: 'Compact splash pistol with eight-round canister bursts and sixteen in reserve.',
+  }),
+  applyCombatMetrics({
+    name: 'Fey Wand',
+    category: 'secondary',
+    fire_mode: 'Full-Auto Splash',
+    damage_body: 15,
+    rps: rpmToRps(120),
+    draw_time_s: 0.1,
+    range_cm: 100,
+    projectile: 'magic',
+    headshot_allowed: false,
+    overheat: {
+      shots_before_overheat: 20,
+      cooldown_s: 3,
+    },
+    splash: {
+      center_damage: 15,
+    },
+    notes: 'Arcane wand that saturates targets with splash bolts before venting after twenty casts.',
+  }),
+  applyCombatMetrics({
+    name: 'Flamethrower',
+    category: 'secondary',
+    fire_mode: 'Full-Auto AOE',
+    rps: rpmToRps(1000),
+    draw_time_s: 0.4,
+    range_cm: 10,
+    projectile: 'aoe',
+    headshot_allowed: false,
+    overheat: {
+      active_time_s: 2,
+      cooldown_s: 2,
+    },
+    ignite: {
+      dps: 10,
+      duration_s: 3,
+    },
+    notes: 'Close-range fire projector dealing 10 DPS for three seconds; overheats after two seconds of sustained burn.',
+  }),
+  applyCombatMetrics({
+    name: 'Hands',
+    category: 'melee',
+    damage_body: 3,
+    rps: rpmToRps(300),
+    draw_time_s: 0.1,
+    range_cm: 2,
+    projectile: 'melee',
+    headshot_allowed: false,
+    stamina_cost: 5,
+    stamina_reserve: 15,
+    abilities: {
+      grapple: 'Hold on to enemy; 5s cooldown',
+    },
+    grapple: {
+      interaction: 'Hold on to enemy',
+    },
+    notes: 'Unarmed strikes drawing from 5 stamina per combo with 15 stamina to work with.',
+  }),
+  applyCombatMetrics({
+    name: 'Knife',
+    category: 'melee',
+    damage_body: 15,
+    rps: rpmToRps(120),
+    draw_time_s: 0.1,
+    range_cm: 2,
+    projectile: 'melee',
+    headshot_allowed: false,
+    stamina_cost: 10,
+    stamina_reserve: 5,
+    abilities: {
+      assassinate: 'Instantly kill from behind; 10s cooldown',
+    },
+    notes: 'Lightweight blade with swift follow-ups and a lethal backstab technique.',
+  }),
+  applyCombatMetrics({
+    name: 'Tomahawk',
+    category: 'melee',
+    damage_body: 20,
+    rps: rpmToRps(60),
+    draw_time_s: 0.3,
+    range_cm: 3,
+    projectile: 'melee',
+    headshot_allowed: false,
+    stamina_cost: 15,
+    stamina_reserve: 10,
+    abilities: {
+      throw: 'Hurl the tomahawk; can be retrieved (0.1s cooldown)',
+    },
+    throw: {
+      damage: 20,
+      pickup: true,
+    },
+    notes: 'Heavy chopping blade that can be thrown and recovered between strikes.',
+  }),
+  applyCombatMetrics({
+    name: 'Katana',
+    category: 'melee',
+    damage_body: 15,
+    rps: rpmToRps(120),
+    draw_time_s: 0.2,
+    range_cm: 4,
+    projectile: 'melee',
+    headshot_allowed: false,
+    stamina_cost: 10,
+    stamina_reserve: '25-100',
+    abilities: {
+      deflect_window_s: 1,
+      deflect_cooldown_s: 5,
+    },
+    notes: 'Fine-edged blade that can deflect incoming shots for one second; stamina cost scales with damage blocked (excluding arrows).',
+  }),
+  applyCombatMetrics({
+    name: 'Shield',
+    category: 'melee',
+    damage_body: 5,
+    rps: rpmToRps(90),
+    draw_time_s: 0.5,
+    range_cm: 2,
+    projectile: 'melee',
+    headshot_allowed: false,
+    stamina_cost: 10,
+    stamina_reserve: 30,
+    bash: {
+      cooldown_s: 5,
+      knockback: 'Enemy units',
+    },
+    notes: 'Bulwark shield suited for close body checks and a five-second bash cooldown.',
+  }),
+  applyCombatMetrics({
+    name: 'Warhammer',
+    category: 'melee',
+    damage_body: 30,
+    rps: rpmToRps(60),
+    draw_time_s: 1,
+    range_cm: 4,
+    projectile: 'melee',
+    headshot_allowed: false,
+    stamina_cost: 30,
+    stamina_reserve: 50,
+    abilities: {
+      ground_slam_damage: 30,
+      ground_slam_cooldown_s: 10,
+    },
+    splash: {
+      center_damage: 30,
+    },
+    notes: 'Massive hammer that delivers splashy impacts and a devastating ground pound.',
+  }),
+  applyCombatMetrics({
+    name: 'Bo Staff',
+    category: 'melee',
+    damage_body: 5,
+    rps: rpmToRps(180),
+    draw_time_s: 0.1,
+    range_cm: 3,
+    projectile: 'melee',
+    headshot_allowed: false,
+    stamina_cost: 2,
+    stamina_reserve: 10,
+    abilities: {
+      spin_cooldown_s: 5,
+      spin_effects: ['Pushes self and enemies back', 'Disarms enemy arrows'],
+    },
+    notes: 'Quick striking staff with a spinning technique that repels foes and strips arrows.',
+  }),
+  applyCombatMetrics({
+    name: 'Grenade',
+    category: 'utility',
+    damage_body: 50,
+    magazine: 2,
+    range_cm: 50,
+    projectile: 'throwable',
+    headshot_allowed: false,
+    splash: {
+      center_damage: 50,
+    },
+    notes: 'Two throwable charges that push everything nearby on detonation; cannot be cooked.',
+  }),
+  applyCombatMetrics({
+    name: 'Smoke Grenade',
+    category: 'utility',
+    magazine: 2,
+    range_cm: 50,
+    projectile: 'throwable',
+    headshot_allowed: false,
+    smoke: {
+      extinguish_fire: true,
+    },
+    notes: 'Creates a dense smoke sphere on impact that also extinguishes fire.',
+  }),
+  applyCombatMetrics({
+    name: 'Resource Pack',
+    category: 'utility',
+    magazine: 4,
+    range_cm: 2,
+    projectile: 'supply',
+    headshot_allowed: false,
+    effects: {
+      ammo_restore_percent: 50,
+    },
+    notes: 'Drop to restore 50% of max ammo and health to any nearby unit.',
+  }),
+  applyCombatMetrics({
+    name: 'Mines',
+    category: 'utility',
+    damage_body: 150,
+    magazine: 4,
+    range_cm: 2,
+    projectile: 'trap',
+    headshot_allowed: false,
+    notes: 'Triggered by enemy footsteps or by shooting the mine (50 health to disarm).',
+  }),
+  applyCombatMetrics({
+    name: 'Glider',
+    category: 'utility',
+    projectile: 'equipment',
+    headshot_allowed: false,
+    notes: 'Hold to deploy a glider; units glide forward once airborne.',
+  }),
+  applyCombatMetrics({
+    name: "Bottle o' Gas",
+    category: 'utility',
+    magazine: 2,
+    range_cm: 50,
+    projectile: 'throwable',
+    headshot_allowed: false,
+    pool: {
+      type: 'gas',
+      dps: 5,
+      duration_s: 5,
+      ignitable: true,
+    },
+    notes: 'Creates a pool of gas that lasts five seconds and can be ignited by any team.',
+  }),
+  applyCombatMetrics({
+    name: "Bottle o' Fire",
+    category: 'utility',
+    magazine: 2,
+    range_cm: 50,
+    projectile: 'throwable',
+    headshot_allowed: false,
+    pool: {
+      type: 'fire',
+      dps: 10,
+      duration_s: 3,
+    },
+    notes: 'Shatters into a fiery pool that burns targets for ten damage per second over three seconds.',
+  }),
+  applyCombatMetrics({
+    name: "Bottle o' Lightning",
+    category: 'utility',
+    magazine: 2,
+    range_cm: 50,
+    projectile: 'throwable',
+    headshot_allowed: false,
+    field: {
+      type: 'electric',
+      stun_pattern: {
+        stun_s: 0.5,
+        interval_s: 1,
+      },
+    },
+    notes: 'Electrified field that paralyzes enemies for 0.5 seconds every second.',
+  }),
+  applyCombatMetrics({
+    name: "Bottle o' Ice",
+    category: 'utility',
+    magazine: 2,
+    range_cm: 50,
+    projectile: 'throwable',
+    headshot_allowed: false,
+    field: {
+      type: 'ice',
+      friction: '50% less friction',
+    },
+    notes: 'Icy slick halves friction for all units caught within the impact area.',
+  }),
+  applyCombatMetrics({
+    name: "Bottle o' Air",
+    category: 'utility',
+    magazine: 2,
+    range_cm: 50,
+    projectile: 'throwable',
+    headshot_allowed: false,
+    notes: 'Releases a compressed air blast that knocks back everyone nearby, including the thrower.',
+  }),
+];
 
 const LEGACY_DETAILS = new Map();
 
