@@ -44,8 +44,7 @@ export class WeaponList {
       this.footerElement.textContent = 'No gear catalogued yet.';
       return;
     }
-    const label = count === 1 ? 'choice' : 'choices';
-    this.footerElement.textContent = `${count} ${label} available`;
+    this.footerElement.textContent = 'Select gear to view its details.';
   }
 
   createCard(weapon) {
