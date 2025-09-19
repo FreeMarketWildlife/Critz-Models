@@ -4,7 +4,7 @@ const RAW_GLOBALS = {
   base_health: 100,
   base_speed: 100,
   base_stamina: 100,
-  headshot_multiplier: 3.0,
+  headshot_multiplier: 2.0,
   units: {
     distance: 'cm',
     time: 's',
@@ -476,8 +476,6 @@ const FALLBACK_RARITY_BY_CATEGORY = {
   utility: 'uncommon',
 };
 
-const HEADSHOT_MULTIPLIER = RAW_GLOBALS.headshot_multiplier ?? 3;
-
 const slugify = (value) =>
   value
     .toLowerCase()
@@ -821,17 +819,8 @@ const getLegacyDetails = (name) => {
 };
 
 const buildStats = (weapon, category) => {
-  const headshotDamage =
-    weapon.headshot_allowed && weapon.damage_body !== null && weapon.damage_body !== undefined
-      ? weapon.damage_body * HEADSHOT_MULTIPLIER
-      : null;
-
   const baseStats = {
     damage: weapon.damage_body !== null && weapon.damage_body !== undefined ? `${formatNumber(weapon.damage_body)} body` : null,
-    headshotDamage:
-      headshotDamage !== null
-        ? `${formatNumber(headshotDamage)} head (×${formatNumber(HEADSHOT_MULTIPLIER)})`
-        : null,
     fireRate: formatRate(weapon.rps),
     reloadSpeed: formatSeconds(weapon.reload_s),
     magazineSize:
@@ -956,16 +945,6 @@ const buildSpecial = (weapon, legacySpecial = {}, category) => {
 
   if (weapon.fire_mode) {
     special.fireMode = prettify(weapon.fire_mode);
-  }
-
-  if (weapon.headshot_allowed !== undefined) {
-    special.headshotRule = weapon.headshot_allowed
-      ? `Headshots enabled (×${formatNumber(HEADSHOT_MULTIPLIER)})`
-      : 'Headshots disabled';
-  }
-
-  if (weapon.headshot_allowed && weapon.damage_body !== null && weapon.damage_body !== undefined) {
-    special.headshotDamage = `${formatNumber(weapon.damage_body * HEADSHOT_MULTIPLIER)} damage on headshots`;
   }
 
   if (weapon.stamina_pool !== undefined && weapon.stamina_pool !== null) {
