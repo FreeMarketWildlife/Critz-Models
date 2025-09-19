@@ -1,5 +1,3 @@
-import { deriveStatsList } from '../../data/weaponSchema.js';
-
 export class WeaponList {
   constructor({ panelElement, footerElement, onSelect }) {
     this.panelElement = panelElement;
@@ -59,20 +57,6 @@ export class WeaponList {
     const title = document.createElement('h3');
     title.textContent = weapon.name;
     card.appendChild(title);
-
-    const stats = deriveStatsList(weapon).slice(0, 4);
-    if (stats.length > 0) {
-      const statList = document.createElement('dl');
-      stats.forEach(({ label, value }) => {
-        const dt = document.createElement('dt');
-        dt.textContent = label;
-        const dd = document.createElement('dd');
-        dd.textContent = value;
-        statList.appendChild(dt);
-        statList.appendChild(dd);
-      });
-      card.appendChild(statList);
-    }
 
     card.addEventListener('click', () => this.handleSelection(weapon.id));
     card.addEventListener('keyup', (event) => {
