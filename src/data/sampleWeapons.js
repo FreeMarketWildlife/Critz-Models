@@ -95,8 +95,8 @@ const RAW_WEAPONS = [
     category: 'primary',
     description: 'Channelled staff that spits arcane splash bolts.',
     stats: {
-      damage: '10',
-      fireMode: 'Full-Auto Splash',
+      damage: '10 Splash',
+      fireMode: 'Full-Auto',
       rpm: '120',
       ammoOverheat: '10/100',
       cooldown: '2s',
@@ -141,8 +141,8 @@ const RAW_WEAPONS = [
     category: 'secondary',
     description: 'Burst sidearm that saturates tight spaces.',
     stats: {
-      damage: '10',
-      fireMode: 'Semi-Auto Splash',
+      damage: '10 Splash',
+      fireMode: 'Semi-Auto',
       rpm: '300',
       ammo: '8/16',
       reloadSpeed: '0.2s',
@@ -158,8 +158,8 @@ const RAW_WEAPONS = [
     category: 'secondary',
     description: 'Full-auto wand that bathes targets in fae energy.',
     stats: {
-      damage: '15',
-      fireMode: 'Full-Auto Splash',
+      damage: '15 Splash',
+      fireMode: 'Full-Auto',
       rpm: '120',
       overheat: '20/100',
       cooldown: '3s',
@@ -175,8 +175,8 @@ const RAW_WEAPONS = [
     category: 'secondary',
     description: 'Close-range burner that drenches foes in flame.',
     stats: {
-      damage: 'Fire (10/s for 3s)',
-      fireMode: 'Full-Auto AOE',
+      damage: 'Fire (10/s for 3s) AOE',
+      fireMode: 'Full-Auto',
       rpm: '1000',
       overheat: '2/100',
       cooldown: '2s',
