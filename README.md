@@ -1,7 +1,7 @@
-# Critz Armory Display Application Plan
+# Critz Library Experience Plan
 
 ## Vision
-Create an immersive, fantasy-inspired armory interface that catalogs every weapon in Critz. The application should blend an arcane HUD with interactive 3D weapon previews powered by Three.js. It must support rapid iteration on weapon metadata, modular UI sections for Primary, Secondary, Melee, and Utility gear, and an extensible pipeline for importing new 3D assets.
+Create an immersive, fantasy-inspired library interface that catalogs every artifact in Critz. The application should blend an arcane HUD with interactive 3D previews powered by Three.js. It must support rapid iteration on item metadata, modular UI sections for Primary, Secondary, Melee, and Utility collections, and an extensible pipeline for importing new 3D assets.
 
 ## Technology Stack
 - **Core**: Vanilla JavaScript with ES modules
@@ -99,7 +99,7 @@ Weapons are modeled with a base schema plus category-specific extensions.
 The schema is intentionally flexible. The HUD reads the schema metadata to decide which stats to show. Optional fields (like `quiverCapacity`) are displayed only when present.
 
 ## UI Layout & Flow
-- **Top-left HUD**: Permanent "Crtiz" brand glyph and environment controls (fullscreen, sound toggle).
+- **Top-left HUD**: Permanent "Critz Library" marque and environment controls (fullscreen, sound toggle).
 - **Left rail**: Navigation tabs stacked vertically for category selection.
 - **Center stage**: Three.js canvas with weapon preview, orbit controls, and atmospheric VFX.
 - **Right panel**: Weapon list (top) and detail panel (bottom) with animated transitions.

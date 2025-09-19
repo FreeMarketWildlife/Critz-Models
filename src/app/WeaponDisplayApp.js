@@ -116,7 +116,7 @@ export class WeaponDisplayApp {
   buildLayout() {
     this.root.innerHTML = `
       <div class="app-shell">
-        <div class="hud-brand">Crtiz Armory</div>
+        <div class="hud-brand">Critz Library</div>
         <nav class="hud-nav" aria-label="Interface options">
           <div class="nav-section nav-section--critters">
             <h2>Critters</h2>
@@ -129,21 +129,21 @@ export class WeaponDisplayApp {
         </nav>
         <section class="panel hud-panel hud-list" data-component="weapon-list">
           <div class="panel-header">
-            <span>Arsenal</span>
+            <span>Collection</span>
             <span data-role="list-context"></span>
           </div>
           <div class="weapon-cards" data-role="weapon-cards"></div>
-          <div class="panel-footer" data-role="list-footer">Choose a category to see its gear.</div>
+          <div class="panel-footer" data-role="list-footer">Choose a category to browse its entries.</div>
         </section>
         <section class="panel hud-panel hud-detail" data-component="weapon-detail">
           <div class="panel-header">
-            <span>Equipment Info</span>
+            <span>Item Details</span>
             <span data-role="rarity-badge"></span>
           </div>
           <div class="detail-content" data-role="detail-content">
-            <p class="description">Pick a tool to see its details.</p>
+            <p class="description">Pick an entry to see its details.</p>
           </div>
-          <div class="panel-footer" data-role="detail-footer">Awaiting selection</div>
+          <div class="panel-footer" data-role="detail-footer">Select an item to begin</div>
         </section>
         <section class="stage" data-component="stage">
           <div class="stage-toolbar" data-component="stage-toolbar">
