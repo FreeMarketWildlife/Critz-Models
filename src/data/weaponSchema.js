@@ -80,6 +80,41 @@ export const deriveStatsList = (weapon) => {
     value !== null && value !== undefined && value !== ''
   );
 
+  const fireModeEntry = entries.find(([key]) => key === 'fireMode');
+  const damageEntry = entries.find(([key]) => key === 'damage');
+
+  if (fireModeEntry && typeof fireModeEntry[1] === 'string') {
+    const fireModeValue = fireModeEntry[1].trim();
+    const areaMatch = fireModeValue.match(/\b(Splash|AOE)\s*$/i);
+
+    if (areaMatch) {
+      const areaTag = areaMatch[1];
+      const baseFireMode = fireModeValue.replace(areaMatch[0], '').trim();
+
+      if (baseFireMode) {
+        fireModeEntry[1] = baseFireMode;
+      }
+
+      if (damageEntry && typeof damageEntry[1] === 'string') {
+        const damageValue = damageEntry[1].trim();
+        const hasAreaAlready = new RegExp(`\\b${areaTag}\\b`, 'i').test(damageValue);
+
+        if (!hasAreaAlready) {
+          const numericOnly = /^\d+(\.\d+)?$/.test(damageValue);
+          const endsWithDamage = /damage$/i.test(damageValue);
+
+          if (endsWithDamage) {
+            damageEntry[1] = damageValue.replace(/damage$/i, `${areaTag} damage`).trim();
+          } else if (numericOnly) {
+            damageEntry[1] = `${damageValue} ${areaTag} damage`;
+          } else {
+            damageEntry[1] = `${damageValue} ${areaTag}`;
+          }
+        }
+      }
+    }
+  }
+
   entries.sort((a, b) => {
     const indexA = DEFAULT_STATS_ORDER.indexOf(a[0]);
     const indexB = DEFAULT_STATS_ORDER.indexOf(b[0]);
