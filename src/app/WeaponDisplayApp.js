@@ -4,7 +4,6 @@ import { sampleWeapons } from '../data/sampleWeapons.js';
 import { createEventBus } from '../utils/eventBus.js';
 import { critters } from '../data/critters.js';
 import { CritterSelector } from '../hud/components/CritterSelector.js';
-import { AnimationSelector } from '../hud/components/AnimationSelector.js';
 import { ViewportOverlay } from '../hud/components/ViewportOverlay.js';
 import { RigControlPanel } from '../hud/components/RigControlPanel.js';
 
@@ -15,7 +14,7 @@ export class WeaponDisplayApp {
     this.sceneManager = null;
     this.hudController = null;
     this.critterSelector = null;
-    this.animationSelector = null;
+    this.activeAnimationId = null;
     this.viewportOverlay = null;
     this.rigControlPanel = null;
 
@@ -76,12 +75,6 @@ export class WeaponDisplayApp {
       bus: this.eventBus,
     });
 
-    this.animationSelector = new AnimationSelector({
-      container: layout.animationSelectorElement,
-      bus: this.eventBus,
-    });
-    this.animationSelector.init();
-
     this.rigControlPanel = new RigControlPanel({
       container: layout.rigControlsElement,
       bus: this.eventBus,
@@ -91,23 +84,13 @@ export class WeaponDisplayApp {
     const defaultCritter = this.findDefaultCritter();
     if (defaultCritter) {
       this.activeCritter = defaultCritter;
-      this.animationSelector.setCritterName(defaultCritter.name);
-      this.animationSelector.setAnimations(
-        defaultCritter.animations,
-        defaultCritter.defaultAnimationId
-      );
-
-      const activeAnimationId = this.animationSelector.getActiveAnimationId();
-      const activeAnimation = this.findAnimation(defaultCritter, activeAnimationId);
+      this.activeAnimationId = this.resolveDefaultAnimation(defaultCritter);
 
       this.sceneManager.loadCritter(defaultCritter).then(() => {
-        if (activeAnimation) {
-          this.sceneManager.playAnimation(activeAnimation);
-        }
+        this.playActiveAnimation();
       });
     } else {
-      this.animationSelector.setCritterName('--');
-      this.animationSelector.setAnimations([]);
+      this.activeAnimationId = null;
     }
 
     this.critterSelector.render(defaultCritter?.id);
@@ -147,7 +130,6 @@ export class WeaponDisplayApp {
         <section class="stage" data-component="stage">
           <div class="stage-toolbar" data-component="stage-toolbar">
             <div class="stage-tool-grid">
-              <div class="stage-tool-panel stage-tool-panel--selector" data-component="animation-selector"></div>
               <div class="stage-tool-panel stage-tool-panel--rig" data-component="rig-controls"></div>
             </div>
           </div>
@@ -172,7 +154,6 @@ export class WeaponDisplayApp {
       listFooter: this.root.querySelector('[data-role="list-footer"]'),
       rarityBadge: this.root.querySelector('[data-role="rarity-badge"]'),
       detailFooter: this.root.querySelector('[data-role="detail-footer"]'),
-      animationSelectorElement: this.root.querySelector('[data-component="animation-selector"]'),
       rigControlsElement: this.root.querySelector('[data-component="rig-controls"]'),
     };
   }
@@ -199,30 +180,11 @@ export class WeaponDisplayApp {
       }
 
       this.activeCritter = critter;
-      this.animationSelector.setCritterName(critter.name);
-      this.animationSelector.setAnimations(critter.animations, critter.defaultAnimationId);
-
-      const activeAnimationId = this.animationSelector.getActiveAnimationId();
-      const activeAnimation = this.findAnimation(critter, activeAnimationId);
+      this.activeAnimationId = this.resolveDefaultAnimation(critter);
 
       this.sceneManager.loadCritter(critter).then(() => {
-        if (activeAnimation) {
-          this.sceneManager.playAnimation(activeAnimation);
-        } else {
-          this.sceneManager.stopAnimation();
-        }
+        this.playActiveAnimation();
       });
-    });
-
-    this.eventBus.on('critter:animation-selected', (animationId) => {
-      if (!this.activeCritter) {
-        return;
-      }
-
-      const animation = this.findAnimation(this.activeCritter, animationId);
-      if (animation) {
-        this.sceneManager.playAnimation(animation);
-      }
     });
 
     this.eventBus.on('rig:refresh-requested', () => {
@@ -271,20 +233,39 @@ export class WeaponDisplayApp {
     return critter.animations?.find((animation) => animation.id === animationId) || null;
   }
 
+  resolveDefaultAnimation(critter) {
+    if (!critter) {
+      return null;
+    }
+
+    return critter.defaultAnimationId || critter.animations?.[0]?.id || null;
+  }
+
+  playActiveAnimation() {
+    if (!this.sceneManager || !this.activeCritter) {
+      return;
+    }
+
+    if (!this.activeAnimationId) {
+      this.sceneManager.stopAnimation();
+      return;
+    }
+
+    const animation = this.findAnimation(this.activeCritter, this.activeAnimationId);
+    if (animation) {
+      this.sceneManager.playAnimation(animation);
+    } else {
+      this.sceneManager.stopAnimation();
+    }
+  }
+
   refreshActiveCritter() {
     if (!this.activeCritter || !this.sceneManager) {
       return;
     }
 
-    const animationId = this.animationSelector?.getActiveAnimationId?.();
-    const animation = this.findAnimation(this.activeCritter, animationId);
-
     this.sceneManager.loadCritter(this.activeCritter).then(() => {
-      if (animation) {
-        this.sceneManager.playAnimation(animation);
-      } else {
-        this.sceneManager.stopAnimation();
-      }
+      this.playActiveAnimation();
     });
   }
 }

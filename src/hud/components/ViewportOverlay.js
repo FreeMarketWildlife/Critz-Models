@@ -47,14 +47,6 @@ export class ViewportOverlay {
         </div>
       </div>
       <div class="viewport-ui__bottom">
-        <div class="viewport-instructions">
-          <p class="viewport-instructions__title">Camera Tips</p>
-          <ul class="viewport-instructions__list" aria-label="Viewport camera controls">
-            <li><span>Drag</span> Orbit around</li>
-            <li><span>Right-drag</span> Pan the view</li>
-            <li><span>Scroll</span> Zoom in or out</li>
-          </ul>
-        </div>
         <div class="viewport-controls" role="group" aria-label="Viewport controls">
           <button type="button" class="viewport-button" data-action="focus">Focus Model</button>
           <button type="button" class="viewport-button" data-action="reset">Reset View</button>
