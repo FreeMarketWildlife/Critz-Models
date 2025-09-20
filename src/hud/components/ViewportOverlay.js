@@ -26,13 +26,9 @@ export class ViewportOverlay {
     this.build();
     this.bindControls();
     this.bindBusEvents();
-    this.setStatus('idle', 'Select a critter to preview.');
     this.setControlsAvailability({
       focus: false,
       reset: false,
-      autorotate: false,
-      resetPose: false,
-      refresh: false,
     });
   }
 
@@ -40,27 +36,11 @@ export class ViewportOverlay {
     this.root = document.createElement('div');
     this.root.className = 'viewport-ui';
     this.root.innerHTML = `
-      <div class="viewport-ui__top">
-        <div class="viewport-status" data-role="viewport-status" data-state="idle">
-          <span class="viewport-status__indicator" data-role="viewport-status-indicator"></span>
-          <span class="viewport-status__text" data-role="viewport-status-text"></span>
-        </div>
-      </div>
       <div class="viewport-ui__bottom">
         <div class="viewport-controls-panel">
           <div class="viewport-controls" role="group" aria-label="Viewport controls">
             <button type="button" class="viewport-button" data-action="focus">Focus Model</button>
             <button type="button" class="viewport-button" data-action="reset">Reset View</button>
-            <button type="button" class="viewport-button" data-action="reset-pose">Reset Pose</button>
-            <button type="button" class="viewport-button" data-action="refresh">Refresh Critter</button>
-            <button
-              type="button"
-              class="viewport-button viewport-button--toggle"
-              data-action="autorotate"
-              aria-pressed="false"
-            >
-              Auto Orbit
-            </button>
           </div>
         </div>
       </div>
@@ -134,9 +114,6 @@ export class ViewportOverlay {
         this.setControlsAvailability({
           focus: true,
           reset: true,
-          autorotate: true,
-          resetPose: this.hasRigControls,
-          refresh: this.hasRigControls,
         });
         this.flashStatus();
       }),
@@ -147,9 +124,6 @@ export class ViewportOverlay {
         this.setControlsAvailability({
           focus: false,
           reset: true,
-          autorotate: false,
-          resetPose: false,
-          refresh: false,
         });
       }),
       this.bus.on('stage:focus-achieved', () => {
@@ -165,11 +139,9 @@ export class ViewportOverlay {
       this.bus.on('stage:rig-controls-ready', (payload) => {
         const controls = payload?.controls ?? [];
         this.hasRigControls = controls.length > 0;
-        this.setControlsAvailability({ resetPose: this.hasRigControls, refresh: this.hasRigControls });
       }),
       this.bus.on('stage:rig-controls-cleared', () => {
         this.hasRigControls = false;
-        this.setControlsAvailability({ resetPose: false, refresh: false });
       })
     );
   }
@@ -215,9 +187,6 @@ export class ViewportOverlay {
     this.setControlsAvailability({
       focus: !isLoading,
       reset: !isLoading,
-      autorotate: !isLoading,
-      resetPose: !isLoading && this.hasRigControls,
-      refresh: !isLoading && this.hasRigControls,
     });
   }
 
