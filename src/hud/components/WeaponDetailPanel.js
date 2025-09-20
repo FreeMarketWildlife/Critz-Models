@@ -1,4 +1,5 @@
 import { deriveStatsList } from '../../data/weaponSchema.js';
+import { applyKeywordTooltips } from '../../utils/keywordTooltips.js';
 
 const RARITY_TITLES = {
   common: 'Common',
@@ -9,7 +10,7 @@ const RARITY_TITLES = {
   mythic: 'Mythic',
 };
 
-const buildStatsMarkup = (weapon) => {
+const buildStatsMarkup = (weapon, decorate = (value) => value) => {
   if (!weapon) {
     return '';
   }
@@ -20,13 +21,13 @@ const buildStatsMarkup = (weapon) => {
   }
 
   const rows = stats
-    .map(({ label, value }) => `<dt>${label}</dt><dd>${value}</dd>`)
+    .map(({ label, value }) => `<dt>${decorate(label)}</dt><dd>${decorate(value)}</dd>`)
     .join('');
 
   return `<dl class="stat-list">${rows}</dl>`;
 };
 
-const buildSpecialMarkup = (weapon, prettify) => {
+const buildSpecialMarkup = (weapon, prettify, decorate = (value) => value) => {
   const entries = Object.entries(weapon.special || {}).filter(([, value]) =>
     value !== null && value !== undefined && value !== ''
   );
@@ -36,7 +37,10 @@ const buildSpecialMarkup = (weapon, prettify) => {
   }
 
   const items = entries
-    .map(([key, value]) => `<li><span class="special-key">${prettify(key)}:</span> ${value}</li>`)
+    .map(
+      ([key, value]) =>
+        `<li><span class="special-key">${decorate(prettify(key))}:</span> ${decorate(value)}</li>`
+    )
     .join('');
 
   return `
@@ -76,12 +80,13 @@ export class WeaponDetailPanel {
   }
 
   renderContent(weapon) {
-    const statsMarkup = buildStatsMarkup(weapon);
-    const specialMarkup = buildSpecialMarkup(weapon, (value) => this.prettify(value));
+    const decorate = (value) => applyKeywordTooltips(value);
+    const statsMarkup = buildStatsMarkup(weapon, decorate);
+    const specialMarkup = buildSpecialMarkup(weapon, (value) => this.prettify(value), decorate);
 
     this.contentElement.innerHTML = `
       <h3>${weapon.name}</h3>
-      <p class="description">${weapon.description}</p>
+      <p class="description">${decorate(weapon.description)}</p>
       ${statsMarkup}
       ${specialMarkup}
     `;
