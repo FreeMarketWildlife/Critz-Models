@@ -420,6 +420,21 @@ dl dt {
   color: var(--color-text-secondary);
 }
 
+.has-tooltip {
+  cursor: help;
+  text-decoration-line: underline;
+  text-decoration-style: dotted;
+  text-decoration-color: rgba(247, 255, 244, 0.65);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.15em;
+}
+
+.has-tooltip:hover,
+.has-tooltip:focus-visible {
+  text-decoration-color: var(--color-highlight);
+  text-decoration-style: solid;
+}
+
 .stat-grid {
   display: flex;
   flex-direction: column;
