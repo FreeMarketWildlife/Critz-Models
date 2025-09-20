@@ -9,6 +9,51 @@ const RARITY_TITLES = {
   mythic: 'Mythic',
 };
 
+const escapeRegExp = (value) =>
+  value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const TOOLTIP_KEYWORDS = [
+  {
+    term: 'Splash',
+    description:
+      'Damage is highest at the point of impact, and falls off sharply the further away from the impact it is',
+  },
+  {
+    term: 'AOE',
+    description:
+      'There is an Area of Effect (a defined zone or radius) applying whatever damage or effects.',
+  },
+  {
+    term: 'Fire',
+    description:
+      'Ignites targets for 3 seconds dealing 10 damage per second. Gas can be lit by fire.',
+  },
+  { term: 'RPM', description: 'Rounds per Minute' },
+  {
+    term: 'Overheat',
+    description:
+      'Weapons that have Overheat do not use Ammo, instead they are limited by a heat meter that rises with each shot fired and dissipates between shots. X/Y means that each shot costs X, and Y is the max of the heat meter. When a weapon overheats, it must wait until it\'s at 0/Y to fire again.',
+  },
+  {
+    term: 'Gas',
+    description: 'Gas deals 5 damage for 5 seconds. Gas can be lit by fire.',
+  },
+  { term: 'Lightning', description: 'Paralyzes Enemy Units for 0.5s every 1s' },
+  { term: 'Ice', description: 'All Units Have 50% Less Friction' },
+];
+
+const TOOLTIP_LOOKUP = new Map(
+  TOOLTIP_KEYWORDS.map((entry) => [entry.term.toLowerCase(), entry])
+);
+
+const TOOLTIP_PATTERN =
+  TOOLTIP_KEYWORDS.length > 0
+    ? new RegExp(
+        `\\b(${TOOLTIP_KEYWORDS.map(({ term }) => escapeRegExp(term)).join('|')})\\b`,
+        'gi'
+      )
+    : null;
+
 const buildStatsMarkup = (weapon) => {
   if (!weapon) {
     return '';
@@ -26,6 +71,37 @@ const buildStatsMarkup = (weapon) => {
   return `<dl class="stat-list">${rows}</dl>`;
 };
 
+const normalizeSpecialValue = (value) => {
+  if (value === null || value === undefined) {
+    return '';
+  }
+
+  if (typeof value === 'string') {
+    return value.trim();
+  }
+
+  if (typeof value === 'number') {
+    return `${value}`;
+  }
+
+  if (typeof value === 'boolean') {
+    return value ? '' : 'No';
+  }
+
+  return String(value);
+};
+
+const formatSpecialEntry = (key, value, prettify) => {
+  const label = prettify(key);
+  const normalizedValue = normalizeSpecialValue(value);
+  const shouldShowValue =
+    normalizedValue !== '' && normalizedValue.toLowerCase() !== label.toLowerCase();
+
+  const valueMarkup = shouldShowValue ? `: ${normalizedValue}` : '';
+
+  return `<li><span class="special-key">${label}</span>${valueMarkup}</li>`;
+};
+
 const buildSpecialMarkup = (weapon, prettify) => {
   const entries = Object.entries(weapon.special || {}).filter(([, value]) =>
     value !== null && value !== undefined && value !== ''
@@ -36,7 +112,7 @@ const buildSpecialMarkup = (weapon, prettify) => {
   }
 
   const items = entries
-    .map(([key, value]) => `<li><span class="special-key">${prettify(key)}:</span> ${value}</li>`)
+    .map(([key, value]) => formatSpecialEntry(key, value, prettify))
     .join('');
 
   return `
@@ -45,6 +121,83 @@ const buildSpecialMarkup = (weapon, prettify) => {
       <ul class="special-list">${items}</ul>
     </div>
   `;
+};
+
+const applyKeywordTooltips = (container) => {
+  if (!container || !TOOLTIP_PATTERN) {
+    return;
+  }
+
+  const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
+  const textNodes = [];
+
+  while (walker.nextNode()) {
+    const node = walker.currentNode;
+    if (!node.nodeValue || !node.nodeValue.trim()) {
+      continue;
+    }
+
+    const parentElement = node.parentElement;
+    if (parentElement && parentElement.closest('.tooltip-trigger')) {
+      continue;
+    }
+
+    TOOLTIP_PATTERN.lastIndex = 0;
+    if (!TOOLTIP_PATTERN.test(node.nodeValue)) {
+      continue;
+    }
+
+    TOOLTIP_PATTERN.lastIndex = 0;
+    textNodes.push(node);
+  }
+
+  textNodes.forEach((textNode) => {
+    const textContent = textNode.nodeValue;
+    const parent = textNode.parentNode;
+
+    if (!parent) {
+      return;
+    }
+
+    TOOLTIP_PATTERN.lastIndex = 0;
+    const fragment = document.createDocumentFragment();
+    let lastIndex = 0;
+    let match;
+
+    while ((match = TOOLTIP_PATTERN.exec(textContent))) {
+      const matchedText = match[0];
+      const startIndex = match.index;
+
+      if (startIndex > lastIndex) {
+        fragment.appendChild(
+          document.createTextNode(textContent.slice(lastIndex, startIndex))
+        );
+      }
+
+      const tooltipDefinition = TOOLTIP_LOOKUP.get(matchedText.toLowerCase());
+
+      if (tooltipDefinition) {
+        const trigger = document.createElement('span');
+        trigger.className = 'tooltip-trigger';
+        trigger.setAttribute('data-tooltip', tooltipDefinition.description);
+        trigger.setAttribute('tabindex', '0');
+        trigger.textContent = matchedText;
+        fragment.appendChild(trigger);
+      } else {
+        fragment.appendChild(document.createTextNode(matchedText));
+      }
+
+      lastIndex = startIndex + matchedText.length;
+    }
+
+    if (lastIndex < textContent.length) {
+      fragment.appendChild(document.createTextNode(textContent.slice(lastIndex)));
+    }
+
+    parent.insertBefore(fragment, textNode);
+    parent.removeChild(textNode);
+    TOOLTIP_PATTERN.lastIndex = 0;
+  });
 };
 
 export class WeaponDetailPanel {
@@ -85,6 +238,8 @@ export class WeaponDetailPanel {
       ${statsMarkup}
       ${specialMarkup}
     `;
+
+    applyKeywordTooltips(this.contentElement);
 
     if (this.footerElement) {
       this.footerElement.textContent = `Catalog ID: ${weapon.id}`;

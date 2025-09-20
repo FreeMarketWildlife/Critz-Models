@@ -200,6 +200,65 @@ body::after {
   opacity: 1;
 }
 
+.tooltip-trigger {
+  position: relative;
+  cursor: help;
+  color: inherit;
+  border-bottom: 1px dotted rgba(247, 255, 245, 0.5);
+  outline: none;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.tooltip-trigger:hover,
+.tooltip-trigger:focus-visible {
+  color: var(--color-highlight);
+  border-bottom-color: rgba(240, 255, 150, 0.75);
+}
+
+.tooltip-trigger::after,
+.tooltip-trigger::before {
+  position: absolute;
+  left: 50%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  z-index: 20;
+}
+
+.tooltip-trigger::after {
+  content: attr(data-tooltip);
+  bottom: calc(100% + 0.55rem);
+  transform: translate(-50%, 0.2rem);
+  background: rgba(6, 19, 13, 0.92);
+  color: var(--color-text-primary);
+  padding: 0.45rem 0.6rem;
+  border-radius: 0.6rem;
+  box-shadow: 0 18px 32px rgba(5, 15, 10, 0.55);
+  font-size: 0.75rem;
+  line-height: 1.25;
+  max-width: 260px;
+  width: max-content;
+  text-align: center;
+  white-space: normal;
+}
+
+.tooltip-trigger::before {
+  content: '';
+  bottom: calc(100% + 0.25rem);
+  transform: translate(-50%, 0.2rem);
+  border-width: 6px 6px 0 6px;
+  border-style: solid;
+  border-color: rgba(6, 19, 13, 0.92) transparent transparent transparent;
+}
+
+.tooltip-trigger:hover::after,
+.tooltip-trigger:hover::before,
+.tooltip-trigger:focus-visible::after,
+.tooltip-trigger:focus-visible::before {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
 .critter-button.active {
   border-color: rgba(211, 243, 107, 0.75);
   color: var(--color-text-primary);
