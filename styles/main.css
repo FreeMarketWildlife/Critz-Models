@@ -875,7 +875,7 @@ dl dt {
   inset: 0;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-end;
   padding: 1.5rem 1.75rem;
   pointer-events: none;
   z-index: 2;
