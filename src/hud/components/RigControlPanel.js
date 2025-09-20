@@ -55,7 +55,8 @@ export class RigControlPanel {
       this.bus.on('stage:model-ready', (payload) => {
         if (payload?.type === 'critter') {
           this.currentCritterName = payload?.name ?? null;
-          this.setLoading(false, `${payload?.name ?? 'Rig'} ready for tuning.`);
+          this.setLoading(false);
+          this.setStatus('idle', 'Idle');
         }
       }),
       this.bus.on('stage:model-missing', (payload) => {
