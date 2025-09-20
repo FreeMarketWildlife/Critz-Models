@@ -39,41 +39,16 @@ export class ViewportOverlay {
   build() {
     this.root = document.createElement('div');
     this.root.className = 'viewport-ui';
-    this.root.innerHTML = `
-      <div class="viewport-ui__top">
-        <div class="viewport-status" data-role="viewport-status" data-state="idle">
-          <span class="viewport-status__indicator" data-role="viewport-status-indicator"></span>
-          <span class="viewport-status__text" data-role="viewport-status-text"></span>
-        </div>
-      </div>
-      <div class="viewport-ui__bottom">
-        <div class="viewport-controls-panel">
-          <div class="viewport-controls" role="group" aria-label="Viewport controls">
-            <button type="button" class="viewport-button" data-action="focus">Focus Model</button>
-            <button type="button" class="viewport-button" data-action="reset">Reset View</button>
-            <button type="button" class="viewport-button" data-action="reset-pose">Reset Pose</button>
-            <button type="button" class="viewport-button" data-action="refresh">Refresh Critter</button>
-            <button
-              type="button"
-              class="viewport-button viewport-button--toggle"
-              data-action="autorotate"
-              aria-pressed="false"
-            >
-              Auto Orbit
-            </button>
-          </div>
-        </div>
-      </div>
-    `;
+    this.root.innerHTML = '';
 
     this.container.appendChild(this.root);
-    this.statusElement = this.root.querySelector('[data-role="viewport-status"]');
-    this.statusText = this.root.querySelector('[data-role="viewport-status-text"]');
-    this.autoRotateButton = this.root.querySelector('[data-action="autorotate"]');
-    this.focusButton = this.root.querySelector('[data-action="focus"]');
-    this.resetButton = this.root.querySelector('[data-action="reset"]');
-    this.resetPoseButton = this.root.querySelector('[data-action="reset-pose"]');
-    this.refreshButton = this.root.querySelector('[data-action="refresh"]');
+    this.statusElement = null;
+    this.statusText = null;
+    this.autoRotateButton = null;
+    this.focusButton = null;
+    this.resetButton = null;
+    this.resetPoseButton = null;
+    this.refreshButton = null;
   }
 
   bindControls() {
