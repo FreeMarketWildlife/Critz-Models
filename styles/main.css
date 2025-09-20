@@ -527,6 +527,55 @@ dl dt {
   font-weight: 600;
 }
 
+.has-tooltip {
+  position: relative;
+  cursor: help;
+  text-decoration: underline dotted;
+}
+
+.has-tooltip::after,
+.has-tooltip::before {
+  position: absolute;
+  left: 50%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  z-index: 10;
+}
+
+.has-tooltip::after {
+  content: attr(data-tooltip);
+  bottom: 125%;
+  transform: translate(-50%, -0.4rem);
+  background: rgba(6, 19, 13, 0.94);
+  color: var(--color-text-primary);
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  box-shadow: 0 10px 25px rgba(6, 19, 13, 0.55);
+  max-width: 220px;
+  width: max-content;
+  text-align: center;
+  line-height: 1.4;
+  white-space: normal;
+}
+
+.has-tooltip::before {
+  content: '';
+  bottom: 115%;
+  transform: translate(-50%, 0);
+  border-width: 6px;
+  border-style: solid;
+  border-color: rgba(6, 19, 13, 0.94) transparent transparent transparent;
+}
+
+.has-tooltip:hover::after,
+.has-tooltip:hover::before,
+.has-tooltip:focus::after,
+.has-tooltip:focus::before {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+
 .panel-footer {
   font-size: 0.78rem;
   letter-spacing: 0.14em;

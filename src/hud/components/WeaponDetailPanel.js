@@ -1,4 +1,5 @@
 import { deriveStatsList } from '../../data/weaponSchema.js';
+import { applyTooltips } from '../../utils/tooltips.js';
 
 const RARITY_TITLES = {
   common: 'Common',
@@ -8,6 +9,8 @@ const RARITY_TITLES = {
   legendary: 'Legendary',
   mythic: 'Mythic',
 };
+
+const withTooltips = (content) => applyTooltips(content);
 
 const buildStatsMarkup = (weapon) => {
   if (!weapon) {
@@ -20,7 +23,11 @@ const buildStatsMarkup = (weapon) => {
   }
 
   const rows = stats
-    .map(({ label, value }) => `<dt>${label}</dt><dd>${value}</dd>`)
+    .map(({ label, value }) => {
+      const labelMarkup = withTooltips(label);
+      const valueMarkup = withTooltips(value);
+      return `<dt>${labelMarkup}</dt><dd>${valueMarkup}</dd>`;
+    })
     .join('');
 
   return `<dl class="stat-list">${rows}</dl>`;
@@ -36,7 +43,22 @@ const buildSpecialMarkup = (weapon, prettify) => {
   }
 
   const items = entries
-    .map(([key, value]) => `<li><span class="special-key">${prettify(key)}:</span> ${value}</li>`)
+    .map(([key, value]) => {
+      const label = prettify(key);
+      const labelMarkup = `<span class="special-key">${withTooltips(label)}</span>`;
+
+      const stringValue = typeof value === 'string' ? value.trim() : '';
+      const hasStandaloneValue =
+        value === true ||
+        (stringValue && stringValue.toLowerCase() === label.toLowerCase());
+
+      if (hasStandaloneValue) {
+        return `<li>${labelMarkup}</li>`;
+      }
+
+      const valueMarkup = withTooltips(stringValue || value);
+      return `<li>${labelMarkup}: ${valueMarkup}</li>`;
+    })
     .join('');
 
   return `

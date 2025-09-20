@@ -59,7 +59,7 @@ const RAW_WEAPONS = [
       range: '300cm',
     },
     special: {
-      splash: 'Splash damage drops to 50% in the inner ring and 25% in the outer ring.',
+      splash: true,
     },
   },
   {
@@ -104,7 +104,7 @@ const RAW_WEAPONS = [
       range: '100cm',
     },
     special: {
-      splash: 'Splash damage drops to 50% in the inner ring and 25% in the outer ring.',
+      splash: true,
     },
   },
 
@@ -150,7 +150,7 @@ const RAW_WEAPONS = [
       range: '100cm',
     },
     special: {
-      splash: 'Splash damage drops to 50% in the inner ring and 25% in the outer ring.',
+      splash: true,
     },
   },
   {
@@ -167,7 +167,7 @@ const RAW_WEAPONS = [
       range: '100cm',
     },
     special: {
-      splash: 'Splash damage drops to 50% in the inner ring and 25% in the outer ring.',
+      splash: true,
     },
   },
   {
@@ -184,7 +184,7 @@ const RAW_WEAPONS = [
       range: '10cm',
     },
     special: {
-      burnProfile: 'Ignites targets for 3 seconds dealing 10 damage per second.',
+      burnProfile: 'Fire',
     },
   },
 
@@ -274,7 +274,7 @@ const RAW_WEAPONS = [
       abilityCooldown: '10s',
     },
     special: {
-      splash: 'Splash damage drops to 50% in the inner ring and 25% in the outer ring.',
+      splash: true,
     },
   },
   {
@@ -305,7 +305,7 @@ const RAW_WEAPONS = [
       info: 'Grenades Push Enemies & Self Back; Grenades Cannot be Cooked',
     },
     special: {
-      splash: 'Splash damage drops to 50% in the inner ring and 25% in the outer ring.',
+      splash: true,
     },
   },
   {
@@ -357,7 +357,7 @@ const RAW_WEAPONS = [
     category: 'utility',
     description: 'Volatile gas bomb for area denial.',
     stats: {
-      damage: 'Gas (5/s for 5s)',
+      damage: 'Gas AOE',
       deploy: 'Throw',
       capacity: '2',
       range: '50cm',
@@ -369,7 +369,7 @@ const RAW_WEAPONS = [
     category: 'utility',
     description: 'Ignites ground targets with lingering flames.',
     stats: {
-      damage: 'Fire (10/s for 3s)',
+      damage: 'Fire AOE',
       deploy: 'Throw',
       capacity: '2',
       range: '50cm',
@@ -381,7 +381,7 @@ const RAW_WEAPONS = [
     category: 'utility',
     description: 'Crackling vial that paralyzes anything within.',
     stats: {
-      effect: 'Lightning (Paralyzes Enemy Units for 0.5s every 1s)',
+      effect: 'Field of Lightning',
       deploy: 'Throw',
       capacity: '2',
       range: '50cm',
@@ -393,7 +393,7 @@ const RAW_WEAPONS = [
     category: 'utility',
     description: 'Chilling vial that strips traction from the ground.',
     stats: {
-      effect: 'Ice (All Units Have 50% Less Friction)',
+      effect: 'Sheet of Ice',
       deploy: 'Throw',
       capacity: '2',
       range: '50cm',
@@ -405,10 +405,10 @@ const RAW_WEAPONS = [
     category: 'utility',
     description: 'Compressed gust that shoves everything outward.',
     stats: {
+      effect: 'Blast of Air',
       deploy: 'Throw',
       capacity: '2',
       range: '50cm',
-      info: 'Create a Blast of Air that Pushes Enemies & Self Away',
     },
     special: {
       knockback: 'Knockback strength follows 100%/50%/25% falloff from the impact center.',
