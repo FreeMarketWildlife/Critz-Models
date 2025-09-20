@@ -54,8 +54,8 @@ export class ViewportOverlay {
     `;
 
     this.container.appendChild(this.root);
-    this.statusElement = this.root.querySelector('[data-role="viewport-status"]');
-    this.statusText = this.root.querySelector('[data-role="viewport-status-text"]');
+    this.statusElement = null;
+    this.statusText = null;
     this.autoRotateButton = this.root.querySelector('[data-action="autorotate"]');
     this.focusButton = this.root.querySelector('[data-action="focus"]');
     this.resetButton = this.root.querySelector('[data-action="reset"]');
