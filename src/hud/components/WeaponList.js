@@ -69,7 +69,6 @@ export class WeaponList {
   }
 
   handleSelection(weaponId) {
-    if (this.activeWeaponId === weaponId) return;
     this.setActiveWeapon(weaponId);
     this.onSelect?.(weaponId);
   }
