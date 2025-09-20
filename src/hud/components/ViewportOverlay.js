@@ -8,14 +8,11 @@ export class ViewportOverlay {
     this.autoRotateButton = null;
     this.focusButton = null;
     this.resetButton = null;
-    this.resetPoseButton = null;
-    this.refreshButton = null;
     this.autoRotateEnabled = false;
     this.state = 'idle';
     this.unsubscribe = [];
     this.pulseTimeout = null;
     this.isLoading = false;
-    this.hasRigControls = false;
   }
 
   init() {
@@ -31,8 +28,6 @@ export class ViewportOverlay {
       focus: false,
       reset: false,
       autorotate: false,
-      resetPose: false,
-      refresh: false,
     });
   }
 
@@ -40,19 +35,11 @@ export class ViewportOverlay {
     this.root = document.createElement('div');
     this.root.className = 'viewport-ui';
     this.root.innerHTML = `
-      <div class="viewport-ui__top">
-        <div class="viewport-status" data-role="viewport-status" data-state="idle">
-          <span class="viewport-status__indicator" data-role="viewport-status-indicator"></span>
-          <span class="viewport-status__text" data-role="viewport-status-text"></span>
-        </div>
-      </div>
       <div class="viewport-ui__bottom">
         <div class="viewport-controls-panel">
           <div class="viewport-controls" role="group" aria-label="Viewport controls">
             <button type="button" class="viewport-button" data-action="focus">Focus Model</button>
             <button type="button" class="viewport-button" data-action="reset">Reset View</button>
-            <button type="button" class="viewport-button" data-action="reset-pose">Reset Pose</button>
-            <button type="button" class="viewport-button" data-action="refresh">Refresh Critter</button>
             <button
               type="button"
               class="viewport-button viewport-button--toggle"
@@ -72,8 +59,6 @@ export class ViewportOverlay {
     this.autoRotateButton = this.root.querySelector('[data-action="autorotate"]');
     this.focusButton = this.root.querySelector('[data-action="focus"]');
     this.resetButton = this.root.querySelector('[data-action="reset"]');
-    this.resetPoseButton = this.root.querySelector('[data-action="reset-pose"]');
-    this.refreshButton = this.root.querySelector('[data-action="refresh"]');
   }
 
   bindControls() {
@@ -90,20 +75,6 @@ export class ViewportOverlay {
     if (this.resetButton) {
       this.resetButton.addEventListener('click', () => {
         this.bus.emit('stage:reset-requested');
-        this.flashStatus();
-      });
-    }
-
-    if (this.resetPoseButton) {
-      this.resetPoseButton.addEventListener('click', () => {
-        this.bus.emit('rig:reset-requested');
-        this.flashStatus();
-      });
-    }
-
-    if (this.refreshButton) {
-      this.refreshButton.addEventListener('click', () => {
-        this.bus.emit('rig:refresh-requested');
         this.flashStatus();
       });
     }
@@ -135,8 +106,6 @@ export class ViewportOverlay {
           focus: true,
           reset: true,
           autorotate: true,
-          resetPose: this.hasRigControls,
-          refresh: this.hasRigControls,
         });
         this.flashStatus();
       }),
@@ -148,8 +117,6 @@ export class ViewportOverlay {
           focus: false,
           reset: true,
           autorotate: false,
-          resetPose: false,
-          refresh: false,
         });
       }),
       this.bus.on('stage:focus-achieved', () => {
@@ -161,15 +128,6 @@ export class ViewportOverlay {
       this.bus.on('stage:auto-rotate-changed', (payload) => {
         this.autoRotateEnabled = Boolean(payload?.enabled);
         this.updateAutoRotateButton();
-      }),
-      this.bus.on('stage:rig-controls-ready', (payload) => {
-        const controls = payload?.controls ?? [];
-        this.hasRigControls = controls.length > 0;
-        this.setControlsAvailability({ resetPose: this.hasRigControls, refresh: this.hasRigControls });
-      }),
-      this.bus.on('stage:rig-controls-cleared', () => {
-        this.hasRigControls = false;
-        this.setControlsAvailability({ resetPose: false, refresh: false });
       })
     );
   }
@@ -216,17 +174,13 @@ export class ViewportOverlay {
       focus: !isLoading,
       reset: !isLoading,
       autorotate: !isLoading,
-      resetPose: !isLoading && this.hasRigControls,
-      refresh: !isLoading && this.hasRigControls,
     });
   }
 
-  setControlsAvailability({ focus, reset, autorotate, resetPose, refresh }) {
+  setControlsAvailability({ focus, reset, autorotate }) {
     this.updateButtonState(this.focusButton, focus);
     this.updateButtonState(this.resetButton, reset);
     this.updateButtonState(this.autoRotateButton, autorotate);
-    this.updateButtonState(this.resetPoseButton, resetPose);
-    this.updateButtonState(this.refreshButton, refresh);
   }
 
   updateButtonState(button, isEnabled) {
@@ -251,14 +205,6 @@ export class ViewportOverlay {
     if (this.resetButton) {
       this.resetButton.replaceWith(this.resetButton.cloneNode(true));
       this.resetButton = null;
-    }
-    if (this.resetPoseButton) {
-      this.resetPoseButton.replaceWith(this.resetPoseButton.cloneNode(true));
-      this.resetPoseButton = null;
-    }
-    if (this.refreshButton) {
-      this.refreshButton.replaceWith(this.refreshButton.cloneNode(true));
-      this.refreshButton = null;
     }
     if (this.root?.parentNode) {
       this.root.parentNode.removeChild(this.root);
