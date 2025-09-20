@@ -1,5 +1,61 @@
 import { deriveStatsList } from '../../data/weaponSchema.js';
 
+const TOOLTIP_TEXT = {
+  splash:
+    'Damage is highest at the point of impact, and falls off sharply the further away from the impact it is',
+  aoe: 'There is an Area of Effect (a defined zone or radius) applying whatever damage or effects.',
+  fire: 'Ignites targets for 3 seconds dealing 10 damage per second. Gas can be lit by fire.',
+  rpm: 'Rounds per Minute',
+  overheat:
+    'Weapons that have Overheat do not use Ammo, instead they are limited by a heat meter that rises with each shot fired and dissipates between shots. X/Y means that each shot costs X, and Y is the max of the heat meter. When a weapon overheats, it must wait until it\'s at 0/Y to fire again.',
+  gas: 'Gas deals 5 damage for 5 seconds. Gas can be lit by fire.',
+  lightning: 'Paralyzes Enemy Units for 0.5s every 1s',
+  ice: 'All Units Have 50% Less Friction',
+};
+
+const escapeRegExp = (value) =>
+  value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const escapeAttribute = (value) =>
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+const buildTooltipPattern = (keywords) => {
+  if (!keywords.length) {
+    return null;
+  }
+
+  return new RegExp(
+    `\\b(${keywords.map((key) => escapeRegExp(key)).join('|')})\\b`,
+    'gi'
+  );
+};
+
+const TOOLTIP_PATTERN = buildTooltipPattern(Object.keys(TOOLTIP_TEXT));
+const LABEL_TOOLTIP_PATTERN = buildTooltipPattern(
+  Object.keys(TOOLTIP_TEXT).filter((key) => key !== 'fire')
+);
+
+const applyTooltips = (content, pattern = TOOLTIP_PATTERN) => {
+  if (typeof content !== 'string' || !content || !pattern) {
+    return content;
+  }
+
+  return content.replace(pattern, (match) => {
+    const tooltip = TOOLTIP_TEXT[match.toLowerCase()];
+
+    if (!tooltip) {
+      return match;
+    }
+
+    return `<span class="has-tooltip" title="${escapeAttribute(tooltip)}">${match}</span>`;
+  });
+};
+
 const RARITY_TITLES = {
   common: 'Common',
   uncommon: 'Uncommon',
@@ -20,7 +76,11 @@ const buildStatsMarkup = (weapon) => {
   }
 
   const rows = stats
-    .map(({ label, value }) => `<dt>${label}</dt><dd>${value}</dd>`)
+    .map(({ label, value }) => {
+      const labelMarkup = applyTooltips(label, LABEL_TOOLTIP_PATTERN);
+      const valueMarkup = typeof value === 'string' ? applyTooltips(value) : value;
+      return `<dt>${labelMarkup}</dt><dd>${valueMarkup}</dd>`;
+    })
     .join('');
 
   return `<dl class="stat-list">${rows}</dl>`;
@@ -36,7 +96,11 @@ const buildSpecialMarkup = (weapon, prettify) => {
   }
 
   const items = entries
-    .map(([key, value]) => `<li><span class="special-key">${prettify(key)}:</span> ${value}</li>`)
+    .map(([key, value]) => {
+      const keyLabel = applyTooltips(prettify(key));
+      const valueMarkup = typeof value === 'string' ? applyTooltips(value) : value;
+      return `<li><span class="special-key">${keyLabel}:</span> ${valueMarkup}</li>`;
+    })
     .join('');
 
   return `
@@ -79,9 +143,11 @@ export class WeaponDetailPanel {
     const statsMarkup = buildStatsMarkup(weapon);
     const specialMarkup = buildSpecialMarkup(weapon, (value) => this.prettify(value));
 
+    const descriptionMarkup = applyTooltips(weapon.description || '');
+
     this.contentElement.innerHTML = `
       <h3>${weapon.name}</h3>
-      <p class="description">${weapon.description}</p>
+      <p class="description">${descriptionMarkup}</p>
       ${statsMarkup}
       ${specialMarkup}
     `;
