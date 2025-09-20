@@ -527,6 +527,62 @@ dl dt {
   font-weight: 600;
 }
 
+.tooltip {
+  position: relative;
+  cursor: help;
+  color: var(--color-highlight);
+  text-decoration: underline dotted rgba(240, 255, 150, 0.65);
+}
+
+.tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  inset: auto auto 125% 50%;
+  transform: translateX(-50%) translateY(4px);
+  min-width: 180px;
+  max-width: 260px;
+  padding: 0.5rem 0.65rem;
+  border-radius: 8px;
+  background: rgba(9, 27, 19, 0.92);
+  border: 1px solid rgba(210, 243, 220, 0.35);
+  color: var(--color-text-primary);
+  font-size: 0.75rem;
+  line-height: 1.45;
+  letter-spacing: 0.02em;
+  white-space: normal;
+  box-shadow: 0 10px 28px rgba(5, 15, 10, 0.55);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 140ms ease-out, transform 140ms ease-out;
+  z-index: 10;
+}
+
+.tooltip::before {
+  content: '';
+  position: absolute;
+  inset: auto auto 115% 50%;
+  transform: translateX(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: rgba(9, 27, 19, 0.92) transparent transparent transparent;
+  opacity: 0;
+  transition: opacity 140ms ease-out;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.tooltip:hover::after,
+.tooltip:focus-visible::after,
+.tooltip:hover::before,
+.tooltip:focus-visible::before {
+  opacity: 1;
+}
+
+.tooltip:hover::after,
+.tooltip:focus-visible::after {
+  transform: translateX(-50%) translateY(0);
+}
+
 .panel-footer {
   font-size: 0.78rem;
   letter-spacing: 0.14em;
