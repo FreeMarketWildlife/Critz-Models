@@ -50,7 +50,7 @@ const RAW_WEAPONS = [
     category: 'primary',
     description: 'Heavy launcher delivering high splash damage.',
     stats: {
-      damage: '100',
+      damage: '100 Splash',
       fireMode: 'Manual',
       rpm: '50',
       ammo: '1/6',
@@ -175,7 +175,7 @@ const RAW_WEAPONS = [
     category: 'secondary',
     description: 'Close-range burner that drenches foes in flame.',
     stats: {
-      damage: 'Fire (10/s for 3s) AOE damage',
+      damage: 'Fire AOE',
       fireMode: 'Full-Auto',
       rpm: '1000',
       overheat: '2/100',
