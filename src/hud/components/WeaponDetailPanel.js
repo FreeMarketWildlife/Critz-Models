@@ -1,5 +1,5 @@
 import { deriveStatsList } from '../../data/weaponSchema.js';
-import { applyKeywordTooltips } from '../../utils/keywordTooltips.js';
+import { applyKeywordTooltips, hasKeywordTooltip } from '../../utils/keywordTooltips.js';
 
 const RARITY_TITLES = {
   common: 'Common',
@@ -27,6 +27,22 @@ const buildStatsMarkup = (weapon, decorate = (value) => value) => {
   return `<dl class="stat-list">${rows}</dl>`;
 };
 
+const shouldDisplaySpecialValue = (label, value) => {
+  if (hasKeywordTooltip(label)) {
+    return false;
+  }
+
+  if (value === null || value === undefined) {
+    return false;
+  }
+
+  if (typeof value === 'string' && value.trim() === '') {
+    return false;
+  }
+
+  return true;
+};
+
 const buildSpecialMarkup = (weapon, prettify, decorate = (value) => value) => {
   const entries = Object.entries(weapon.special || {}).filter(([, value]) =>
     value !== null && value !== undefined && value !== ''
@@ -38,8 +54,14 @@ const buildSpecialMarkup = (weapon, prettify, decorate = (value) => value) => {
 
   const items = entries
     .map(
-      ([key, value]) =>
-        `<li><span class="special-key">${decorate(prettify(key))}:</span> ${decorate(value)}</li>`
+      ([key, value]) => {
+        const label = prettify(key);
+        const decoratedLabel = decorate(label);
+        if (!shouldDisplaySpecialValue(label, value)) {
+          return `<li><span class="special-key">${decoratedLabel}</span></li>`;
+        }
+        return `<li><span class="special-key">${decoratedLabel}:</span> ${decorate(value)}</li>`;
+      }
     )
     .join('');
 

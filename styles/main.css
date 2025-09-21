@@ -73,7 +73,7 @@ body::after {
   width: 100%;
   height: 100%;
   display: grid;
-  grid-template-columns: 200px 300px minmax(280px, 360px) minmax(520px, 1fr);
+  grid-template-columns: 200px 280px minmax(360px, 480px) minmax(380px, 0.95fr);
   grid-template-rows: auto minmax(0, 1fr);
   gap: 1.5rem;
   padding: 2.25rem 2.75rem;
@@ -308,6 +308,7 @@ body::after {
 
 .hud-panel {
   min-height: 0;
+  overflow: visible;
 }
 
 .hud-list {
@@ -528,59 +529,62 @@ dl dt {
 }
 
 .tooltip {
-  position: relative;
   cursor: help;
   color: var(--color-highlight);
   text-decoration: underline dotted rgba(240, 255, 150, 0.65);
+  position: relative;
 }
 
-.tooltip::after {
-  content: attr(data-tooltip);
-  position: absolute;
-  inset: auto auto 125% 50%;
-  transform: translateX(-50%) translateY(4px);
-  min-width: 180px;
-  max-width: 260px;
-  padding: 0.5rem 0.65rem;
-  border-radius: 8px;
-  background: rgba(9, 27, 19, 0.92);
-  border: 1px solid rgba(210, 243, 220, 0.35);
-  color: var(--color-text-primary);
-  font-size: 0.75rem;
-  line-height: 1.45;
-  letter-spacing: 0.02em;
-  white-space: normal;
-  box-shadow: 0 10px 28px rgba(5, 15, 10, 0.55);
-  opacity: 0;
+.tooltip-layer {
+  position: fixed;
+  inset: 0;
+  width: max-content;
+  max-width: min(280px, calc(100vw - 24px));
+  transform: translate(-9999px, -9999px);
   pointer-events: none;
+  z-index: 9999;
   transition: opacity 140ms ease-out, transform 140ms ease-out;
-  z-index: 10;
-}
-
-.tooltip::before {
-  content: '';
-  position: absolute;
-  inset: auto auto 115% 50%;
-  transform: translateX(-50%);
-  border-width: 6px;
-  border-style: solid;
-  border-color: rgba(9, 27, 19, 0.92) transparent transparent transparent;
   opacity: 0;
-  transition: opacity 140ms ease-out;
-  pointer-events: none;
-  z-index: 10;
 }
 
-.tooltip:hover::after,
-.tooltip:focus-visible::after,
-.tooltip:hover::before,
-.tooltip:focus-visible::before {
+.tooltip-layer.is-visible {
   opacity: 1;
 }
 
-.tooltip:hover::after,
-.tooltip:focus-visible::after {
-  transform: translateX(-50%) translateY(0);
+.tooltip-layer__bubble {
+  padding: 0.55rem 0.7rem;
+  border-radius: 10px;
+  background: rgba(9, 27, 19, 0.96);
+  border: 1px solid rgba(210, 243, 220, 0.4);
+  color: var(--color-text-primary);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  letter-spacing: 0.02em;
+  box-shadow: 0 16px 32px rgba(5, 15, 10, 0.6);
+  white-space: normal;
+}
+
+.tooltip-layer__arrow {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: rgba(9, 27, 19, 0.96);
+  border-left: 1px solid rgba(210, 243, 220, 0.4);
+  border-top: 1px solid rgba(210, 243, 220, 0.4);
+  transform: translate(calc(var(--tooltip-arrow-offset, 0px) - 6px), 0) rotate(45deg);
+  top: 100%;
+  box-shadow: 0 12px 22px rgba(5, 15, 10, 0.45);
+}
+
+.tooltip-layer[data-placement='bottom'] .tooltip-layer__arrow {
+  top: auto;
+  bottom: 100%;
+  transform: translate(calc(var(--tooltip-arrow-offset, 0px) - 6px), 0) rotate(45deg);
+  border-left: none;
+  border-top: none;
+  border-right: 1px solid rgba(210, 243, 220, 0.4);
+  border-bottom: 1px solid rgba(210, 243, 220, 0.4);
+  box-shadow: 0 -12px 22px rgba(5, 15, 10, 0.45);
 }
 
 .panel-footer {
@@ -669,7 +673,7 @@ dl dt {
   grid-row: 1 / span 2;
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 280px);
   grid-template-rows: minmax(0, 1fr);
   background: linear-gradient(155deg, rgba(26, 60, 40, 0.96), rgba(17, 48, 59, 0.92));
   border: 1px solid rgba(107, 182, 207, 0.35);
@@ -703,7 +707,7 @@ dl dt {
   z-index: 1;
   grid-column: 2;
   grid-row: 1;
-  padding: 1.6rem 1.75rem 1.4rem;
+  padding: 1.25rem 1.35rem 1.1rem;
   display: flex;
   flex-direction: column;
   gap: 1.1rem;

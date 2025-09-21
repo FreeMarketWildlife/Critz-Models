@@ -6,6 +6,7 @@ import { critters } from '../data/critters.js';
 import { CritterSelector } from '../hud/components/CritterSelector.js';
 import { ViewportOverlay } from '../hud/components/ViewportOverlay.js';
 import { RigControlPanel } from '../hud/components/RigControlPanel.js';
+import { installTooltipLayer } from '../utils/tooltipManager.js';
 
 export class WeaponDisplayApp {
   constructor(rootElement) {
@@ -31,6 +32,7 @@ export class WeaponDisplayApp {
 
   init() {
     const layout = this.buildLayout();
+    installTooltipLayer();
     this.indexWeapons();
     this.indexCritters();
     this.registerEventHandlers();

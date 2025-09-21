@@ -36,6 +36,8 @@ const TOOLTIP_DEFINITIONS = [
   },
 ];
 
+const TOOLTIP_TERMS = new Set(TOOLTIP_DEFINITIONS.map(({ term }) => term.toLowerCase()));
+
 const escapeAttribute = (value) =>
   String(value)
     .replace(/&/g, '&amp;')
@@ -47,6 +49,16 @@ const escapeAttribute = (value) =>
 const buildTooltipMarkup = (label, description) => {
   const escapedDescription = escapeAttribute(description);
   return `<span class="tooltip" data-tooltip="${escapedDescription}" tabindex="0" aria-label="${escapedDescription}">${label}</span>`;
+};
+
+const shouldSkipMatch = (term, text, _start, end) => {
+  if (term.toLowerCase() === 'fire') {
+    const tail = text.slice(end, end + 5).toLowerCase();
+    if (tail.startsWith(' mode')) {
+      return true;
+    }
+  }
+  return false;
 };
 
 export const applyKeywordTooltips = (input) => {
@@ -62,6 +74,9 @@ export const applyKeywordTooltips = (input) => {
     let match;
 
     while ((match = regex.exec(text)) !== null) {
+      if (shouldSkipMatch(term, text, match.index, match.index + match[0].length)) {
+        continue;
+      }
       matches.push({
         start: match.index,
         end: match.index + match[0].length,
@@ -102,4 +117,11 @@ export const applyKeywordTooltips = (input) => {
 
   result += text.slice(cursor);
   return result;
+};
+
+export const hasKeywordTooltip = (term) => {
+  if (!term && term !== 0) {
+    return false;
+  }
+  return TOOLTIP_TERMS.has(String(term).toLowerCase());
 };
