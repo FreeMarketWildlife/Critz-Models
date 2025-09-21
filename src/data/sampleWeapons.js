@@ -375,7 +375,7 @@ const RAW_WEAPONS = [
     category: 'utility',
     description: 'Chilling vial that strips traction from the ground.',
     stats: {
-      effect: 'Sheet of of Ice',
+      effect: 'Sheet of Ice',
       deploy: 'Throw',
       capacity: '2',
       range: '50cm',
