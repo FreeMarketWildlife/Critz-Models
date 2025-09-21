@@ -55,7 +55,7 @@ export class RigControlPanel {
       this.bus.on('stage:model-ready', (payload) => {
         if (payload?.type === 'critter') {
           this.currentCritterName = payload?.name ?? null;
-          this.setLoading(false, `${payload?.name ?? 'Rig'} ready for tuning.`);
+          this.setLoading(false, '');
         }
       }),
       this.bus.on('stage:model-missing', (payload) => {
@@ -90,13 +90,15 @@ export class RigControlPanel {
     this.currentState = state;
     if (this.statusElement) {
       this.statusElement.dataset.state = state;
-      this.statusElement.textContent = message;
+      const hasMessage = typeof message === 'string' && message.trim().length > 0;
+      this.statusElement.textContent = hasMessage ? message : '';
+      this.statusElement.hidden = !hasMessage;
     }
   }
 
   setLoading(isLoading, message) {
     this.root?.classList.toggle('is-loading', Boolean(isLoading));
-    if (message) {
+    if (message !== undefined) {
       this.setStatus(isLoading ? 'loading' : 'ready', message);
     } else if (isLoading) {
       this.setStatus('loading', 'Loading rig…');

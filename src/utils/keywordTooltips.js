@@ -49,6 +49,198 @@ const buildTooltipMarkup = (label, description) => {
   return `<span class="tooltip" data-tooltip="${escapedDescription}" tabindex="0" aria-label="${escapedDescription}">${label}</span>`;
 };
 
+const shouldSkipMatch = (term, text, startIndex, endIndex) => {
+  if (term.toLowerCase() === 'fire') {
+    const trailing = text.slice(endIndex);
+    if (/^\s*mode\b/i.test(trailing)) {
+      return true;
+    }
+  }
+  return false;
+};
+
+let tooltipLayerElement = null;
+let activeTooltipTarget = null;
+let isTooltipSystemInitialized = false;
+
+const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+
+const ensureTooltipLayer = () => {
+  if (tooltipLayerElement && document.body.contains(tooltipLayerElement)) {
+    return;
+  }
+
+  tooltipLayerElement = document.createElement('div');
+  tooltipLayerElement.className = 'tooltip-layer';
+  tooltipLayerElement.dataset.visible = 'false';
+  tooltipLayerElement.dataset.placement = 'top';
+  tooltipLayerElement.setAttribute('role', 'tooltip');
+  tooltipLayerElement.setAttribute('aria-hidden', 'true');
+  tooltipLayerElement.style.left = '0px';
+  tooltipLayerElement.style.top = '0px';
+  document.body.appendChild(tooltipLayerElement);
+};
+
+const getTooltipText = (target) =>
+  target?.getAttribute('data-tooltip')?.trim() || target?.getAttribute('aria-label')?.trim() || '';
+
+const positionTooltipLayer = () => {
+  if (!tooltipLayerElement || !activeTooltipTarget) {
+    return;
+  }
+
+  if (!activeTooltipTarget.isConnected) {
+    activeTooltipTarget = null;
+    tooltipLayerElement.dataset.visible = 'false';
+    tooltipLayerElement.setAttribute('aria-hidden', 'true');
+    return;
+  }
+
+  const rect = activeTooltipTarget.getBoundingClientRect();
+
+  const viewportWidth = document.documentElement.clientWidth;
+  const viewportHeight = document.documentElement.clientHeight;
+
+  tooltipLayerElement.style.left = '0px';
+  tooltipLayerElement.style.top = '0px';
+
+  const layerRect = tooltipLayerElement.getBoundingClientRect();
+  const gap = 12;
+  const halfWidth = layerRect.width / 2;
+  const minLeft = gap + halfWidth;
+  const maxLeft = viewportWidth - gap - halfWidth;
+  const centerLeft = rect.left + rect.width / 2;
+  const clampedLeft = clamp(centerLeft, minLeft, maxLeft);
+
+  let top = rect.top - gap - layerRect.height;
+  let placement = 'top';
+
+  if (top < gap) {
+    top = Math.min(rect.bottom + gap, viewportHeight - gap - layerRect.height);
+    placement = 'bottom';
+  }
+
+  tooltipLayerElement.dataset.placement = placement;
+  tooltipLayerElement.style.left = `${Math.round(clampedLeft)}px`;
+  tooltipLayerElement.style.top = `${Math.round(top)}px`;
+};
+
+const showTooltipLayer = (target) => {
+  if (!target) {
+    return;
+  }
+
+  ensureTooltipLayer();
+  const tooltipText = getTooltipText(target);
+  if (!tooltipText) {
+    return;
+  }
+
+  activeTooltipTarget = target;
+  tooltipLayerElement.textContent = tooltipText;
+  tooltipLayerElement.dataset.visible = 'true';
+  tooltipLayerElement.setAttribute('aria-hidden', 'false');
+  positionTooltipLayer();
+};
+
+const hideTooltipLayer = (target) => {
+  if (!tooltipLayerElement) {
+    return;
+  }
+
+  if (target && target !== activeTooltipTarget) {
+    return;
+  }
+
+  activeTooltipTarget = null;
+  tooltipLayerElement.dataset.visible = 'false';
+  tooltipLayerElement.setAttribute('aria-hidden', 'true');
+};
+
+const handlePointerOver = (event) => {
+  const target = event.target?.closest?.('.tooltip');
+  if (!target) {
+    return;
+  }
+  showTooltipLayer(target);
+};
+
+const handlePointerOut = (event) => {
+  if (!activeTooltipTarget) {
+    return;
+  }
+
+  const origin = event.target?.closest?.('.tooltip');
+  if (!origin) {
+    return;
+  }
+
+  const related = event.relatedTarget instanceof Element ? event.relatedTarget.closest('.tooltip') : null;
+  if (related === origin) {
+    return;
+  }
+
+  hideTooltipLayer(origin);
+};
+
+const handleFocusIn = (event) => {
+  const target = event.target?.closest?.('.tooltip');
+  if (!target) {
+    return;
+  }
+  showTooltipLayer(target);
+};
+
+const handleFocusOut = (event) => {
+  if (!activeTooltipTarget) {
+    return;
+  }
+
+  const origin = event.target?.closest?.('.tooltip');
+  if (!origin) {
+    return;
+  }
+
+  if (event.relatedTarget instanceof Element && origin.contains(event.relatedTarget)) {
+    return;
+  }
+
+  hideTooltipLayer(origin);
+};
+
+const handleViewportChange = () => {
+  if (!activeTooltipTarget) {
+    return;
+  }
+  positionTooltipLayer();
+};
+
+export const initializeKeywordTooltips = () => {
+  if (isTooltipSystemInitialized) {
+    return;
+  }
+  isTooltipSystemInitialized = true;
+
+  if (document.readyState === 'loading') {
+    document.addEventListener(
+      'DOMContentLoaded',
+      () => {
+        ensureTooltipLayer();
+      },
+      { once: true }
+    );
+  } else {
+    ensureTooltipLayer();
+  }
+
+  document.addEventListener('pointerover', handlePointerOver);
+  document.addEventListener('pointerout', handlePointerOut);
+  document.addEventListener('focusin', handleFocusIn);
+  document.addEventListener('focusout', handleFocusOut);
+  window.addEventListener('scroll', handleViewportChange, true);
+  window.addEventListener('resize', handleViewportChange);
+};
+
 export const applyKeywordTooltips = (input) => {
   if (input === null || input === undefined) {
     return '';
@@ -62,9 +254,14 @@ export const applyKeywordTooltips = (input) => {
     let match;
 
     while ((match = regex.exec(text)) !== null) {
+      const startIndex = match.index;
+      const endIndex = match.index + match[0].length;
+      if (shouldSkipMatch(term, text, startIndex, endIndex)) {
+        continue;
+      }
       matches.push({
-        start: match.index,
-        end: match.index + match[0].length,
+        start: startIndex,
+        end: endIndex,
         replacement: buildTooltipMarkup(match[0], description),
       });
     }

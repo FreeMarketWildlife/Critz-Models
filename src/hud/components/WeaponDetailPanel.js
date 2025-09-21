@@ -55,6 +55,8 @@ export class WeaponDetailPanel {
   constructor({ panelElement, rarityBadge, footerElement }) {
     this.panelElement = panelElement;
     this.contentElement = panelElement.querySelector('[data-role="detail-content"]');
+    this.scrollElement =
+      panelElement.querySelector('[data-role="detail-scroll"]') || this.contentElement;
     this.rarityBadge = rarityBadge;
     this.footerElement = footerElement;
   }
@@ -84,12 +86,15 @@ export class WeaponDetailPanel {
     const statsMarkup = buildStatsMarkup(weapon, decorate);
     const specialMarkup = buildSpecialMarkup(weapon, (value) => this.prettify(value), decorate);
 
-    this.contentElement.innerHTML = `
-      <h3>${weapon.name}</h3>
-      <p class="description">${decorate(weapon.description)}</p>
-      ${statsMarkup}
-      ${specialMarkup}
-    `;
+    if (this.scrollElement) {
+      this.scrollElement.innerHTML = `
+        <h3>${weapon.name}</h3>
+        <p class="description">${decorate(weapon.description)}</p>
+        ${statsMarkup}
+        ${specialMarkup}
+      `;
+      this.scrollElement.scrollTop = 0;
+    }
 
     if (this.footerElement) {
       this.footerElement.textContent = `Catalog ID: ${weapon.id}`;
@@ -97,9 +102,10 @@ export class WeaponDetailPanel {
   }
 
   renderEmpty() {
-    if (this.contentElement) {
-      this.contentElement.innerHTML =
+    if (this.scrollElement) {
+      this.scrollElement.innerHTML =
         '<p class="description">Pick a tool to see its story and statistics.</p>';
+      this.scrollElement.scrollTop = 0;
     }
 
     if (this.rarityBadge) {
