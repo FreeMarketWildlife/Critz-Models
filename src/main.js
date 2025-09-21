@@ -1,4 +1,5 @@
 import { WeaponDisplayApp } from './app/WeaponDisplayApp.js';
+import { installTooltipHandlers } from './utils/tooltipManager.js';
 
 const bootstrap = () => {
   const root = document.getElementById('app');
@@ -9,6 +10,7 @@ const bootstrap = () => {
 
   const app = new WeaponDisplayApp(root);
   app.init();
+  installTooltipHandlers();
 };
 
 document.addEventListener('DOMContentLoaded', bootstrap);

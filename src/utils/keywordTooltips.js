@@ -9,10 +9,6 @@ const TOOLTIP_DEFINITIONS = [
     description: 'There is an Area of Effect (a defined zone or radius) applying whatever damage or effects.',
   },
   {
-    term: 'Gas',
-    description: 'Gas deals 5 damage for 5 seconds. Gas can be lit by fire.',
-  },
-  {
     term: 'Fire',
     description:
       'Ignites targets for 3 seconds dealing 10 damage per second. Gas can be lit by fire.',
@@ -24,7 +20,11 @@ const TOOLTIP_DEFINITIONS = [
   {
     term: 'Overheat',
     description:
-      'Weapons that have Overheat do not use Ammo, instead they are limited by a heat meter that rises with each shot fired and dissipates between shots. X/Y means that each shot costs X, and Y is the max of the heat meter. When a weapon overheats, it must wait until it\'s at 0/Y to fire again.',
+      "Weapons that have Overheat do not use Ammo, instead they are limited by a heat meter that rises with each shot fired and dissipates between shots. X/Y means that each shot costs X, and Y is the max of the heat meter. When a weapon overheats, it must wait until it's at 0/Y to fire again.",
+  },
+  {
+    term: 'Gas',
+    description: 'Gas deals 5 damage for 5 seconds. Gas can be lit by fire.',
   },
   {
     term: 'Lightning',
@@ -46,7 +46,18 @@ const escapeAttribute = (value) =>
 
 const buildTooltipMarkup = (label, description) => {
   const escapedDescription = escapeAttribute(description);
-  return `<span class="tooltip" data-tooltip="${escapedDescription}" tabindex="0" aria-label="${escapedDescription}">${label}</span>`;
+  return `<span class="tooltip-trigger" data-tooltip="${escapedDescription}" tabindex="0">${label}</span>`;
+};
+
+const shouldSkipMatch = (term, text, start, end) => {
+  if (term.toLowerCase() === 'fire') {
+    const afterMatch = text.slice(end);
+    if (/^\s+mode\b/i.test(afterMatch)) {
+      return true;
+    }
+  }
+
+  return false;
 };
 
 export const applyKeywordTooltips = (input) => {
@@ -62,9 +73,16 @@ export const applyKeywordTooltips = (input) => {
     let match;
 
     while ((match = regex.exec(text)) !== null) {
+      const start = match.index;
+      const end = start + match[0].length;
+
+      if (shouldSkipMatch(term, text, start, end)) {
+        continue;
+      }
+
       matches.push({
-        start: match.index,
-        end: match.index + match[0].length,
+        start,
+        end,
         replacement: buildTooltipMarkup(match[0], description),
       });
     }
