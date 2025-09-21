@@ -172,7 +172,7 @@ const RAW_WEAPONS = [
       range: '10cm',
     },
     special: {
-      burnProfile: 'Ignites targets for 3 seconds dealing 10 damage per second.',
+      burnProfile: 'Fire',
     },
   },
 

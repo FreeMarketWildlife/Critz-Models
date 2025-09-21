@@ -125,8 +125,10 @@ export class WeaponDisplayApp {
             <span>Equipment Info</span>
             <span data-role="rarity-badge"></span>
           </div>
-          <div class="detail-content" data-role="detail-content">
-            <p class="description">Pick a tool to see its details.</p>
+          <div class="detail-content">
+            <div class="detail-scroll" data-role="detail-content">
+              <p class="description">Pick a tool to see its details.</p>
+            </div>
           </div>
           <div class="panel-footer" data-role="detail-footer">Awaiting selection</div>
         </section>

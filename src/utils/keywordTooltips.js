@@ -16,6 +16,7 @@ const TOOLTIP_DEFINITIONS = [
     term: 'Fire',
     description:
       'Ignites targets for 3 seconds dealing 10 damage per second. Gas can be lit by fire.',
+    shouldSkip: ({ text, end }) => /^\s*mode\b/i.test(text.slice(end)),
   },
   {
     term: 'RPM',
@@ -57,14 +58,21 @@ export const applyKeywordTooltips = (input) => {
   const text = String(input);
   const matches = [];
 
-  TOOLTIP_DEFINITIONS.forEach(({ term, description }) => {
+  TOOLTIP_DEFINITIONS.forEach(({ term, description, shouldSkip }) => {
     const regex = new RegExp(`\\b${term}\\b`, 'gi');
     let match;
 
     while ((match = regex.exec(text)) !== null) {
+      const start = match.index;
+      const end = match.index + match[0].length;
+
+      if (typeof shouldSkip === 'function' && shouldSkip({ term, text, match, start, end })) {
+        continue;
+      }
+
       matches.push({
-        start: match.index,
-        end: match.index + match[0].length,
+        start,
+        end,
         replacement: buildTooltipMarkup(match[0], description),
       });
     }
