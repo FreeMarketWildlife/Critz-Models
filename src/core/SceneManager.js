@@ -444,7 +444,7 @@ export class SceneManager {
 
     this.mixer = new THREE.AnimationMixer(model);
     this.activeAction = null;
-    this.focusOnCurrentModel({ immediate: false });
+    this.resetView(true);
     this.emitStageEvent('stage:model-ready', {
       type: 'critter',
       id: critter.id,
