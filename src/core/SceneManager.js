@@ -308,6 +308,37 @@ export class SceneManager {
     return true;
   }
 
+  updateDefaultViewFromCurrentModel() {
+    if (!this.currentModel) {
+      return false;
+    }
+
+    this.currentModel.updateWorldMatrix?.(true, true);
+    this.boundingBox.setFromObject(this.currentModel);
+    if (this.boundingBox.isEmpty()) {
+      return false;
+    }
+
+    this.boundingBox.getBoundingSphere(this.boundingSphere);
+    const { center, radius } = this.boundingSphere;
+
+    if (!Number.isFinite(radius) || radius <= 0) {
+      return false;
+    }
+
+    if (!Number.isFinite(center.x) || !Number.isFinite(center.y) || !Number.isFinite(center.z)) {
+      return false;
+    }
+
+    const distance = this.computeFrameDistance(radius);
+    const offset = FOCUS_OFFSET_DIRECTION.clone().multiplyScalar(distance);
+    const position = center.clone().add(offset);
+
+    this.defaultCameraTarget.copy(center);
+    this.defaultCameraPosition.copy(position);
+    return true;
+  }
+
   resetView(immediate = false) {
     this.startCameraTransition(this.defaultCameraPosition, this.defaultCameraTarget, { immediate });
     this.emitStageEvent('stage:view-reset');
@@ -386,6 +417,10 @@ export class SceneManager {
     this.stageGroup.add(model);
 
     this.applyRarityGlow();
+    if (!this.updateDefaultViewFromCurrentModel()) {
+      this.defaultCameraPosition.copy(CAMERA_DEFAULT_POSITION);
+      this.defaultCameraTarget.copy(CAMERA_DEFAULT_TARGET);
+    }
     this.focusOnCurrentModel({ immediate: false });
     this.emitStageEvent('stage:model-ready', {
       type: 'weapon',
@@ -444,7 +479,11 @@ export class SceneManager {
 
     this.mixer = new THREE.AnimationMixer(model);
     this.activeAction = null;
-    this.focusOnCurrentModel({ immediate: false });
+    if (!this.updateDefaultViewFromCurrentModel()) {
+      this.defaultCameraPosition.copy(CAMERA_DEFAULT_POSITION);
+      this.defaultCameraTarget.copy(CAMERA_DEFAULT_TARGET);
+    }
+    this.resetView(true);
     this.emitStageEvent('stage:model-ready', {
       type: 'critter',
       id: critter.id,
@@ -533,6 +572,8 @@ export class SceneManager {
     this.activeAction = null;
     this.pendingAnimationId = null;
     this.disposeRigController();
+    this.defaultCameraPosition.copy(CAMERA_DEFAULT_POSITION);
+    this.defaultCameraTarget.copy(CAMERA_DEFAULT_TARGET);
   }
 
   applyRarityGlow() {
