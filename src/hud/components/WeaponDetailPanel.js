@@ -10,6 +10,84 @@ const RARITY_TITLES = {
   mythic: 'Mythic',
 };
 
+const escapeAttribute = (value) =>
+  String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+const wrapWithTooltip = (content, description) => {
+  if (!description) {
+    return content;
+  }
+
+  const escapedDescription = escapeAttribute(description);
+  return `<span class="tooltip" data-tooltip="${escapedDescription}" tabindex="0" aria-label="${escapedDescription}">${content}</span>`;
+};
+
+const parseDualValue = (rawValue) => {
+  if (typeof rawValue !== 'string') {
+    return null;
+  }
+
+  const parts = rawValue
+    .split('/')
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  if (parts.length !== 2) {
+    return null;
+  }
+
+  return parts;
+};
+
+const pluralize = (value, singular, plural) => {
+  const numeric = Number(value);
+  if (Number.isFinite(numeric) && Math.abs(numeric) === 1) {
+    return singular;
+  }
+  return plural;
+};
+
+const createAmmoTooltip = (rawValue) => {
+  const parts = parseDualValue(rawValue);
+  if (!parts) {
+    return null;
+  }
+
+  const [magazine, reserve] = parts;
+  const magazineLabel = pluralize(magazine, 'Round per Magazine', 'Rounds per Magazine');
+  return `${magazine} ${magazineLabel}; ${reserve} Extra Ammo`;
+};
+
+const createOverheatTooltip = (rawValue) => {
+  const parts = parseDualValue(rawValue);
+  if (!parts) {
+    return null;
+  }
+
+  const [cost, max] = parts;
+  return `Cost per Shot: ${cost} Heat; Max Heat: ${max}`;
+};
+
+const STAT_TOOLTIP_BUILDERS = {
+  ammo: createAmmoTooltip,
+  overheat: createOverheatTooltip,
+  ammoOverheat: createOverheatTooltip,
+};
+
+const getStatTooltip = (key, rawValue) => {
+  const builder = STAT_TOOLTIP_BUILDERS[key];
+  if (typeof builder !== 'function') {
+    return null;
+  }
+
+  return builder(rawValue);
+};
+
 const buildStatsMarkup = (weapon, decorate = (value) => value) => {
   if (!weapon) {
     return '';
@@ -21,7 +99,14 @@ const buildStatsMarkup = (weapon, decorate = (value) => value) => {
   }
 
   const rows = stats
-    .map(({ label, value }) => `<dt>${decorate(label)}</dt><dd>${decorate(value)}</dd>`)
+    .map(({ key, label, value }) => {
+      const decoratedLabel = decorate(label);
+      const decoratedValue = decorate(value);
+      const tooltip = getStatTooltip(key, value);
+      const finalValue = tooltip ? wrapWithTooltip(decoratedValue, tooltip) : decoratedValue;
+
+      return `<dt>${decoratedLabel}</dt><dd>${finalValue}</dd>`;
+    })
     .join('');
 
   return `<dl class="stat-list">${rows}</dl>`;
