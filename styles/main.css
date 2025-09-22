@@ -73,7 +73,7 @@ body::after {
   width: 100%;
   height: 100%;
   display: grid;
-  grid-template-columns: 200px 300px minmax(360px, 520px) minmax(420px, 1fr);
+  grid-template-columns: 200px 300px minmax(216px, 312px) minmax(520px, 1fr);
   grid-template-rows: auto minmax(0, 1fr);
   gap: 1.5rem;
   padding: 2.25rem 2.75rem;
@@ -969,10 +969,12 @@ dl dt {
 
 .viewport-ui__top {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: flex-start;
-  gap: 1.5rem;
+  gap: 0.9rem;
   pointer-events: none;
+  align-self: flex-start;
+  width: min(100%, 280px);
 }
 
 .viewport-ui__bottom {
@@ -1018,13 +1020,15 @@ dl dt {
 
 .viewport-stats {
   pointer-events: none;
-  min-width: 220px;
-  max-width: 280px;
+  width: 100%;
+  max-width: 320px;
+  min-width: 0;
   padding: 1rem 1.1rem;
   border-radius: 16px;
-  background: linear-gradient(175deg, rgba(14, 36, 26, 0.92), rgba(12, 30, 27, 0.82));
+  background: linear-gradient(175deg, rgba(14, 36, 26, 0.78), rgba(12, 30, 27, 0.6));
   border: 1px solid rgba(210, 243, 220, 0.26);
-  box-shadow: 0 16px 38px rgba(8, 22, 16, 0.55);
+  box-shadow: 0 12px 28px rgba(8, 22, 16, 0.45);
+  backdrop-filter: blur(6px);
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
@@ -1167,7 +1171,7 @@ dl dt {
   }
 
   .app-shell {
-    grid-template-columns: 160px 300px minmax(340px, 1fr);
+    grid-template-columns: 160px 300px minmax(204px, 1fr);
     grid-template-rows: auto minmax(0, 1fr) minmax(280px, auto);
     padding: 2rem;
   }
@@ -1212,6 +1216,7 @@ dl dt {
   .viewport-ui__top {
     flex-direction: column;
     align-items: flex-start;
+    width: 100%;
   }
 
   .viewport-stats {
@@ -1304,6 +1309,7 @@ dl dt {
   .viewport-ui__top {
     flex-direction: column;
     gap: 1rem;
+    width: 100%;
   }
 
   .viewport-stats {
@@ -1344,6 +1350,7 @@ dl dt {
 
   .viewport-ui__top {
     gap: 0.75rem;
+    width: 100%;
   }
 
   .viewport-stats__list {
