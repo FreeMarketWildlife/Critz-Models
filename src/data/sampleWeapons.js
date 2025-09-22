@@ -95,7 +95,7 @@ const RAW_WEAPONS = [
       damage: '10 Splash damage',
       fireMode: 'Full-Auto',
       rpm: '120',
-      ammoOverheat: '10/100',
+      overheat: '10/100',
       cooldown: '2s',
       drawSpeed: '0.5s',
       range: '100cm',
