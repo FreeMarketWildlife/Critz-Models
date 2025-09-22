@@ -36,24 +36,31 @@ export class CritterSelector {
   }
 
   selectCritter(id, { emit }) {
-    if (!id || this.activeId === id) {
+    if (id === this.activeId) {
       if (emit && id) {
         this.bus?.emit?.('critter:selected', id);
       }
       return;
     }
 
-    this.activeId = id;
+    this.activeId = id || null;
 
     this.buttons.forEach((button, critterId) => {
-      const isActive = critterId === id;
+      const isActive = Boolean(id) && critterId === id;
       button.classList.toggle('active', isActive);
       button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
       button.setAttribute('aria-checked', isActive ? 'true' : 'false');
     });
 
-    if (emit) {
+    if (emit && id) {
       this.bus?.emit?.('critter:selected', id);
     }
+  }
+
+  clearSelection() {
+    if (!this.activeId) {
+      return;
+    }
+    this.selectCritter(null, { emit: false });
   }
 }
