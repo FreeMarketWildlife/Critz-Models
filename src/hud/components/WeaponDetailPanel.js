@@ -10,6 +10,19 @@ const RARITY_TITLES = {
   mythic: 'Mythic',
 };
 
+const escapeAttribute = (value) =>
+  String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+const wrapWithTooltip = (content, description) => {
+  const escaped = escapeAttribute(description);
+  return `<span class="tooltip" data-tooltip="${escaped}" tabindex="0" aria-label="${escaped}">${content}</span>`;
+};
+
 const buildStatsMarkup = (weapon, decorate = (value) => value) => {
   if (!weapon) {
     return '';
@@ -21,7 +34,16 @@ const buildStatsMarkup = (weapon, decorate = (value) => value) => {
   }
 
   const rows = stats
-    .map(({ label, value }) => `<dt>${decorate(label)}</dt><dd>${decorate(value)}</dd>`)
+    .map(({ label, value, valueTooltip }) => {
+      const decoratedLabel = decorate(label);
+      let decoratedValue = decorate(value);
+
+      if (valueTooltip) {
+        decoratedValue = wrapWithTooltip(decoratedValue, valueTooltip);
+      }
+
+      return `<dt>${decoratedLabel}</dt><dd>${decoratedValue}</dd>`;
+    })
     .join('');
 
   return `<dl class="stat-list">${rows}</dl>`;

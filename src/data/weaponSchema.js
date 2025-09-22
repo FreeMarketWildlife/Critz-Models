@@ -9,7 +9,7 @@ export const STAT_LABELS = {
   fireMode: 'Fire Mode',
   rpm: 'RPM',
   ammo: 'Ammo',
-  ammoOverheat: 'Ammo/Overheat',
+  ammoOverheat: 'Overheat',
   overheat: 'Overheat',
   cooldown: 'Cooldown',
   reloadSpeed: 'Reload Speed',
@@ -115,18 +115,32 @@ export const deriveStatsList = (weapon) => {
     }
   }
 
-  entries.sort((a, b) => {
-    const indexA = DEFAULT_STATS_ORDER.indexOf(a[0]);
-    const indexB = DEFAULT_STATS_ORDER.indexOf(b[0]);
+  const normalizedEntries = entries.map(([key, value]) => {
+    const aliasKey = key === 'ammoOverheat' ? 'overheat' : key;
+    const label = STAT_LABELS[aliasKey] || STAT_LABELS[key] || prettify(aliasKey);
+
+    return {
+      key,
+      sortKey: key,
+      label,
+      value,
+      valueTooltip: createValueTooltip(aliasKey, value),
+    };
+  });
+
+  normalizedEntries.sort((a, b) => {
+    const indexA = DEFAULT_STATS_ORDER.indexOf(a.sortKey);
+    const indexB = DEFAULT_STATS_ORDER.indexOf(b.sortKey);
     const safeA = indexA === -1 ? Number.MAX_SAFE_INTEGER : indexA;
     const safeB = indexB === -1 ? Number.MAX_SAFE_INTEGER : indexB;
     return safeA - safeB;
   });
 
-  return entries.map(([key, value]) => ({
+  return normalizedEntries.map(({ key, label, value, valueTooltip }) => ({
     key,
-    label: STAT_LABELS[key] || prettify(key),
+    label,
     value,
+    valueTooltip,
   }));
 };
 
@@ -135,3 +149,45 @@ const prettify = (key) =>
     .replace(/([a-z])([A-Z])/g, '$1 $2')
     .replace(/[-_]/g, ' ')
     .replace(/^\w/, (char) => char.toUpperCase());
+
+const createValueTooltip = (key, value) => {
+  if (!value && value !== 0) {
+    return null;
+  }
+
+  const pair = parseValuePair(value);
+  if (!pair) {
+    return null;
+  }
+
+  const [primary, secondary] = pair;
+
+  if (key === 'ammo') {
+    return `${primary} rounds per magazine; ${secondary} extra ammo.`;
+  }
+
+  if (key === 'overheat') {
+    return `Costs ${primary} heat per shot; ${secondary} maximum heat.`;
+  }
+
+  return null;
+};
+
+const parseValuePair = (value) => {
+  const text = String(value).trim();
+  if (!text.includes('/')) {
+    return null;
+  }
+
+  const parts = text.split('/').map((part) => part.trim());
+  if (parts.length !== 2) {
+    return null;
+  }
+
+  const [primary, secondary] = parts;
+  if (!primary || !secondary) {
+    return null;
+  }
+
+  return [primary, secondary];
+};
