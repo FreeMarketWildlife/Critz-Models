@@ -13,6 +13,14 @@ export class ViewportOverlay {
     this.unsubscribe = [];
     this.pulseTimeout = null;
     this.isLoading = false;
+    this.critterCardElement = null;
+    this.critterNameElement = null;
+    this.critterStatElements = {
+      health: null,
+      speed: null,
+      stamina: null,
+      bonus: null,
+    };
   }
 
   init() {
@@ -35,6 +43,35 @@ export class ViewportOverlay {
     this.root = document.createElement('div');
     this.root.className = 'viewport-ui';
     this.root.innerHTML = `
+      <div class="viewport-ui__top">
+        <div class="viewport-status" data-role="viewport-status" data-state="idle">
+          <span class="viewport-status__label">Preview</span>
+          <span class="viewport-status__text" data-role="viewport-status-text"></span>
+        </div>
+        <aside class="viewport-critter" data-role="critter-card" hidden>
+          <div class="viewport-critter__header">
+            <span class="viewport-critter__name" data-role="critter-name"></span>
+          </div>
+          <dl class="viewport-critter__stats">
+            <div class="viewport-critter__stat">
+              <dt>Health</dt>
+              <dd data-role="critter-stat-health"></dd>
+            </div>
+            <div class="viewport-critter__stat">
+              <dt>Speed</dt>
+              <dd data-role="critter-stat-speed"></dd>
+            </div>
+            <div class="viewport-critter__stat">
+              <dt>Stamina</dt>
+              <dd data-role="critter-stat-stamina"></dd>
+            </div>
+            <div class="viewport-critter__stat viewport-critter__stat--wide">
+              <dt>Bonus</dt>
+              <dd data-role="critter-stat-bonus"></dd>
+            </div>
+          </dl>
+        </aside>
+      </div>
       <div class="viewport-ui__bottom">
         <div class="viewport-controls-panel">
           <div class="viewport-controls" role="group" aria-label="Viewport controls">
@@ -59,6 +96,14 @@ export class ViewportOverlay {
     this.autoRotateButton = this.root.querySelector('[data-action="autorotate"]');
     this.focusButton = this.root.querySelector('[data-action="focus"]');
     this.resetButton = this.root.querySelector('[data-action="reset"]');
+    this.critterCardElement = this.root.querySelector('[data-role="critter-card"]');
+    this.critterNameElement = this.root.querySelector('[data-role="critter-name"]');
+    this.critterStatElements = {
+      health: this.root.querySelector('[data-role="critter-stat-health"]'),
+      speed: this.root.querySelector('[data-role="critter-stat-speed"]'),
+      stamina: this.root.querySelector('[data-role="critter-stat-stamina"]'),
+      bonus: this.root.querySelector('[data-role="critter-stat-bonus"]'),
+    };
   }
 
   bindControls() {
@@ -118,6 +163,9 @@ export class ViewportOverlay {
           reset: true,
           autorotate: false,
         });
+        if (payload?.type === 'critter') {
+          this.updateCritterDetails(null);
+        }
       }),
       this.bus.on('stage:focus-achieved', () => {
         this.flashStatus();
@@ -128,6 +176,17 @@ export class ViewportOverlay {
       this.bus.on('stage:auto-rotate-changed', (payload) => {
         this.autoRotateEnabled = Boolean(payload?.enabled);
         this.updateAutoRotateButton();
+      }),
+      this.bus.on('viewport:critter-details', (payload) => {
+        const critter = payload?.critter ?? null;
+        this.updateCritterDetails(critter);
+        if (!this.isLoading) {
+          if (critter) {
+            this.setStatus('ready', critter.name);
+          } else {
+            this.setStatus('idle', 'Select a critter to preview.');
+          }
+        }
       })
     );
   }
@@ -181,6 +240,44 @@ export class ViewportOverlay {
     this.updateButtonState(this.focusButton, focus);
     this.updateButtonState(this.resetButton, reset);
     this.updateButtonState(this.autoRotateButton, autorotate);
+  }
+
+  updateCritterDetails(critter) {
+    if (!this.critterCardElement) {
+      return;
+    }
+
+    if (!critter) {
+      this.critterCardElement.hidden = true;
+      Object.values(this.critterStatElements).forEach((element) => {
+        if (element) {
+          element.textContent = '';
+        }
+      });
+      if (this.critterNameElement) {
+        this.critterNameElement.textContent = '';
+      }
+      return;
+    }
+
+    this.critterCardElement.hidden = false;
+    if (this.critterNameElement) {
+      this.critterNameElement.textContent = critter.name;
+    }
+
+    const stats = critter.stats ?? {};
+    if (this.critterStatElements.health) {
+      this.critterStatElements.health.textContent = stats.health ?? '—';
+    }
+    if (this.critterStatElements.speed) {
+      this.critterStatElements.speed.textContent = stats.speed ?? '—';
+    }
+    if (this.critterStatElements.stamina) {
+      this.critterStatElements.stamina.textContent = stats.stamina ?? '—';
+    }
+    if (this.critterStatElements.bonus) {
+      this.critterStatElements.bonus.textContent = stats.bonus ?? '—';
+    }
   }
 
   updateButtonState(button, isEnabled) {

@@ -7,6 +7,10 @@ export const createRenderer = (container) => {
   renderer.setSize(clientWidth, clientHeight, false);
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.1;
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.physicallyCorrectLights = true;
   container.appendChild(renderer.domElement);
   return renderer;
 };

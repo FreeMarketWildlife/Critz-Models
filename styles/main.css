@@ -698,8 +698,8 @@ dl dt {
   grid-row: 1 / span 2;
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 58%) minmax(220px, 300px);
-  grid-template-rows: minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) auto;
   background: linear-gradient(155deg, rgba(26, 60, 40, 0.96), rgba(17, 48, 59, 0.92));
   border: 1px solid rgba(107, 182, 207, 0.35);
   border-radius: calc(var(--border-radius-lg) + 4px);
@@ -730,15 +730,16 @@ dl dt {
 .stage-toolbar {
   position: relative;
   z-index: 1;
-  grid-column: 2;
-  grid-row: 1;
-  padding: 1.6rem 1.75rem 1.4rem;
+  grid-column: 1;
+  grid-row: 2;
+  padding: 1.4rem 1.75rem 1.6rem;
   display: flex;
   flex-direction: column;
   gap: 1.1rem;
-  background: linear-gradient(180deg, rgba(10, 26, 19, 0.95), rgba(10, 26, 19, 0.4));
-  backdrop-filter: blur(4px);
+  background: linear-gradient(180deg, rgba(10, 26, 19, 0.95), rgba(10, 26, 19, 0.6));
+  backdrop-filter: blur(6px);
   overflow-y: auto;
+  border-top: 1px solid rgba(107, 182, 207, 0.25);
 }
 
 .stage-tool-panel {
@@ -960,13 +961,22 @@ dl dt {
   inset: 0;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
-  padding: 1.5rem 1.75rem;
+  justify-content: space-between;
+  padding: 1.5rem 1.75rem 1.35rem;
   pointer-events: none;
   z-index: 2;
   color: var(--color-text-primary);
-  background: linear-gradient(180deg, rgba(8, 22, 16, 0.35), rgba(8, 22, 16, 0));
-  backdrop-filter: blur(2px);
+  background: linear-gradient(180deg, rgba(8, 22, 16, 0.42), rgba(8, 22, 16, 0));
+  gap: 1.25rem;
+}
+
+.viewport-ui__top {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.15rem;
+  align-items: flex-start;
+  justify-content: space-between;
+  pointer-events: none;
 }
 
 .viewport-ui__bottom {
@@ -976,6 +986,119 @@ dl dt {
   align-items: flex-end;
 }
 
+.viewport-status {
+  pointer-events: none;
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.65rem 1rem;
+  border-radius: 16px;
+  border: 1px solid rgba(210, 243, 220, 0.38);
+  background: linear-gradient(160deg, rgba(12, 32, 23, 0.85), rgba(12, 32, 23, 0.55));
+  min-width: 200px;
+}
+
+.viewport-status[data-state='loading'] {
+  border-color: rgba(107, 182, 207, 0.65);
+}
+
+.viewport-status[data-state='empty'] {
+  border-color: rgba(197, 141, 82, 0.55);
+}
+
+.viewport-status__label {
+  font-size: 0.65rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(247, 255, 244, 0.6);
+}
+
+.viewport-status__text {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  letter-spacing: 0.1em;
+}
+
+.viewport-status.is-pulsing {
+  animation: viewport-status-pulse 0.9s ease;
+}
+
+@keyframes viewport-status-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(159, 217, 127, 0.45);
+  }
+  70% {
+    box-shadow: 0 0 0 12px rgba(159, 217, 127, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(159, 217, 127, 0);
+  }
+}
+
+.viewport-critter {
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  padding: 0.95rem 1.25rem;
+  border-radius: 18px;
+  border: 1px solid rgba(210, 243, 220, 0.32);
+  background: linear-gradient(160deg, rgba(11, 30, 21, 0.85), rgba(16, 37, 27, 0.65));
+  max-width: clamp(240px, 32vw, 320px);
+  box-shadow: 0 18px 28px rgba(7, 20, 14, 0.35);
+  backdrop-filter: blur(6px);
+}
+
+.viewport-critter[hidden] {
+  display: none;
+}
+
+.viewport-critter__header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.viewport-critter__name {
+  font-family: var(--font-display);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-size: 1rem;
+  color: var(--color-highlight);
+}
+
+.viewport-critter__stats {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.viewport-critter__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.viewport-critter__stat--wide {
+  grid-column: 1 / -1;
+}
+
+.viewport-critter__stat dt {
+  margin: 0;
+  font-size: 0.62rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(247, 255, 244, 0.55);
+}
+
+.viewport-critter__stat dd {
+  margin: 0;
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
+
 .viewport-controls-panel {
   pointer-events: auto;
   padding: 1rem 1.35rem;
@@ -983,6 +1106,10 @@ dl dt {
   border: 1px solid rgba(210, 243, 220, 0.28);
   background: linear-gradient(165deg, rgba(16, 37, 27, 0.85), rgba(17, 44, 52, 0.78));
   box-shadow: 0 18px 32px rgba(7, 20, 14, 0.45);
+}
+
+.viewport-controls-panel {
+  backdrop-filter: blur(6px);
 }
 
 .viewport-controls {
@@ -1076,22 +1203,23 @@ dl dt {
   .stage {
     grid-column: 1 / -1;
     grid-row: 3;
-    height: 320px;
+    min-height: 360px;
+    height: auto;
     border-radius: var(--border-radius-lg);
-    display: flex;
-    flex-direction: column;
+    grid-template-rows: minmax(240px, 1fr) auto;
   }
 
   .stage-toolbar {
-    grid-column: auto;
-    grid-row: auto;
+    grid-column: 1;
+    grid-row: 2;
     overflow-y: visible;
+    padding: 1.25rem 1.5rem 1.4rem;
   }
 
   .stage-viewport {
-    grid-column: auto;
-    grid-row: auto;
-    flex: 1;
+    grid-column: 1;
+    grid-row: 1;
+    min-height: 240px;
   }
 
   .viewport-ui {
@@ -1156,13 +1284,25 @@ dl dt {
   .stage {
     grid-row: 5;
     grid-column: 1;
-    height: 320px;
-    display: flex;
-    flex-direction: column;
+    min-height: 340px;
+    grid-template-rows: minmax(220px, 1fr) auto;
   }
 
   .viewport-ui {
     padding: 1.1rem 1.3rem;
+  }
+
+  .viewport-ui__top {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .viewport-critter {
+    max-width: none;
+  }
+
+  .viewport-critter__stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .viewport-ui__bottom {
@@ -1193,11 +1333,17 @@ dl dt {
   }
 
   .stage {
-    height: 260px;
+    height: auto;
+    min-height: 300px;
+    grid-template-rows: minmax(200px, 1fr) auto;
   }
 
   .viewport-ui {
-    padding: 1rem 1.1rem;
+    padding: 0.95rem 1.1rem;
+  }
+
+  .viewport-critter__stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .viewport-controls {

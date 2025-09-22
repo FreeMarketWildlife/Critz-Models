@@ -14,6 +14,9 @@ const RARITY_GLOWS = {
   mythic: 0xffb7ff,
 };
 
+const DEFAULT_STAGE_LIGHT_COLOR = 0xaad7ff;
+const DEFAULT_STAGE_LIGHT_INTENSITY = 1.15;
+
 const CAMERA_DEFAULT_POSITION = new THREE.Vector3(0, 1.1, 3.3);
 const CAMERA_DEFAULT_TARGET = new THREE.Vector3(0, 0.65, 0);
 const CAMERA_TRANSITION_SPEED = 2.25;
@@ -331,19 +334,39 @@ export class SceneManager {
 
   setupLights() {
     const ambient = new THREE.AmbientLight(0xffe6ff, 0.4);
-    const rimLight = new THREE.DirectionalLight(0xa7c9ff, 1.15);
-    rimLight.position.set(-3, 4, 2);
-    const fillLight = new THREE.SpotLight(0xffc3f7, 1.25, 20, Math.PI / 4, 0.85, 2);
-    fillLight.position.set(2.6, 3.8, 1.4);
-    const bounceLight = new THREE.PointLight(0x8cf5ff, 0.6, 6, 2);
-    bounceLight.position.set(0, 1.2, 0.8);
+    const rimLight = new THREE.DirectionalLight(0xa7c9ff, 1.1);
+    rimLight.position.set(-3.5, 4.4, 2.8);
+    const fillLight = new THREE.SpotLight(0xc4e5ff, 1.2, 24, Math.PI / 4.2, 0.8, 2.1);
+    fillLight.position.set(3, 4.2, 1.6);
+    const bounceLight = new THREE.PointLight(DEFAULT_STAGE_LIGHT_COLOR, DEFAULT_STAGE_LIGHT_INTENSITY, 12, 2.2);
+    bounceLight.position.set(0.4, 1.4, 1.1);
 
     this.rarityLight = bounceLight;
 
-    this.scene.add(ambient, rimLight, fillLight, bounceLight);
+    const hemisphere = new THREE.HemisphereLight(0xcfe8ff, 0x0c1a12, 0.45);
+    const keyLight = new THREE.DirectionalLight(0xfff6dc, 1.55);
+    keyLight.position.set(4.5, 6, 3.5);
+    const backLight = new THREE.DirectionalLight(0x9fd97f, 0.85);
+    backLight.position.set(-3.5, 5.5, -2.5);
+
+    hemisphere.name = 'hemi-light';
+    keyLight.name = 'key-light';
+    backLight.name = 'back-light';
+
+    this.scene.add(ambient, hemisphere, keyLight, backLight, fillLight, bounceLight, rimLight);
+    this.applyDefaultStageLighting();
   }
 
   setupEnvironment() {}
+
+  applyDefaultStageLighting() {
+    if (!this.rarityLight) {
+      return;
+    }
+
+    this.rarityLight.color = new THREE.Color(DEFAULT_STAGE_LIGHT_COLOR);
+    this.rarityLight.intensity = DEFAULT_STAGE_LIGHT_INTENSITY;
+  }
 
   async loadWeapon(weapon) {
     if (!weapon) return;
@@ -441,6 +464,8 @@ export class SceneManager {
     this.currentCritterId = critter.id;
     this.stageGroup.add(model);
 
+    this.applyDefaultStageLighting();
+
     this.setupRigController(model);
 
     this.mixer = new THREE.AnimationMixer(model);
@@ -534,13 +559,22 @@ export class SceneManager {
     this.activeAction = null;
     this.pendingAnimationId = null;
     this.disposeRigController();
+    this.applyDefaultStageLighting();
   }
 
   applyRarityGlow(rarity = 'common') {
     const color = RARITY_GLOWS[rarity] ?? RARITY_GLOWS.common;
-    if (this.rarityLight) {
-      this.rarityLight.color = new THREE.Color(color);
+    if (!this.rarityLight) {
+      return;
     }
+
+    if (this.currentCritterId) {
+      this.applyDefaultStageLighting();
+      return;
+    }
+
+    this.rarityLight.color = new THREE.Color(color);
+    this.rarityLight.intensity = DEFAULT_STAGE_LIGHT_INTENSITY;
   }
 
   createPlaceholderModel() {
@@ -553,6 +587,8 @@ export class SceneManager {
   handleResize() {
     if (!this.renderer || !this.camera) return;
     const { clientWidth, clientHeight } = this.container;
+    const pixelRatio = window.devicePixelRatio || 1;
+    this.renderer.setPixelRatio(pixelRatio);
     this.renderer.setSize(clientWidth, clientHeight, false);
     this.camera.aspect = clientWidth / Math.max(clientHeight, 1);
     this.camera.updateProjectionMatrix();
