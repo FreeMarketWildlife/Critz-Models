@@ -56,6 +56,7 @@ const STAT_TOOLTIP_BUILDERS = {
   ammo: (value) => buildAmmoTooltip(value),
   ammoOverheat: (value) => buildOverheatTooltip(value),
   overheat: (value) => buildOverheatTooltip(value),
+  drawSpeed: () => 'How fast this weapon or tool can be used after switching to it',
 };
 
 const RARITY_TITLES = {
