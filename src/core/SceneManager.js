@@ -42,13 +42,15 @@ export class SceneManager {
     this.handleResize = this.handleResize.bind(this);
     this.animate = this.animate.bind(this);
 
-    this.defaultCameraPosition = CAMERA_DEFAULT_POSITION.clone();
-    this.defaultCameraTarget = CAMERA_DEFAULT_TARGET.clone();
+    this.baseCameraPosition = CAMERA_DEFAULT_POSITION.clone();
+    this.baseCameraTarget = CAMERA_DEFAULT_TARGET.clone();
+    this.defaultCameraPosition = this.baseCameraPosition.clone();
+    this.defaultCameraTarget = this.baseCameraTarget.clone();
 
-    this.cameraStartPosition = CAMERA_DEFAULT_POSITION.clone();
-    this.cameraTargetPosition = CAMERA_DEFAULT_POSITION.clone();
-    this.controlsStartTarget = CAMERA_DEFAULT_TARGET.clone();
-    this.controlsTarget = CAMERA_DEFAULT_TARGET.clone();
+    this.cameraStartPosition = this.baseCameraPosition.clone();
+    this.cameraTargetPosition = this.baseCameraPosition.clone();
+    this.controlsStartTarget = this.baseCameraTarget.clone();
+    this.controlsTarget = this.baseCameraTarget.clone();
     this.cameraLerpAlpha = 1;
     this.cameraLerpSpeed = CAMERA_TRANSITION_SPEED;
 
@@ -263,6 +265,15 @@ export class SceneManager {
     this.cameraLerpAlpha = 0;
   }
 
+  setDefaultCamera(position, target) {
+    this.defaultCameraPosition.copy(position ?? this.baseCameraPosition);
+    this.defaultCameraTarget.copy(target ?? this.baseCameraTarget);
+  }
+
+  restoreBaseCameraDefaults() {
+    this.setDefaultCamera();
+  }
+
   computeFrameDistance(radius) {
     if (!this.camera || radius <= 0) {
       return 3;
@@ -276,7 +287,7 @@ export class SceneManager {
     return distance * FOCUS_PADDING;
   }
 
-  focusOnCurrentModel({ immediate = false } = {}) {
+  focusOnCurrentModel({ immediate = false, setAsDefault = false } = {}) {
     if (!this.currentModel) {
       return false;
     }
@@ -300,6 +311,9 @@ export class SceneManager {
     const offset = FOCUS_OFFSET_DIRECTION.clone().multiplyScalar(distance);
     const position = center.clone().add(offset);
 
+    if (setAsDefault) {
+      this.setDefaultCamera(position, center);
+    }
     this.startCameraTransition(position, center, { immediate });
     this.emitStageEvent('stage:focus-achieved', {
       position: position.toArray(),
@@ -424,6 +438,8 @@ export class SceneManager {
       });
       this.stopAnimation();
       this.setAutoRotate(false);
+      this.restoreBaseCameraDefaults();
+      this.resetView(true);
       this.pendingCritterId = null;
       return;
     }
@@ -444,7 +460,7 @@ export class SceneManager {
 
     this.mixer = new THREE.AnimationMixer(model);
     this.activeAction = null;
-    this.focusOnCurrentModel({ immediate: false });
+    this.focusOnCurrentModel({ immediate: false, setAsDefault: true });
     this.emitStageEvent('stage:model-ready', {
       type: 'critter',
       id: critter.id,
