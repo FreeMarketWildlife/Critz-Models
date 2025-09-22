@@ -6,14 +6,6 @@ import { RigController } from './RigController.js';
 const ORBIT_CONTROLS_MODULE =
   'https://esm.sh/three@0.160.0/examples/jsm/controls/OrbitControls.js';
 
-const RARITY_GLOWS = {
-  common: 0x7c6cff,
-  rare: 0x7df0ff,
-  epic: 0xff9af5,
-  legendary: 0xffe37d,
-  mythic: 0xffb7ff,
-};
-
 const CAMERA_DEFAULT_POSITION = new THREE.Vector3(0, 1.1, 3.3);
 const CAMERA_DEFAULT_TARGET = new THREE.Vector3(0, 0.65, 0);
 const CAMERA_TRANSITION_SPEED = 2.25;
@@ -330,17 +322,24 @@ export class SceneManager {
   }
 
   setupLights() {
-    const ambient = new THREE.AmbientLight(0xffe6ff, 0.4);
-    const rimLight = new THREE.DirectionalLight(0xa7c9ff, 1.15);
-    rimLight.position.set(-3, 4, 2);
-    const fillLight = new THREE.SpotLight(0xffc3f7, 1.25, 20, Math.PI / 4, 0.85, 2);
-    fillLight.position.set(2.6, 3.8, 1.4);
-    const bounceLight = new THREE.PointLight(0x8cf5ff, 0.6, 6, 2);
-    bounceLight.position.set(0, 1.2, 0.8);
+    const ambient = new THREE.AmbientLight(0xe9f7ff, 0.55);
+    const hemisphere = new THREE.HemisphereLight(0xbaf5e0, 0x0c1412, 0.6);
 
-    this.rarityLight = bounceLight;
+    const keyLight = new THREE.DirectionalLight(0xffffff, 1.35);
+    keyLight.position.set(4.5, 6, 5.2);
 
-    this.scene.add(ambient, rimLight, fillLight, bounceLight);
+    const rimLight = new THREE.DirectionalLight(0x78c7ff, 0.85);
+    rimLight.position.set(-4.5, 5, -2.5);
+
+    const fillLight = new THREE.PointLight(0xfff0d4, 0.95, 18, 2.2);
+    fillLight.position.set(0.9, 3.6, 2.8);
+
+    const accentLight = new THREE.PointLight(0x9fffe0, 1.05, 12, 2.4);
+    accentLight.position.set(0, 1.6, 1.2);
+    this.rarityLight = accentLight;
+    this.applyRarityGlow();
+
+    this.scene.add(ambient, hemisphere, keyLight, rimLight, fillLight, accentLight);
   }
 
   setupEnvironment() {}
@@ -386,7 +385,7 @@ export class SceneManager {
     this.currentModel = model;
     this.stageGroup.add(model);
 
-    this.applyRarityGlow(weapon.rarity);
+    this.applyRarityGlow();
     this.focusOnCurrentModel({ immediate: false });
     this.emitStageEvent('stage:model-ready', {
       type: 'weapon',
@@ -536,10 +535,10 @@ export class SceneManager {
     this.disposeRigController();
   }
 
-  applyRarityGlow(rarity = 'common') {
-    const color = RARITY_GLOWS[rarity] ?? RARITY_GLOWS.common;
+  applyRarityGlow() {
     if (this.rarityLight) {
-      this.rarityLight.color = new THREE.Color(color);
+      this.rarityLight.color = new THREE.Color(0x9fffe0);
+      this.rarityLight.intensity = 1.05;
     }
   }
 

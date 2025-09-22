@@ -697,9 +697,8 @@ dl dt {
   grid-column: 4;
   grid-row: 1 / span 2;
   position: relative;
-  display: grid;
-  grid-template-columns: minmax(0, 58%) minmax(220px, 300px);
-  grid-template-rows: minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
   background: linear-gradient(155deg, rgba(26, 60, 40, 0.96), rgba(17, 48, 59, 0.92));
   border: 1px solid rgba(107, 182, 207, 0.35);
   border-radius: calc(var(--border-radius-lg) + 4px);
@@ -730,15 +729,16 @@ dl dt {
 .stage-toolbar {
   position: relative;
   z-index: 1;
-  grid-column: 2;
-  grid-row: 1;
-  padding: 1.6rem 1.75rem 1.4rem;
+  padding: 1.4rem 1.75rem 1.6rem;
   display: flex;
   flex-direction: column;
   gap: 1.1rem;
-  background: linear-gradient(180deg, rgba(10, 26, 19, 0.95), rgba(10, 26, 19, 0.4));
+  background: linear-gradient(180deg, rgba(10, 26, 19, 0.92), rgba(10, 26, 19, 0.75));
+  border-top: 1px solid rgba(210, 243, 220, 0.22);
+  box-shadow: 0 -10px 28px rgba(5, 15, 10, 0.4);
   backdrop-filter: blur(4px);
   overflow-y: auto;
+  max-height: clamp(220px, 28vh, 360px);
 }
 
 .stage-tool-panel {
@@ -752,6 +752,7 @@ dl dt {
   flex-direction: column;
   gap: 0.9rem;
   position: relative;
+  width: 100%;
 }
 
 .stage-tool-panel::before {
@@ -940,10 +941,8 @@ dl dt {
 
 .stage-viewport {
   position: relative;
-  grid-column: 1;
-  grid-row: 1;
+  flex: 1 1 auto;
   width: 100%;
-  height: 100%;
   min-height: 0;
 }
 
@@ -960,13 +959,20 @@ dl dt {
   inset: 0;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
   padding: 1.5rem 1.75rem;
   pointer-events: none;
   z-index: 2;
   color: var(--color-text-primary);
-  background: linear-gradient(180deg, rgba(8, 22, 16, 0.35), rgba(8, 22, 16, 0));
-  backdrop-filter: blur(2px);
+  background: linear-gradient(180deg, rgba(6, 18, 13, 0.55), rgba(6, 18, 13, 0));
+  gap: 1.2rem;
+}
+
+.viewport-ui__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1.5rem;
+  pointer-events: none;
 }
 
 .viewport-ui__bottom {
@@ -974,6 +980,113 @@ dl dt {
   pointer-events: none;
   justify-content: flex-end;
   align-items: flex-end;
+  margin-top: auto;
+}
+
+.viewport-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid rgba(210, 243, 220, 0.35);
+  background: rgba(10, 30, 22, 0.7);
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--color-highlight);
+  min-width: 0;
+}
+
+.viewport-status.is-pulsing {
+  box-shadow: 0 0 0 6px rgba(159, 217, 127, 0.22);
+}
+
+.viewport-status[data-state='loading'] {
+  color: var(--color-water);
+  border-color: rgba(107, 182, 207, 0.55);
+}
+
+.viewport-status[data-state='empty'] {
+  color: rgba(247, 255, 244, 0.75);
+  border-color: rgba(247, 255, 244, 0.3);
+}
+
+.viewport-status__text {
+  white-space: nowrap;
+}
+
+.viewport-stats {
+  pointer-events: none;
+  min-width: 220px;
+  max-width: 280px;
+  padding: 1rem 1.1rem;
+  border-radius: 16px;
+  background: linear-gradient(175deg, rgba(14, 36, 26, 0.92), rgba(12, 30, 27, 0.82));
+  border: 1px solid rgba(210, 243, 220, 0.26);
+  box-shadow: 0 16px 38px rgba(8, 22, 16, 0.55);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.viewport-stats[hidden] {
+  display: none;
+}
+
+.viewport-stats__name {
+  font-family: var(--font-display);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-size: 0.82rem;
+  color: var(--color-highlight);
+}
+
+.viewport-stats__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.viewport-stats__item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.55rem 0.6rem;
+  border-radius: 12px;
+  border: 1px solid rgba(210, 243, 220, 0.24);
+  background: rgba(9, 27, 19, 0.55);
+}
+
+.viewport-stats__item dt {
+  margin: 0;
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(247, 255, 244, 0.65);
+}
+
+.viewport-stats__item dd {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--color-text-primary);
+}
+
+.viewport-stats__bonus {
+  margin: 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-water);
+}
+
+.viewport-stats__bonus.is-empty {
+  display: none;
 }
 
 .viewport-controls-panel {
@@ -1076,21 +1189,15 @@ dl dt {
   .stage {
     grid-column: 1 / -1;
     grid-row: 3;
-    height: 320px;
+    min-height: 320px;
     border-radius: var(--border-radius-lg);
-    display: flex;
-    flex-direction: column;
   }
 
   .stage-toolbar {
-    grid-column: auto;
-    grid-row: auto;
-    overflow-y: visible;
+    max-height: none;
   }
 
   .stage-viewport {
-    grid-column: auto;
-    grid-row: auto;
     flex: 1;
   }
 
@@ -1100,6 +1207,20 @@ dl dt {
 
   .viewport-controls {
     justify-content: flex-start;
+  }
+
+  .viewport-ui__top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .viewport-stats {
+    width: 100%;
+    max-width: none;
+  }
+
+  .viewport-stats__list {
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
   }
 }
 
@@ -1156,9 +1277,11 @@ dl dt {
   .stage {
     grid-row: 5;
     grid-column: 1;
-    height: 320px;
-    display: flex;
-    flex-direction: column;
+    min-height: 320px;
+  }
+
+  .stage-toolbar {
+    max-height: none;
   }
 
   .viewport-ui {
@@ -1177,6 +1300,21 @@ dl dt {
   .viewport-controls {
     justify-content: flex-start;
   }
+
+  .viewport-ui__top {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .viewport-stats {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+  }
+
+  .viewport-stats__list {
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  }
 }
 
 @media (max-width: 700px) {
@@ -1193,11 +1331,23 @@ dl dt {
   }
 
   .stage {
-    height: 260px;
+    min-height: 260px;
+  }
+
+  .stage-toolbar {
+    max-height: none;
   }
 
   .viewport-ui {
     padding: 1rem 1.1rem;
+  }
+
+  .viewport-ui__top {
+    gap: 0.75rem;
+  }
+
+  .viewport-stats__list {
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
   }
 
   .viewport-controls {
