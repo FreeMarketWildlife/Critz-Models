@@ -45,7 +45,7 @@ const escapeAttribute = (value) =>
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
 
-const buildTooltipMarkup = (label, description) => {
+export const createTooltipMarkup = (label, description) => {
   const escapedDescription = escapeAttribute(description);
   return `<span class="tooltip" data-tooltip="${escapedDescription}" tabindex="0" aria-label="${escapedDescription}">${label}</span>`;
 };
@@ -73,7 +73,7 @@ export const applyKeywordTooltips = (input) => {
       matches.push({
         start,
         end,
-        replacement: buildTooltipMarkup(match[0], description),
+        replacement: createTooltipMarkup(match[0], description),
       });
     }
   });

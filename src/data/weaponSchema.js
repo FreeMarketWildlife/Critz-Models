@@ -9,7 +9,7 @@ export const STAT_LABELS = {
   fireMode: 'Fire Mode',
   rpm: 'RPM',
   ammo: 'Ammo',
-  ammoOverheat: 'Ammo/Overheat',
+  ammoOverheat: 'Overheat',
   overheat: 'Overheat',
   cooldown: 'Cooldown',
   reloadSpeed: 'Reload Speed',

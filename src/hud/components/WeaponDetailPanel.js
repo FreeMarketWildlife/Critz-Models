@@ -1,5 +1,62 @@
 import { deriveStatsList } from '../../data/weaponSchema.js';
-import { applyKeywordTooltips } from '../../utils/keywordTooltips.js';
+import { applyKeywordTooltips, createTooltipMarkup } from '../../utils/keywordTooltips.js';
+
+const buildAmmoTooltip = (value) => {
+  const pair = parseStatPair(value);
+  if (!pair) {
+    return null;
+  }
+
+  const magazine = pluralize(pair.primary, 'round');
+  const reserve = pluralize(pair.secondary, 'round');
+  return `${magazine} per magazine; ${reserve} of extra ammo.`;
+};
+
+const buildOverheatTooltip = (value) => {
+  const pair = parseStatPair(value);
+  if (!pair) {
+    return null;
+  }
+
+  return `Costs ${pair.primary} heat per shot; ${pair.secondary} maximum heat.`;
+};
+
+const parseStatPair = (value) => {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  const text = String(value).trim();
+  if (!text.includes('/')) {
+    return null;
+  }
+
+  const [rawPrimary, rawSecondary] = text.split('/');
+  if (rawSecondary === undefined) {
+    return null;
+  }
+
+  const primary = rawPrimary.trim();
+  const secondary = rawSecondary.trim();
+
+  if (!primary || !secondary) {
+    return null;
+  }
+
+  return { primary, secondary };
+};
+
+const pluralize = (value, singular, plural = `${singular}s`) => {
+  const numericValue = Number(value);
+  const useSingular = Number.isFinite(numericValue) ? Math.abs(numericValue) === 1 : false;
+  return `${value} ${useSingular ? singular : plural}`;
+};
+
+const STAT_TOOLTIP_BUILDERS = {
+  ammo: (value) => buildAmmoTooltip(value),
+  ammoOverheat: (value) => buildOverheatTooltip(value),
+  overheat: (value) => buildOverheatTooltip(value),
+};
 
 const RARITY_TITLES = {
   common: 'Common',
@@ -21,7 +78,7 @@ const buildStatsMarkup = (weapon, decorate = (value) => value) => {
   }
 
   const rows = stats
-    .map(({ label, value }) => `<dt>${decorate(label)}</dt><dd>${decorate(value)}</dd>`)
+    .map(({ key, label, value }) => `<dt>${decorate(label)}</dt><dd>${buildStatValueMarkup({ key, value, decorate })}</dd>`)
     .join('');
 
   return `<dl class="stat-list">${rows}</dl>`;
@@ -49,6 +106,22 @@ const buildSpecialMarkup = (weapon, prettify, decorate = (value) => value) => {
       <ul class="special-list">${items}</ul>
     </div>
   `;
+};
+
+const buildStatValueMarkup = ({ key, value, decorate }) => {
+  const decoratedValue = decorate(value);
+  const tooltipBuilder = STAT_TOOLTIP_BUILDERS[key];
+
+  if (!tooltipBuilder) {
+    return decoratedValue;
+  }
+
+  const tooltipDescription = tooltipBuilder(value);
+  if (!tooltipDescription) {
+    return decoratedValue;
+  }
+
+  return createTooltipMarkup(decoratedValue, tooltipDescription);
 };
 
 export class WeaponDetailPanel {
