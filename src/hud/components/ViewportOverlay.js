@@ -8,6 +8,8 @@ export class ViewportOverlay {
     this.autoRotateButton = null;
     this.focusButton = null;
     this.resetButton = null;
+    this.statsElement = null;
+    this.statFields = {};
     this.autoRotateEnabled = false;
     this.state = 'idle';
     this.unsubscribe = [];
@@ -35,6 +37,29 @@ export class ViewportOverlay {
     this.root = document.createElement('div');
     this.root.className = 'viewport-ui';
     this.root.innerHTML = `
+      <div class="viewport-ui__top">
+        <div class="viewport-status" data-role="viewport-status">
+          <span class="viewport-status__text" data-role="viewport-status-text"></span>
+        </div>
+        <div class="viewport-stats" data-role="viewport-stats" hidden>
+          <span class="viewport-stats__name" data-stat="name"></span>
+          <dl class="viewport-stats__list">
+            <div class="viewport-stats__item">
+              <dt>Health</dt>
+              <dd data-stat="health">--</dd>
+            </div>
+            <div class="viewport-stats__item">
+              <dt>Speed</dt>
+              <dd data-stat="speed">--</dd>
+            </div>
+            <div class="viewport-stats__item">
+              <dt>Stamina</dt>
+              <dd data-stat="stamina">--</dd>
+            </div>
+          </dl>
+          <p class="viewport-stats__bonus" data-stat="bonus"></p>
+        </div>
+      </div>
       <div class="viewport-ui__bottom">
         <div class="viewport-controls-panel">
           <div class="viewport-controls" role="group" aria-label="Viewport controls">
@@ -56,9 +81,18 @@ export class ViewportOverlay {
     this.container.appendChild(this.root);
     this.statusElement = this.root.querySelector('[data-role="viewport-status"]');
     this.statusText = this.root.querySelector('[data-role="viewport-status-text"]');
+    this.statsElement = this.root.querySelector('[data-role="viewport-stats"]');
+    this.statFields = {
+      name: this.root.querySelector('[data-stat="name"]'),
+      health: this.root.querySelector('[data-stat="health"]'),
+      speed: this.root.querySelector('[data-stat="speed"]'),
+      stamina: this.root.querySelector('[data-stat="stamina"]'),
+      bonus: this.root.querySelector('[data-stat="bonus"]'),
+    };
     this.autoRotateButton = this.root.querySelector('[data-action="autorotate"]');
     this.focusButton = this.root.querySelector('[data-action="focus"]');
     this.resetButton = this.root.querySelector('[data-action="reset"]');
+    this.updateStats(null);
   }
 
   bindControls() {
@@ -118,6 +152,9 @@ export class ViewportOverlay {
           reset: true,
           autorotate: false,
         });
+        if (payload?.type === 'critter') {
+          this.updateStats(null);
+        }
       }),
       this.bus.on('stage:focus-achieved', () => {
         this.flashStatus();
@@ -128,6 +165,9 @@ export class ViewportOverlay {
       this.bus.on('stage:auto-rotate-changed', (payload) => {
         this.autoRotateEnabled = Boolean(payload?.enabled);
         this.updateAutoRotateButton();
+      }),
+      this.bus.on('viewport:critter-info', (payload) => {
+        this.updateStats(payload);
       })
     );
   }
@@ -191,6 +231,48 @@ export class ViewportOverlay {
     button.classList.toggle('is-disabled', !isEnabled);
   }
 
+  updateStats(payload) {
+    if (!this.statsElement || !this.statFields) {
+      return;
+    }
+
+    if (!payload || !payload.stats) {
+      this.statsElement.hidden = true;
+      if (this.statFields.name) {
+        this.statFields.name.textContent = payload?.name ?? '';
+      }
+      ['health', 'speed', 'stamina'].forEach((key) => {
+        if (this.statFields[key]) {
+          this.statFields[key].textContent = '--';
+        }
+      });
+      if (this.statFields.bonus) {
+        this.statFields.bonus.textContent = '';
+        this.statFields.bonus.classList.add('is-empty');
+      }
+      return;
+    }
+
+    const { name, stats } = payload;
+    this.statsElement.hidden = false;
+    if (this.statFields.name) {
+      this.statFields.name.textContent = name ?? '';
+    }
+
+    ['health', 'speed', 'stamina'].forEach((key) => {
+      if (this.statFields[key]) {
+        const value = stats[key];
+        this.statFields[key].textContent = typeof value === 'number' ? String(value) : value ?? '--';
+      }
+    });
+
+    if (this.statFields.bonus) {
+      const bonus = stats.bonus ? `Bonus: ${stats.bonus}` : '';
+      this.statFields.bonus.textContent = bonus;
+      this.statFields.bonus.classList.toggle('is-empty', !bonus);
+    }
+  }
+
   destroy() {
     this.unsubscribe.forEach((off) => off?.());
     this.unsubscribe = [];
@@ -206,6 +288,8 @@ export class ViewportOverlay {
       this.resetButton.replaceWith(this.resetButton.cloneNode(true));
       this.resetButton = null;
     }
+    this.statsElement = null;
+    this.statFields = {};
     if (this.root?.parentNode) {
       this.root.parentNode.removeChild(this.root);
     }
