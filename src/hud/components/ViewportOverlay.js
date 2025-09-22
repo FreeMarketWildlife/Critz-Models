@@ -41,6 +41,8 @@ export class ViewportOverlay {
         <div class="viewport-status" data-role="viewport-status">
           <span class="viewport-status__text" data-role="viewport-status-text"></span>
         </div>
+      </div>
+      <div class="viewport-ui__bottom">
         <div class="viewport-stats" data-role="viewport-stats" hidden>
           <span class="viewport-stats__name" data-stat="name"></span>
           <dl class="viewport-stats__list">
@@ -59,8 +61,6 @@ export class ViewportOverlay {
           </dl>
           <p class="viewport-stats__bonus" data-stat="bonus"></p>
         </div>
-      </div>
-      <div class="viewport-ui__bottom">
         <div class="viewport-controls-panel">
           <div class="viewport-controls" role="group" aria-label="Viewport controls">
             <button type="button" class="viewport-button" data-action="focus">Focus Model</button>
