@@ -52,10 +52,14 @@ const pluralize = (value, singular, plural = `${singular}s`) => {
   return `${value} ${useSingular ? singular : plural}`;
 };
 
+const buildDrawSpeedTooltip = () =>
+  'How fast this weapon or tool can be used after switching to it';
+
 const STAT_TOOLTIP_BUILDERS = {
   ammo: (value) => buildAmmoTooltip(value),
   ammoOverheat: (value) => buildOverheatTooltip(value),
   overheat: (value) => buildOverheatTooltip(value),
+  drawSpeed: () => buildDrawSpeedTooltip(),
 };
 
 const RARITY_TITLES = {
