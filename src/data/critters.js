@@ -5,6 +5,12 @@ export const critters = [
     modelPath: 'assets/models/critters/models/SK_TH_Frog_Rigged_01.glb',
     scale: 1.15,
     offset: { y: -0.6 },
+    stats: {
+      health: 100,
+      speed: 100,
+      stamina: 100,
+      bonus: 'Double Jump',
+    },
     defaultAnimationId: 'frog_idle',
     animations: [
       { id: 'frog_idle', label: 'Idle', path: 'assets/models/critters/animations/TH_Frog_Idle.glb' },
@@ -80,6 +86,12 @@ export const critters = [
     modelPath: 'assets/models/critters/models/SK_TH_Lizard_Rigged_01.glb',
     scale: 1.25,
     offset: { y: -0.6 },
+    stats: {
+      health: 100,
+      speed: 100,
+      stamina: 100,
+      bonus: '+25% Sprint Boost While Above 50% Stamina',
+    },
     defaultAnimationId: 'lizard_idle',
     animations: [
       { id: 'lizard_idle', label: 'Idle', path: 'assets/models/critters/animations/TH_Lizard_Idle.glb' },

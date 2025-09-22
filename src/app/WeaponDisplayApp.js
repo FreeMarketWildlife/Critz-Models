@@ -66,7 +66,7 @@ export class WeaponDisplayApp {
 
     if (defaultWeapon) {
       this.activeWeapon = defaultWeapon;
-      this.sceneManager.applyRarityGlow(defaultWeapon.rarity);
+      this.sceneManager.applyRarityGlow();
     }
 
     this.critterSelector = new CritterSelector({
@@ -133,15 +133,15 @@ export class WeaponDisplayApp {
           <div class="panel-footer" data-role="detail-footer">Awaiting selection</div>
         </section>
         <section class="stage" data-component="stage">
-          <div class="stage-toolbar" data-component="stage-toolbar">
-            <div class="stage-tool-panel stage-tool-panel--rig" data-component="rig-controls"></div>
-          </div>
           <div
             class="stage-viewport"
             data-role="stage-viewport"
             aria-label="Critter viewer"
             tabindex="0"
           ></div>
+          <div class="stage-toolbar" data-component="stage-toolbar">
+            <div class="stage-tool-panel stage-tool-panel--rig" data-component="rig-controls"></div>
+          </div>
         </section>
       </div>
     `;
@@ -173,7 +173,7 @@ export class WeaponDisplayApp {
         return;
       }
       this.activeWeapon = weapon;
-      this.sceneManager.applyRarityGlow(weapon.rarity);
+      this.sceneManager.applyRarityGlow();
     });
 
     this.eventBus.on('critter:selected', (critterId) => {
@@ -215,12 +215,32 @@ export class WeaponDisplayApp {
   }
 
   groupWeaponsByCategory() {
-    return this.weapons.reduce((acc, weapon) => {
+    const grouped = this.weapons.reduce((acc, weapon) => {
       const bucket = acc[weapon.category] || [];
       bucket.push(weapon);
       acc[weapon.category] = bucket;
       return acc;
     }, {});
+
+    const rarityRank = {
+      common: 0,
+      rare: 1,
+      legendary: 2,
+      mythic: 3,
+    };
+
+    Object.values(grouped).forEach((list) => {
+      list.sort((a, b) => {
+        const rankA = rarityRank[a.rarity] ?? Number.MAX_SAFE_INTEGER;
+        const rankB = rarityRank[b.rarity] ?? Number.MAX_SAFE_INTEGER;
+        if (rankA !== rankB) {
+          return rankA - rankB;
+        }
+        return a.name.localeCompare(b.name);
+      });
+    });
+
+    return grouped;
   }
 
   findDefaultWeapon() {

@@ -5,6 +5,10 @@ export class ViewportOverlay {
     this.root = null;
     this.statusElement = null;
     this.statusText = null;
+    this.statsElement = null;
+    this.statsNameElement = null;
+    this.statsBonusElement = null;
+    this.statsValues = {};
     this.autoRotateButton = null;
     this.focusButton = null;
     this.resetButton = null;
@@ -35,6 +39,32 @@ export class ViewportOverlay {
     this.root = document.createElement('div');
     this.root.className = 'viewport-ui';
     this.root.innerHTML = `
+      <div class="viewport-ui__top">
+        <div class="viewport-status" data-role="viewport-status" role="status" aria-live="polite">
+          <span class="viewport-status__text" data-role="viewport-status-text"></span>
+        </div>
+        <div class="critter-stats" data-role="critter-stats" hidden>
+          <div class="critter-stats__header">
+            <span class="critter-stats__title">Vitals</span>
+            <h3 class="critter-stats__name" data-role="critter-name"></h3>
+          </div>
+          <dl class="critter-stats__grid">
+            <div class="critter-stats__row">
+              <dt>Health</dt>
+              <dd data-stat="health"></dd>
+            </div>
+            <div class="critter-stats__row">
+              <dt>Speed</dt>
+              <dd data-stat="speed"></dd>
+            </div>
+            <div class="critter-stats__row">
+              <dt>Stamina</dt>
+              <dd data-stat="stamina"></dd>
+            </div>
+          </dl>
+          <p class="critter-stats__bonus" data-role="critter-bonus"></p>
+        </div>
+      </div>
       <div class="viewport-ui__bottom">
         <div class="viewport-controls-panel">
           <div class="viewport-controls" role="group" aria-label="Viewport controls">
@@ -56,9 +86,19 @@ export class ViewportOverlay {
     this.container.appendChild(this.root);
     this.statusElement = this.root.querySelector('[data-role="viewport-status"]');
     this.statusText = this.root.querySelector('[data-role="viewport-status-text"]');
+    this.statsElement = this.root.querySelector('[data-role="critter-stats"]');
+    this.statsNameElement = this.root.querySelector('[data-role="critter-name"]');
+    this.statsBonusElement = this.root.querySelector('[data-role="critter-bonus"]');
+    this.statsValues = {};
+    this.root.querySelectorAll('[data-stat]').forEach((node) => {
+      if (node.dataset.stat) {
+        this.statsValues[node.dataset.stat] = node;
+      }
+    });
     this.autoRotateButton = this.root.querySelector('[data-action="autorotate"]');
     this.focusButton = this.root.querySelector('[data-action="focus"]');
     this.resetButton = this.root.querySelector('[data-action="reset"]');
+    this.updateCritterStats(null);
   }
 
   bindControls() {
@@ -97,6 +137,11 @@ export class ViewportOverlay {
         const name = payload?.name ?? 'Model';
         this.setStatus('loading', `Loading ${name}...`);
         this.setLoading(true);
+        if (payload?.type === 'critter') {
+          this.updateCritterStats(payload, { state: 'loading' });
+        } else {
+          this.updateCritterStats(null);
+        }
       }),
       this.bus.on('stage:model-ready', (payload) => {
         const name = payload?.name ?? 'Model';
@@ -108,6 +153,11 @@ export class ViewportOverlay {
           autorotate: true,
         });
         this.flashStatus();
+        if (payload?.type === 'critter') {
+          this.updateCritterStats(payload, { state: 'ready' });
+        } else {
+          this.updateCritterStats(null);
+        }
       }),
       this.bus.on('stage:model-missing', (payload) => {
         const name = payload?.name ?? 'model';
@@ -118,6 +168,7 @@ export class ViewportOverlay {
           reset: true,
           autorotate: false,
         });
+        this.updateCritterStats(null);
       }),
       this.bus.on('stage:focus-achieved', () => {
         this.flashStatus();
@@ -136,6 +187,7 @@ export class ViewportOverlay {
     this.state = state;
     if (this.statusElement) {
       this.statusElement.dataset.state = state;
+      this.statusElement.classList.remove('is-pulsing');
     }
     if (this.statusText) {
       this.statusText.textContent = message;
@@ -183,6 +235,45 @@ export class ViewportOverlay {
     this.updateButtonState(this.autoRotateButton, autorotate);
   }
 
+  updateCritterStats(detail, { state } = {}) {
+    if (!this.statsElement) {
+      return;
+    }
+
+    const stats = detail?.stats;
+    if (!stats) {
+      this.statsElement.hidden = true;
+      this.statsElement.dataset.state = 'empty';
+      return;
+    }
+
+    this.statsElement.hidden = false;
+    this.statsElement.dataset.state = state || 'ready';
+
+    if (this.statsNameElement) {
+      this.statsNameElement.textContent = detail?.name || 'Critter';
+    }
+
+    ['health', 'speed', 'stamina'].forEach((key) => {
+      const node = this.statsValues[key];
+      if (!node) {
+        return;
+      }
+      const value = stats[key];
+      node.textContent = typeof value === 'number' ? `${value}` : value ?? '—';
+    });
+
+    if (this.statsBonusElement) {
+      if (stats.bonus) {
+        this.statsBonusElement.textContent = stats.bonus;
+        this.statsBonusElement.hidden = false;
+      } else {
+        this.statsBonusElement.textContent = '';
+        this.statsBonusElement.hidden = true;
+      }
+    }
+  }
+
   updateButtonState(button, isEnabled) {
     if (!button || typeof isEnabled === 'undefined') {
       return;
@@ -213,5 +304,9 @@ export class ViewportOverlay {
       clearTimeout(this.pulseTimeout);
       this.pulseTimeout = null;
     }
+    this.statsElement = null;
+    this.statsNameElement = null;
+    this.statsBonusElement = null;
+    this.statsValues = {};
   }
 }

@@ -6,13 +6,7 @@ import { RigController } from './RigController.js';
 const ORBIT_CONTROLS_MODULE =
   'https://esm.sh/three@0.160.0/examples/jsm/controls/OrbitControls.js';
 
-const RARITY_GLOWS = {
-  common: 0x7c6cff,
-  rare: 0x7df0ff,
-  epic: 0xff9af5,
-  legendary: 0xffe37d,
-  mythic: 0xffb7ff,
-};
+const BASE_RARITY_GLOW_COLOR = 0x9fd97f;
 
 const CAMERA_DEFAULT_POSITION = new THREE.Vector3(0, 1.1, 3.3);
 const CAMERA_DEFAULT_TARGET = new THREE.Vector3(0, 0.65, 0);
@@ -330,17 +324,22 @@ export class SceneManager {
   }
 
   setupLights() {
-    const ambient = new THREE.AmbientLight(0xffe6ff, 0.4);
-    const rimLight = new THREE.DirectionalLight(0xa7c9ff, 1.15);
-    rimLight.position.set(-3, 4, 2);
-    const fillLight = new THREE.SpotLight(0xffc3f7, 1.25, 20, Math.PI / 4, 0.85, 2);
-    fillLight.position.set(2.6, 3.8, 1.4);
-    const bounceLight = new THREE.PointLight(0x8cf5ff, 0.6, 6, 2);
-    bounceLight.position.set(0, 1.2, 0.8);
+    const ambient = new THREE.HemisphereLight(0xe8f7ff, 0x0b1a12, 0.65);
+    const keyLight = new THREE.DirectionalLight(0xffffff, 1.35);
+    keyLight.position.set(4.2, 5.1, 3.3);
+
+    const fillLight = new THREE.DirectionalLight(0xffe6c5, 0.9);
+    fillLight.position.set(-2.5, 3.2, -1.6);
+
+    const rimLight = new THREE.DirectionalLight(0x88d6ff, 0.85);
+    rimLight.position.set(-4.1, 2.6, 4.4);
+
+    const bounceLight = new THREE.PointLight(BASE_RARITY_GLOW_COLOR, 0.55, 10, 1.8);
+    bounceLight.position.set(0.2, 1.35, 0.6);
 
     this.rarityLight = bounceLight;
 
-    this.scene.add(ambient, rimLight, fillLight, bounceLight);
+    this.scene.add(ambient, keyLight, fillLight, rimLight, bounceLight);
   }
 
   setupEnvironment() {}
@@ -386,7 +385,7 @@ export class SceneManager {
     this.currentModel = model;
     this.stageGroup.add(model);
 
-    this.applyRarityGlow(weapon.rarity);
+    this.applyRarityGlow();
     this.focusOnCurrentModel({ immediate: false });
     this.emitStageEvent('stage:model-ready', {
       type: 'weapon',
@@ -404,6 +403,7 @@ export class SceneManager {
       type: 'critter',
       id: critter.id,
       name: critter.name,
+      stats: critter.stats ?? null,
     });
 
     let model = null;
@@ -422,6 +422,7 @@ export class SceneManager {
         type: 'critter',
         id: critter.id,
         name: critter.name,
+        stats: critter.stats ?? null,
       });
       this.stopAnimation();
       this.setAutoRotate(false);
@@ -450,6 +451,7 @@ export class SceneManager {
       type: 'critter',
       id: critter.id,
       name: critter.name,
+      stats: critter.stats ?? null,
     });
     this.pendingCritterId = null;
   }
@@ -536,10 +538,10 @@ export class SceneManager {
     this.disposeRigController();
   }
 
-  applyRarityGlow(rarity = 'common') {
-    const color = RARITY_GLOWS[rarity] ?? RARITY_GLOWS.common;
+  applyRarityGlow() {
     if (this.rarityLight) {
-      this.rarityLight.color = new THREE.Color(color);
+      this.rarityLight.color.setHex(BASE_RARITY_GLOW_COLOR);
+      this.rarityLight.intensity = 0.55;
     }
   }
 
