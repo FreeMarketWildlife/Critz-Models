@@ -7,6 +7,12 @@ import { CritterSelector } from '../hud/components/CritterSelector.js';
 import { ViewportOverlay } from '../hud/components/ViewportOverlay.js';
 import { RigControlPanel } from '../hud/components/RigControlPanel.js';
 
+const RARITY_ORDER = ['common', 'rare', 'legendary', 'mythic'];
+const RARITY_WEIGHT = RARITY_ORDER.reduce((acc, rarity, index) => {
+  acc[rarity] = index;
+  return acc;
+}, {});
+
 export class WeaponDisplayApp {
   constructor(rootElement) {
     this.root = rootElement;
@@ -97,6 +103,7 @@ export class WeaponDisplayApp {
     }
 
     this.critterSelector.render(defaultCritter?.id);
+    this.eventBus.emit('viewport:critter-details', { critter: defaultCritter || null });
   }
 
   buildLayout() {
@@ -133,15 +140,15 @@ export class WeaponDisplayApp {
           <div class="panel-footer" data-role="detail-footer">Awaiting selection</div>
         </section>
         <section class="stage" data-component="stage">
-          <div class="stage-toolbar" data-component="stage-toolbar">
-            <div class="stage-tool-panel stage-tool-panel--rig" data-component="rig-controls"></div>
-          </div>
           <div
             class="stage-viewport"
             data-role="stage-viewport"
             aria-label="Critter viewer"
             tabindex="0"
           ></div>
+          <div class="stage-toolbar" data-component="stage-toolbar">
+            <div class="stage-tool-panel stage-tool-panel--rig" data-component="rig-controls"></div>
+          </div>
         </section>
       </div>
     `;
@@ -179,10 +186,14 @@ export class WeaponDisplayApp {
     this.eventBus.on('critter:selected', (critterId) => {
       const critter = this.critterMap.get(critterId);
       if (!critter || this.activeCritter?.id === critterId) {
+        if (!critter) {
+          this.eventBus.emit('viewport:critter-details', { critter: null });
+        }
         return;
       }
 
       this.activeCritter = critter;
+      this.eventBus.emit('viewport:critter-details', { critter });
       this.activeAnimationId = this.resolveAnimationId(critter);
       const activeAnimation = this.findAnimation(critter, this.activeAnimationId);
 
@@ -215,12 +226,25 @@ export class WeaponDisplayApp {
   }
 
   groupWeaponsByCategory() {
-    return this.weapons.reduce((acc, weapon) => {
+    const grouped = this.weapons.reduce((acc, weapon) => {
       const bucket = acc[weapon.category] || [];
       bucket.push(weapon);
       acc[weapon.category] = bucket;
       return acc;
     }, {});
+
+    Object.values(grouped).forEach((weapons) => {
+      weapons.sort((a, b) => {
+        const rankA = RARITY_WEIGHT[a.rarity] ?? RARITY_ORDER.length;
+        const rankB = RARITY_WEIGHT[b.rarity] ?? RARITY_ORDER.length;
+        if (rankA !== rankB) {
+          return rankA - rankB;
+        }
+        return a.name.localeCompare(b.name);
+      });
+    });
+
+    return grouped;
   }
 
   findDefaultWeapon() {
