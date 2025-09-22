@@ -20,6 +20,7 @@ const RAW_WEAPONS = [
   {
     name: 'Assault Rifle',
     category: 'primary',
+    rarity: 'common',
     description: 'Standard issue rifle offering controllable automatic fire.',
     stats: {
       damage: '10',
@@ -34,6 +35,7 @@ const RAW_WEAPONS = [
   {
     name: 'Sniper Rifle',
     category: 'primary',
+    rarity: 'common',
     description: 'Precision rifle built for long-range eliminations.',
     stats: {
       damage: '50',
@@ -48,6 +50,7 @@ const RAW_WEAPONS = [
   {
     name: 'Rocket Launcher',
     category: 'primary',
+    rarity: 'rare',
     description: 'Heavy launcher delivering high splash damage.',
     stats: {
       damage: '100 Splash',
@@ -62,6 +65,7 @@ const RAW_WEAPONS = [
   {
     name: 'Bow',
     category: 'primary',
+    rarity: 'rare',
     description: 'Lightweight bow with flexible draw strength.',
     stats: {
       damage: '15',
@@ -76,6 +80,7 @@ const RAW_WEAPONS = [
   {
     name: 'Crossbow',
     category: 'primary',
+    rarity: 'rare',
     description: 'Precision bolt thrower with high per-shot impact.',
     stats: {
       damage: '30',
@@ -90,6 +95,7 @@ const RAW_WEAPONS = [
   {
     name: 'Wizard Staff',
     category: 'primary',
+    rarity: 'legendary',
     description: 'Channelled staff that spits arcane splash bolts.',
     stats: {
       damage: '10 Splash damage',
@@ -106,6 +112,7 @@ const RAW_WEAPONS = [
   {
     name: 'Blaster Pistol',
     category: 'secondary',
+    rarity: 'common',
     description: 'Reliable sidearm that vents heat between bursts.',
     stats: {
       damage: '5',
@@ -120,6 +127,7 @@ const RAW_WEAPONS = [
   {
     name: 'Slingshot',
     category: 'secondary',
+    rarity: 'rare',
     description: 'Elastic launcher for quick pebbles and seeds.',
     stats: {
       damage: '5',
@@ -133,6 +141,7 @@ const RAW_WEAPONS = [
   {
     name: 'Splash Blaster',
     category: 'secondary',
+    rarity: 'rare',
     description: 'Burst sidearm that saturates tight spaces.',
     stats: {
       damage: '10 Splash damage',
@@ -147,6 +156,7 @@ const RAW_WEAPONS = [
   {
     name: 'Fey Wand',
     category: 'secondary',
+    rarity: 'legendary',
     description: 'Full-auto wand that bathes targets in fae energy.',
     stats: {
       damage: '15 Splash damage',
@@ -161,6 +171,7 @@ const RAW_WEAPONS = [
   {
     name: 'Flamethrower',
     category: 'secondary',
+    rarity: 'legendary',
     description: 'Close-range burner that drenches foes in flame.',
     stats: {
       damage: 'Fire AOE',
@@ -180,6 +191,7 @@ const RAW_WEAPONS = [
   {
     name: 'Hands',
     category: 'melee',
+    rarity: 'common',
     description: 'Basic close-quarters strikes powered by stamina.',
     stats: {
       damage: '3',
@@ -194,6 +206,7 @@ const RAW_WEAPONS = [
   {
     name: 'Knife',
     category: 'melee',
+    rarity: 'common',
     description: 'Light blade tuned for stealth eliminations.',
     stats: {
       damage: '15',
@@ -208,6 +221,7 @@ const RAW_WEAPONS = [
   {
     name: 'Tomahawk',
     category: 'melee',
+    rarity: 'rare',
     description: 'Hefty blade built for brutal swings or throws.',
     stats: {
       damage: '20',
@@ -222,6 +236,7 @@ const RAW_WEAPONS = [
   {
     name: 'Katana',
     category: 'melee',
+    rarity: 'legendary',
     description: 'Balanced blade suited for agile duels.',
     stats: {
       damage: '15',
@@ -237,6 +252,7 @@ const RAW_WEAPONS = [
   {
     name: 'Shield',
     category: 'melee',
+    rarity: 'rare',
     description: 'Protective barrier that can drive foes back.',
     stats: {
       damage: '5',
@@ -251,6 +267,7 @@ const RAW_WEAPONS = [
   {
     name: 'Warhammer',
     category: 'melee',
+    rarity: 'legendary',
     description: 'Massive hammer that crushes targets with splash.',
     stats: {
       damage: '30',
@@ -265,6 +282,7 @@ const RAW_WEAPONS = [
   {
     name: 'Bo Staff',
     category: 'melee',
+    rarity: 'mythic',
     description: 'Swift staff ideal for crowd control.',
     stats: {
       damage: '5',
@@ -281,6 +299,7 @@ const RAW_WEAPONS = [
   {
     name: 'Grenade',
     category: 'utility',
+    rarity: 'common',
     description: 'Standard grenade for clearing clustered foes.',
     stats: {
       damage: '50 Splash',
@@ -293,6 +312,7 @@ const RAW_WEAPONS = [
   {
     name: 'Smoke Grenade',
     category: 'utility',
+    rarity: 'rare',
     description: 'Obscures sightlines with a dense smoke field.',
     stats: {
       deploy: 'Throw',
@@ -304,6 +324,7 @@ const RAW_WEAPONS = [
   {
     name: 'Resource Pack',
     category: 'utility',
+    rarity: 'rare',
     description: 'Support drop that refreshes health and ammunition.',
     stats: {
       restores: '50% of Max Ammo & Health',
@@ -316,6 +337,7 @@ const RAW_WEAPONS = [
   {
     name: 'Mines',
     category: 'utility',
+    rarity: 'rare',
     description: 'Area denial charges triggered by contact.',
     stats: {
       damage: '150 damage',
@@ -328,6 +350,7 @@ const RAW_WEAPONS = [
   {
     name: 'Glider',
     category: 'utility',
+    rarity: 'mythic',
     description: 'Traversal tool that lets units ride the air.',
     stats: {
       deploy: 'Hold',
@@ -337,6 +360,7 @@ const RAW_WEAPONS = [
   {
     name: "Bottle o' Gas",
     category: 'utility',
+    rarity: 'rare',
     description: 'Volatile gas bomb for area denial.',
     stats: {
       damage: 'Gas AOE',
@@ -349,6 +373,7 @@ const RAW_WEAPONS = [
   {
     name: "Bottle o' Fire",
     category: 'utility',
+    rarity: 'rare',
     description: 'Ignites ground targets with lingering flames.',
     stats: {
       damage: 'Fire AOE',
@@ -361,6 +386,7 @@ const RAW_WEAPONS = [
   {
     name: "Bottle o' Lightning",
     category: 'utility',
+    rarity: 'rare',
     description: 'Crackling vial that paralyzes anything within.',
     stats: {
       effect: 'Field of Lightning',
@@ -373,6 +399,7 @@ const RAW_WEAPONS = [
   {
     name: "Bottle o' Ice",
     category: 'utility',
+    rarity: 'rare',
     description: 'Chilling vial that strips traction from the ground.',
     stats: {
       effect: 'Sheet of of Ice',
@@ -385,6 +412,7 @@ const RAW_WEAPONS = [
   {
     name: "Bottle o' Air",
     category: 'utility',
+    rarity: 'rare',
     description: 'Compressed gust that shoves everything outward.',
     stats: {
       effect: 'Blast of Air',
@@ -456,7 +484,7 @@ const weapons = RAW_WEAPONS.map((weapon) => {
     id: slugify(weapon.name),
     name: weapon.name,
     category,
-    rarity: legacy.rarity || FALLBACK_RARITY_BY_CATEGORY[category] || 'common',
+    rarity: legacy.rarity || weapon.rarity || FALLBACK_RARITY_BY_CATEGORY[category] || 'common',
     description: legacy.description || weapon.description || 'Specification pending.',
     modelPath: legacy.modelPath ?? null,
     preview: legacy.preview || undefined,
