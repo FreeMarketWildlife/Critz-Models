@@ -276,34 +276,51 @@ export class SceneManager {
     return distance * FOCUS_PADDING;
   }
 
-  focusOnCurrentModel({ immediate = false } = {}) {
+  computeCurrentModelView() {
     if (!this.currentModel) {
-      return false;
+      return null;
     }
 
     this.currentModel.updateWorldMatrix?.(true, true);
     this.boundingBox.setFromObject(this.currentModel);
     if (this.boundingBox.isEmpty()) {
-      return false;
+      return null;
     }
 
     this.boundingBox.getBoundingSphere(this.boundingSphere);
     if (!Number.isFinite(this.boundingSphere.radius) || this.boundingSphere.radius <= 0) {
-      return false;
+      return null;
     }
 
     const center = this.boundingSphere.center.clone();
-    if (!Number.isFinite(center.x) || !Number.isFinite(center.y) || !Number.isFinite(center.z)) {
-      return false;
+    const components = [center.x, center.y, center.z];
+    if (!components.every((value) => Number.isFinite(value))) {
+      return null;
     }
+
     const distance = this.computeFrameDistance(this.boundingSphere.radius);
     const offset = FOCUS_OFFSET_DIRECTION.clone().multiplyScalar(distance);
     const position = center.clone().add(offset);
 
-    this.startCameraTransition(position, center, { immediate });
+    return {
+      position,
+      target: center,
+    };
+  }
+
+  focusOnCurrentModel({ immediate = false } = {}) {
+    const view = this.computeCurrentModelView();
+    if (!view) {
+      return false;
+    }
+
+    this.defaultCameraPosition.copy(view.position);
+    this.defaultCameraTarget.copy(view.target);
+
+    this.startCameraTransition(view.position, view.target, { immediate });
     this.emitStageEvent('stage:focus-achieved', {
-      position: position.toArray(),
-      target: center.toArray(),
+      position: view.position.toArray(),
+      target: view.target.toArray(),
     });
     return true;
   }
@@ -440,11 +457,20 @@ export class SceneManager {
     this.currentCritterId = critter.id;
     this.stageGroup.add(model);
 
+    const critterView = this.computeCurrentModelView();
+    if (critterView) {
+      this.defaultCameraPosition.copy(critterView.position);
+      this.defaultCameraTarget.copy(critterView.target);
+    } else {
+      this.defaultCameraPosition.copy(CAMERA_DEFAULT_POSITION);
+      this.defaultCameraTarget.copy(CAMERA_DEFAULT_TARGET);
+    }
+    this.resetView(true);
+
     this.setupRigController(model);
 
     this.mixer = new THREE.AnimationMixer(model);
     this.activeAction = null;
-    this.focusOnCurrentModel({ immediate: false });
     this.emitStageEvent('stage:model-ready', {
       type: 'critter',
       id: critter.id,
