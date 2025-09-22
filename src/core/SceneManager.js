@@ -2,6 +2,7 @@ import * as THREE from 'https://esm.sh/three@0.160.0';
 import { createRenderer } from './RendererFactory.js';
 import { ResourceLoader } from './ResourceLoader.js';
 import { RigController } from './RigController.js';
+import { createAssaultBlasterPlaceholder } from './placeholders/createAssaultBlasterPlaceholder.js';
 
 const ORBIT_CONTROLS_MODULE =
   'https://esm.sh/three@0.160.0/examples/jsm/controls/OrbitControls.js';
@@ -349,6 +350,7 @@ export class SceneManager {
     if (!weapon) return;
 
     const requestId = (this.pendingWeaponId = weapon.id);
+    this.pendingCritterId = null;
     this.emitStageEvent('stage:model-loading', {
       type: 'weapon',
       id: weapon.id,
@@ -356,7 +358,9 @@ export class SceneManager {
     });
 
     let model = null;
-    if (weapon.modelPath) {
+    if (weapon.id === 'assault-rifle') {
+      model = createAssaultBlasterPlaceholder();
+    } else if (weapon.modelPath) {
       model = await this.resourceLoader.loadModel(weapon.modelPath);
     }
 
@@ -400,6 +404,7 @@ export class SceneManager {
     if (!critter) return;
 
     const requestId = (this.pendingCritterId = critter.id);
+    this.pendingWeaponId = null;
     this.emitStageEvent('stage:model-loading', {
       type: 'critter',
       id: critter.id,
