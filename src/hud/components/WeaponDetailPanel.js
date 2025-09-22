@@ -10,6 +10,53 @@ const RARITY_TITLES = {
   mythic: 'Mythic',
 };
 
+const escapeAttribute = (value) =>
+  String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+const parseDualStatValue = (value) => {
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  const parts = value.split('/').map((part) => part.trim());
+  if (parts.length !== 2) {
+    return null;
+  }
+
+  const [primary, secondary] = parts;
+  if (!primary || !secondary) {
+    return null;
+  }
+
+  return { primary, secondary };
+};
+
+const createStatTooltip = (key, rawValue) => {
+  const parsed = parseDualStatValue(rawValue);
+  if (!parsed) {
+    return null;
+  }
+
+  switch (key) {
+    case 'ammo':
+      return `Magazine size: ${parsed.primary} rounds; Extra ammo: ${parsed.secondary}`;
+    case 'overheat':
+      return `Heat cost per shot: ${parsed.primary}; Maximum heat: ${parsed.secondary}`;
+    default:
+      return null;
+  }
+};
+
+const wrapWithTooltip = (content, tooltipText) => {
+  const escaped = escapeAttribute(tooltipText);
+  return `<span class="stat-value tooltip" data-tooltip="${escaped}" tabindex="0" aria-label="${escaped}">${content}</span>`;
+};
+
 const buildStatsMarkup = (weapon, decorate = (value) => value) => {
   if (!weapon) {
     return '';
@@ -21,7 +68,16 @@ const buildStatsMarkup = (weapon, decorate = (value) => value) => {
   }
 
   const rows = stats
-    .map(({ label, value }) => `<dt>${decorate(label)}</dt><dd>${decorate(value)}</dd>`)
+    .map(({ key, label, value }) => {
+      const baseLabel = label == null ? '' : String(label);
+      const baseValue = value == null ? '' : String(value);
+      const tooltip = createStatTooltip(key, baseValue);
+      const decoratedLabel = decorate(baseLabel);
+      const decoratedValue = decorate(baseValue);
+      const valueMarkup = tooltip ? wrapWithTooltip(decoratedValue, tooltip) : decoratedValue;
+
+      return `<dt>${decoratedLabel}</dt><dd>${valueMarkup}</dd>`;
+    })
     .join('');
 
   return `<dl class="stat-list">${rows}</dl>`;
