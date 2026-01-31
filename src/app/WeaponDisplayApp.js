@@ -1,8 +1,8 @@
 import { SceneManager } from '../core/SceneManager.js';
 import { HUDController } from '../hud/HUDController.js';
-import { sampleWeapons } from '../data/sampleWeapons.js';
+import { sampleWeapons } from '../data/critzapedia/weapons/sampleWeapons.js';
 import { createEventBus } from '../utils/eventBus.js';
-import { critters } from '../data/critters.js';
+import { critters } from '../data/critzapedia/critters/critters.js';
 import { CritterSelector } from '../hud/components/CritterSelector.js';
 import { ViewportOverlay } from '../hud/components/ViewportOverlay.js';
 import { RigControlPanel } from '../hud/components/RigControlPanel.js';

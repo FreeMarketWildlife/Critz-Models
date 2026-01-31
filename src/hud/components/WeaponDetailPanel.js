@@ -1,4 +1,4 @@
-import { deriveStatsList } from '../../data/weaponSchema.js';
+import { deriveStatsList } from '../../data/critzapedia/weapons/weaponSchema.js';
 import { applyKeywordTooltips, createTooltipMarkup } from '../../utils/keywordTooltips.js';
 
 const buildAmmoTooltip = (value) => {
