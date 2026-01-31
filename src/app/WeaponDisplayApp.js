@@ -3,6 +3,7 @@ import { HUDController } from '../hud/HUDController.js';
 import { sampleWeapons } from '../data/sampleWeapons.js';
 import { createEventBus } from '../utils/eventBus.js';
 import { critters } from '../data/critters.js';
+import { librarySections } from '../data/librarySections.js';
 import { CritterSelector } from '../hud/components/CritterSelector.js';
 import { ViewportOverlay } from '../hud/components/ViewportOverlay.js';
 import { RigControlPanel } from '../hud/components/RigControlPanel.js';
@@ -30,6 +31,7 @@ export class WeaponDisplayApp {
     this.categories = ['primary', 'secondary', 'melee', 'utility'];
     this.activeCategory = 'primary';
     this.activeWeapon = null;
+    this.librarySections = librarySections;
 
     this.critters = critters;
     this.critterMap = new Map();
@@ -108,6 +110,15 @@ export class WeaponDisplayApp {
   }
 
   buildLayout() {
+    const mapsMarkup = this.renderNavList(
+      this.librarySections.maps,
+      'Map catalog entries are on deck.'
+    );
+    const modesMarkup = this.renderNavList(
+      this.librarySections.gameModes,
+      'Game mode catalog entries are on deck.'
+    );
+
     this.root.innerHTML = `
       <div class="app-shell">
         <div class="hud-brand">Critz Library</div>
@@ -117,8 +128,16 @@ export class WeaponDisplayApp {
             <div data-component="critter-selector"></div>
           </div>
           <div class="nav-section nav-section--categories">
-            <h2>Arsenal</h2>
+            <h2>Weapons &amp; Tools</h2>
             <ul class="nav-tabs" data-component="nav-tabs"></ul>
+          </div>
+          <div class="nav-section nav-section--maps">
+            <h2>Maps</h2>
+            ${mapsMarkup}
+          </div>
+          <div class="nav-section nav-section--modes">
+            <h2>Game Modes</h2>
+            ${modesMarkup}
           </div>
         </nav>
         <section class="panel hud-panel hud-list" data-component="weapon-list">
@@ -126,7 +145,9 @@ export class WeaponDisplayApp {
             <span data-role="list-context"></span>
           </div>
           <div class="weapon-cards" data-role="weapon-cards"></div>
-          <div class="panel-footer" data-role="list-footer">Choose a category to see its gear.</div>
+          <div class="panel-footer" data-role="list-footer">
+            Choose a category to see its weapons &amp; tools.
+          </div>
         </section>
         <section class="panel hud-panel hud-detail" data-component="weapon-detail">
           <div class="panel-header">
@@ -167,6 +188,20 @@ export class WeaponDisplayApp {
       detailFooter: this.root.querySelector('[data-role="detail-footer"]'),
       rigControlsElement: this.root.querySelector('[data-component="rig-controls"]'),
     };
+  }
+
+  renderNavList(items, emptyMessage) {
+    if (!items || items.length === 0) {
+      return `<p class="nav-empty">${emptyMessage}</p>`;
+    }
+
+    return `
+      <ul class="nav-list">
+        ${items
+          .map((item) => `<li>${item.label ?? item.name}</li>`)
+          .join('')}
+      </ul>
+    `;
   }
 
   registerEventHandlers() {
