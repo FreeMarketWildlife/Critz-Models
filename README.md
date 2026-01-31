@@ -30,7 +30,13 @@ Critz-Models/
     │   └── ResourceLoader.js # Helper for loading models/textures
     ├── data/
     │   ├── weaponSchema.js   # Schema definition + validation helpers
-    │   └── sampleWeapons.js  # Seed data used for UI scaffolding
+    │   ├── sampleWeapons.js  # Seed data used for UI scaffolding
+    │   ├── critters.js       # Critter catalog entrypoint
+    │   └── critzapedia/      # Organized encyclopedia data
+    │       ├── index.js
+    │       ├── critters/
+    │       ├── weapons/
+    │       └── tools/
     ├── hud/
     │   ├── HUDController.js  # Coordinates HUD state with app
     │   └── components/
@@ -98,6 +104,11 @@ Weapons are modeled with a base schema plus category-specific extensions.
 
 The schema is intentionally flexible. The HUD reads the schema metadata to decide which stats to show. Optional fields (like `quiverCapacity`) are displayed only when present.
 
+## Critzapedia Data Library
+The `src/data/critzapedia/` folder is the new encyclopedia-ready catalog for critters, weapons,
+and tools. Use the catalog files to add new entries, and extend the schema files when you need
+additional fields. This keeps the UI stable while the encyclopedia grows.
+
 ## UI Layout & Flow
 - **Top-left HUD**: Permanent "Crtiz" brand glyph and environment controls (fullscreen, sound toggle).
 - **Left rail**: Navigation tabs stacked vertically for category selection.
@@ -139,4 +150,3 @@ All sections are responsive; on small screens the nav becomes a top bar and the 
 3. Establish theme styles in `styles/main.css`.
 4. Create placeholder GLB assets or cubes per category for dev previews.
 5. Expand UI interactions (search, filters, comparisons).
-
