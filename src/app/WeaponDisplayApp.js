@@ -117,8 +117,16 @@ export class WeaponDisplayApp {
             <div data-component="critter-selector"></div>
           </div>
           <div class="nav-section nav-section--categories">
-            <h2>Arsenal</h2>
+            <h2>Weapons &amp; Tools</h2>
             <ul class="nav-tabs" data-component="nav-tabs"></ul>
+          </div>
+          <div class="nav-section nav-section--maps">
+            <h2>Maps</h2>
+            <p class="nav-placeholder">Atlas entries arriving soon.</p>
+          </div>
+          <div class="nav-section nav-section--modes">
+            <h2>Game Modes</h2>
+            <p class="nav-placeholder">Match types coming online shortly.</p>
           </div>
         </nav>
         <section class="panel hud-panel hud-list" data-component="weapon-list">
