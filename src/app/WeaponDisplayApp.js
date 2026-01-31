@@ -3,7 +3,9 @@ import { HUDController } from '../hud/HUDController.js';
 import { sampleWeapons } from '../data/sampleWeapons.js';
 import { createEventBus } from '../utils/eventBus.js';
 import { critters } from '../data/critters.js';
+import { librarySections } from '../data/librarySections.js';
 import { CritterSelector } from '../hud/components/CritterSelector.js';
+import { LibraryInfoList } from '../hud/components/LibraryInfoList.js';
 import { ViewportOverlay } from '../hud/components/ViewportOverlay.js';
 import { RigControlPanel } from '../hud/components/RigControlPanel.js';
 
@@ -21,6 +23,8 @@ export class WeaponDisplayApp {
     this.sceneManager = null;
     this.hudController = null;
     this.critterSelector = null;
+    this.mapsList = null;
+    this.gameModesList = null;
     this.viewportOverlay = null;
     this.rigControlPanel = null;
     this.activeAnimationId = null;
@@ -34,6 +38,8 @@ export class WeaponDisplayApp {
     this.critters = critters;
     this.critterMap = new Map();
     this.activeCritter = null;
+
+    this.librarySections = librarySections;
   }
 
   init() {
@@ -82,6 +88,20 @@ export class WeaponDisplayApp {
       bus: this.eventBus,
     });
 
+    this.mapsList = new LibraryInfoList({
+      element: layout.mapsListElement,
+      items: this.librarySections.maps.items,
+      emptyMessage: this.librarySections.maps.emptyMessage,
+    });
+    this.mapsList.render();
+
+    this.gameModesList = new LibraryInfoList({
+      element: layout.gameModesListElement,
+      items: this.librarySections.gameModes.items,
+      emptyMessage: this.librarySections.gameModes.emptyMessage,
+    });
+    this.gameModesList.render();
+
     this.rigControlPanel = new RigControlPanel({
       container: layout.rigControlsElement,
       bus: this.eventBus,
@@ -117,8 +137,16 @@ export class WeaponDisplayApp {
             <div data-component="critter-selector"></div>
           </div>
           <div class="nav-section nav-section--categories">
-            <h2>Arsenal</h2>
+            <h2>Weapons & Tools</h2>
             <ul class="nav-tabs" data-component="nav-tabs"></ul>
+          </div>
+          <div class="nav-section nav-section--maps">
+            <h2>Maps</h2>
+            <div class="library-info" data-component="maps-list"></div>
+          </div>
+          <div class="nav-section nav-section--modes">
+            <h2>Game modes</h2>
+            <div class="library-info" data-component="game-modes-list"></div>
           </div>
         </nav>
         <section class="panel hud-panel hud-list" data-component="weapon-list">
@@ -159,6 +187,8 @@ export class WeaponDisplayApp {
       stageViewportElement: this.root.querySelector('[data-role="stage-viewport"]'),
       navTabsElement: this.root.querySelector('[data-component="nav-tabs"]'),
       critterSelectorElement: this.root.querySelector('[data-component="critter-selector"]'),
+      mapsListElement: this.root.querySelector('[data-component="maps-list"]'),
+      gameModesListElement: this.root.querySelector('[data-component="game-modes-list"]'),
       weaponListPanel: this.root.querySelector('[data-component="weapon-list"]'),
       weaponDetailPanel: this.root.querySelector('[data-component="weapon-detail"]'),
       listContextLabel: this.root.querySelector('[data-role="list-context"]'),
