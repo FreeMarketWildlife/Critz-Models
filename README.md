@@ -29,8 +29,13 @@ Critz-Models/
     │   ├── RendererFactory.js
     │   └── ResourceLoader.js # Helper for loading models/textures
     ├── data/
+    │   ├── critzapedia/      # Organized data for Critzapedia entries
+    │   │   ├── critters/      # Critter profiles + animations
+    │   │   ├── tools/         # Tool entries + categories
+    │   │   └── weapons/       # Weapon entries + schemas
     │   ├── weaponSchema.js   # Schema definition + validation helpers
-    │   └── sampleWeapons.js  # Seed data used for UI scaffolding
+    │   ├── sampleWeapons.js  # Compatibility re-export (weapons)
+    │   └── critters.js       # Compatibility re-export (critters)
     ├── hud/
     │   ├── HUDController.js  # Coordinates HUD state with app
     │   └── components/
@@ -139,4 +144,3 @@ All sections are responsive; on small screens the nav becomes a top bar and the 
 3. Establish theme styles in `styles/main.css`.
 4. Create placeholder GLB assets or cubes per category for dev previews.
 5. Expand UI interactions (search, filters, comparisons).
-
