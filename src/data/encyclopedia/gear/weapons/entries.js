@@ -1,4 +1,4 @@
-import { normalizeWeapon } from './weaponSchema.js';
+import { normalizeWeapon } from './schema.js';
 
 const RAW_GLOBALS = {
   base_health: 100,
@@ -499,5 +499,5 @@ const weapons = RAW_WEAPONS.map((weapon) => {
 });
 
 export const weaponGlobals = RAW_GLOBALS;
+export { weapons };
 export const sampleWeapons = weapons;
-

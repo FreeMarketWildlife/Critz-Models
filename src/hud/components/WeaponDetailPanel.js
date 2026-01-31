@@ -1,4 +1,4 @@
-import { deriveStatsList } from '../../data/weaponSchema.js';
+import { deriveStatsList } from '../../data/encyclopedia/gear/weapons/schema.js';
 import { applyKeywordTooltips, createTooltipMarkup } from '../../utils/keywordTooltips.js';
 
 const buildAmmoTooltip = (value) => {

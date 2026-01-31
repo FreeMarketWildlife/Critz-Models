@@ -1,8 +1,8 @@
 import { SceneManager } from '../core/SceneManager.js';
 import { HUDController } from '../hud/HUDController.js';
-import { sampleWeapons } from '../data/sampleWeapons.js';
+import { weapons } from '../data/encyclopedia/gear/weapons/entries.js';
 import { createEventBus } from '../utils/eventBus.js';
-import { critters } from '../data/critters.js';
+import { critters } from '../data/encyclopedia/critters/entries.js';
 import { CritterSelector } from '../hud/components/CritterSelector.js';
 import { ViewportOverlay } from '../hud/components/ViewportOverlay.js';
 import { RigControlPanel } from '../hud/components/RigControlPanel.js';
@@ -25,7 +25,7 @@ export class WeaponDisplayApp {
     this.rigControlPanel = null;
     this.activeAnimationId = null;
 
-    this.weapons = sampleWeapons;
+    this.weapons = weapons;
     this.weaponMap = new Map();
     this.categories = ['primary', 'secondary', 'melee', 'utility'];
     this.activeCategory = 'primary';
@@ -110,7 +110,7 @@ export class WeaponDisplayApp {
   buildLayout() {
     this.root.innerHTML = `
       <div class="app-shell">
-        <div class="hud-brand">Critz Library</div>
+        <div class="hud-brand">Critzapedia</div>
         <nav class="hud-nav" aria-label="Interface options">
           <div class="nav-section nav-section--critters">
             <h2>Critters</h2>
