@@ -1,7 +1,7 @@
 import { NavigationTabs } from './components/NavigationTabs.js';
 import { WeaponList } from './components/WeaponList.js';
 import { WeaponDetailPanel } from './components/WeaponDetailPanel.js';
-import { WEAPON_CATEGORIES } from '../data/weaponSchema.js';
+import { WEAPON_CATEGORIES } from '../data/critzapedia/weapons/weaponSchema.js';
 
 const CATEGORY_LABELS = {
   primary: 'Primary Weapons',
