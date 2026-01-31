@@ -219,6 +219,14 @@ body::after {
   margin: 0;
 }
 
+.nav-placeholder {
+  margin: 0;
+  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(221, 247, 232, 0.65);
+}
+
 .nav-tabs button {
   width: 100%;
   padding: 0.9rem 1rem;
