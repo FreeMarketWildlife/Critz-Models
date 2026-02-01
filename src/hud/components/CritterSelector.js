@@ -1,7 +1,16 @@
+const DEFAULT_CATEGORY_LABELS = {
+  reptiles: 'Reptiles',
+  amphibians: 'Amphibians',
+  mammals: 'Mammals',
+  birds: 'Birds',
+  insects: 'Insects',
+};
+
 export class CritterSelector {
-  constructor({ element, critters = [], bus }) {
+  constructor({ element, critters = [], categories = [], bus }) {
     this.element = element;
     this.critters = critters;
+    this.categories = categories;
     this.bus = bus;
     this.activeId = null;
     this.buttons = new Map();
@@ -15,24 +24,74 @@ export class CritterSelector {
     this.element.setAttribute('role', 'radiogroup');
     this.element.classList.add('critter-selector');
 
-    this.critters.forEach((critter) => {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = 'critter-button';
-      button.dataset.critterId = critter.id;
-      button.textContent = critter.name;
-      button.setAttribute('role', 'radio');
-      button.setAttribute('aria-pressed', 'false');
-      button.setAttribute('aria-checked', 'false');
-      button.addEventListener('click', () => this.selectCritter(critter.id, { emit: true }));
-      this.element.appendChild(button);
-      this.buttons.set(critter.id, button);
+    const grouped = this.groupCrittersByCategory();
+
+    grouped.forEach(({ id, label, critters }) => {
+      const section = document.createElement('div');
+      section.className = 'critter-category';
+
+      const heading = document.createElement('h3');
+      heading.className = 'critter-category__title';
+      heading.textContent = label;
+      section.appendChild(heading);
+
+      const list = document.createElement('div');
+      list.className = 'critter-category__list';
+
+      critters.forEach((critter) => {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'critter-button';
+        button.dataset.critterId = critter.id;
+        button.textContent = critter.name;
+        button.setAttribute('role', 'radio');
+        button.setAttribute('aria-pressed', 'false');
+        button.setAttribute('aria-checked', 'false');
+        button.addEventListener('click', () => this.selectCritter(critter.id, { emit: true }));
+        list.appendChild(button);
+        this.buttons.set(critter.id, button);
+      });
+
+      section.appendChild(list);
+      this.element.appendChild(section);
     });
 
     const initialId = defaultId || this.critters[0]?.id || null;
     if (initialId) {
       this.selectCritter(initialId, { emit: false });
     }
+  }
+
+  groupCrittersByCategory() {
+    const categoryOrder = this.categories.length
+      ? this.categories
+      : Object.keys(DEFAULT_CATEGORY_LABELS).map((id) => ({
+          id,
+          label: DEFAULT_CATEGORY_LABELS[id],
+        }));
+
+    const bucketed = new Map();
+    categoryOrder.forEach((category) => {
+      bucketed.set(category.id, {
+        id: category.id,
+        label: category.label || DEFAULT_CATEGORY_LABELS[category.id] || category.id,
+        critters: [],
+      });
+    });
+
+    this.critters.forEach((critter) => {
+      const categoryId = critter.category || 'other';
+      if (!bucketed.has(categoryId)) {
+        bucketed.set(categoryId, {
+          id: categoryId,
+          label: DEFAULT_CATEGORY_LABELS[categoryId] || categoryId,
+          critters: [],
+        });
+      }
+      bucketed.get(categoryId).critters.push(critter);
+    });
+
+    return Array.from(bucketed.values()).filter((group) => group.critters.length > 0);
   }
 
   selectCritter(id, { emit }) {
