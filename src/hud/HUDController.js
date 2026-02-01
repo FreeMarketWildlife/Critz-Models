@@ -52,6 +52,10 @@ export class HUDController {
       categories: categories.map((category) => ({
         id: category,
         label: CATEGORY_LABELS[category] || this.prettify(category),
+        items: (this.weaponsByCategory[category] || []).map((weapon) => ({
+          id: weapon.id,
+          label: weapon.name,
+        })),
       })),
       activeCategory: this.activeCategory,
       onSelect: (category) => this.handleCategoryChange(category),
@@ -73,6 +77,8 @@ export class HUDController {
     this.refreshCategory(this.activeCategory, { announce: false });
     if (this.activeWeaponId) {
       this.selectWeapon(this.activeWeaponId, { emit: false });
+    } else {
+      this.selectWeapon(null, { emit: false });
     }
   }
 
@@ -86,6 +92,7 @@ export class HUDController {
   handleCategoryChange(category) {
     if (category === this.activeCategory) return;
     this.activeCategory = category;
+    this.activeWeaponId = null;
     this.refreshCategory(category, { announce: true });
   }
 
@@ -95,21 +102,15 @@ export class HUDController {
     if (this.listContextLabel) {
       this.listContextLabel.textContent = label;
     }
-    this.navigationTabs.setActive(category);
-    const defaultWeaponId = weapons[0]?.id ?? null;
-    this.weaponList.setWeapons(weapons, defaultWeaponId);
+    this.navigationTabs.setActive(category, { open: announce });
+    this.weaponList.setWeapons(weapons);
 
     if (announce) {
       this.bus.emit('hud:category-changed', category);
     }
 
-    if (weapons.length === 0) {
-      this.selectWeapon(null, { emit: false });
-      return;
-    }
-
-    const targetWeaponId = weapons.find((weapon) => weapon.id === this.activeWeaponId)?.id || defaultWeaponId;
-    this.selectWeapon(targetWeaponId, { emit: false });
+    const activeWeaponId = weapons.find((weapon) => weapon.id === this.activeWeaponId)?.id || null;
+    this.selectWeapon(activeWeaponId, { emit: false });
   }
 
   handleWeaponSelection(weaponId) {

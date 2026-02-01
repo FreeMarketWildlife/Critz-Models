@@ -139,6 +139,7 @@ export class WeaponDetailPanel {
       return;
     }
 
+    this.panelElement.hidden = false;
     this.panelElement.classList.remove('is-empty');
     this.renderHeader(weapon);
     this.renderContent(weapon);
@@ -171,6 +172,7 @@ export class WeaponDetailPanel {
   }
 
   renderEmpty() {
+    this.panelElement.hidden = true;
     if (this.contentElement) {
       this.contentElement.innerHTML =
         '<p class="description">Pick a tool to see its story and statistics.</p>';

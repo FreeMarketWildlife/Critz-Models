@@ -27,13 +27,13 @@ export class CritterSelector {
     const grouped = this.groupCrittersByCategory();
 
     grouped.forEach(({ id, label, critters }) => {
-      const section = document.createElement('div');
+      const section = document.createElement('details');
       section.className = 'critter-category';
+      section.dataset.category = id;
 
-      const heading = document.createElement('h3');
-      heading.className = 'critter-category__title';
+      const heading = document.createElement('summary');
+      heading.className = 'critter-category__summary';
       heading.textContent = label;
-      section.appendChild(heading);
 
       const list = document.createElement('div');
       list.className = 'critter-category__list';
@@ -52,13 +52,13 @@ export class CritterSelector {
         this.buttons.set(critter.id, button);
       });
 
+      section.appendChild(heading);
       section.appendChild(list);
       this.element.appendChild(section);
     });
 
-    const initialId = defaultId || this.critters[0]?.id || null;
-    if (initialId) {
-      this.selectCritter(initialId, { emit: false });
+    if (defaultId) {
+      this.selectCritter(defaultId, { emit: false });
     }
   }
 
