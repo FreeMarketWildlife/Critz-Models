@@ -11,7 +11,7 @@ export const critters = [
       health: 100,
       speed: 100,
       stamina: 100,
-      bonus: 'Double Jump',
+      bonus: 'Double Jump (player gets an extra jump in the air for no stamina cost)',
     },
     animations: [
       { id: 'frog_idle', label: 'Idle', path: 'assets/models/critters/animations/TH_Frog_Idle.glb' },
@@ -93,7 +93,7 @@ export const critters = [
       health: 100,
       speed: 100,
       stamina: 100,
-      bonus: '+25% Sprint Boost While Above 50% Stamina',
+      bonus: 'Sprint Boost (+25% movement while above 50% stamina)',
     },
     animations: [
       { id: 'lizard_idle', label: 'Idle', path: 'assets/models/critters/animations/TH_Lizard_Idle.glb' },
@@ -168,47 +168,109 @@ export const critters = [
     name: 'Turtle',
     category: 'reptiles',
     modelPath: '',
+    stats: {
+      health: 125,
+      speed: 75,
+      stamina: 125,
+      bonus: 'Shell (Shell Blocks All Physical Damage)',
+    },
   },
   {
     id: 'salamander',
     name: 'Salamander',
     category: 'amphibians',
     modelPath: '',
+    stats: {
+      health: 100,
+      speed: 90,
+      stamina: 100,
+      bonus: 'Health Regeneration (+1 hp per second)',
+    },
+  },
+  {
+    id: 'porcupine',
+    name: 'Porcupine',
+    category: 'mammals',
+    modelPath: '',
+    stats: {
+      health: 110,
+      speed: 75,
+      stamina: 75,
+      bonus:
+        'Thornmail (Melee attacks return back 25% damage dealt, enemy units that touch the thorns will be damaged with 25 physical damage)',
+    },
   },
   {
     id: 'hedgehog',
     name: 'Hedgehog',
     category: 'mammals',
     modelPath: '',
+    stats: {
+      health: 75,
+      speed: 125,
+      stamina: 80,
+      bonus: 'Spike Roll (Invulnerable long roll as a spiky ball that does 10 physical damage)',
+    },
   },
   {
     id: 'ferret',
     name: 'Ferret',
     category: 'mammals',
     modelPath: '',
+    stats: {
+      health: 100,
+      speed: 125,
+      stamina: 100,
+      bonus: 'Keen Senses (Enemy units are Revealed on Minimap if Standing Still)',
+    },
   },
   {
     id: 'finch',
     name: 'Finch',
     category: 'birds',
     modelPath: '',
+    stats: {
+      health: 50,
+      speed: 80,
+      stamina: 100,
+      bonus: 'Bird Flight (press space bar to flap wings)',
+    },
   },
   {
     id: 'sparrow',
     name: 'Sparrow',
     category: 'birds',
     modelPath: '',
+    stats: {
+      health: 50,
+      speed: 120,
+      stamina: 150,
+      bonus: 'Bird Flight (press space bar to flap wings)',
+    },
   },
   {
     id: 'mantis',
     name: 'Mantis',
     category: 'insects',
     modelPath: '',
+    stats: {
+      health: 75,
+      speed: 50,
+      stamina: 100,
+      bonus: "Mantis Flight (Mantis does a long jump with flapping it's wings)",
+    },
   },
   {
     id: 'beetle',
     name: 'Beetle',
     category: 'insects',
     modelPath: '',
+    stats: {
+      health: 125,
+      speed: 75,
+      stamina: 100,
+      bonus:
+        "Beetle Flight (Beetle opens it's wings to fly a medium distance and takes in more damage in this state)",
+    },
   },
 ];
