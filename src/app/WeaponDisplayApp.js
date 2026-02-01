@@ -1,5 +1,4 @@
 import { SceneManager } from '../core/SceneManager.js';
-import { HUDController } from '../hud/HUDController.js';
 import { sampleWeapons } from '../data/sampleWeapons.js';
 import { createEventBus } from '../utils/eventBus.js';
 import { critters } from '../data/critters.js';
@@ -8,6 +7,9 @@ import { critterCategories } from '../data/critterCategories.js';
 import { CritterSelector } from '../hud/components/CritterSelector.js';
 import { ViewportOverlay } from '../hud/components/ViewportOverlay.js';
 import { RigControlPanel } from '../hud/components/RigControlPanel.js';
+import { WeaponDetailPanel } from '../hud/components/WeaponDetailPanel.js';
+import { WeaponCategorySelector } from '../hud/components/WeaponCategorySelector.js';
+import { LibraryItemList } from '../hud/components/LibraryItemList.js';
 
 const RARITY_ORDER = {
   common: 0,
@@ -21,8 +23,11 @@ export class WeaponDisplayApp {
     this.root = rootElement;
     this.eventBus = createEventBus();
     this.sceneManager = null;
-    this.hudController = null;
+    this.weaponDetailPanel = null;
     this.critterSelector = null;
+    this.weaponCategorySelector = null;
+    this.mapList = null;
+    this.modeList = null;
     this.viewportOverlay = null;
     this.rigControlPanel = null;
     this.activeAnimationId = null;
@@ -30,7 +35,6 @@ export class WeaponDisplayApp {
     this.weapons = sampleWeapons;
     this.weaponMap = new Map();
     this.categories = ['primary', 'secondary', 'melee', 'utility'];
-    this.activeCategory = 'primary';
     this.activeWeapon = null;
     this.librarySections = librarySections;
 
@@ -54,23 +58,35 @@ export class WeaponDisplayApp {
     });
     this.viewportOverlay.init();
 
-    this.hudController = new HUDController({
-      bus: this.eventBus,
-      navElement: layout.navTabsElement,
-      listPanel: layout.weaponListPanel,
-      detailPanel: layout.weaponDetailPanel,
-      listContextLabel: layout.listContextLabel,
-      listFooter: layout.listFooter,
+    this.weaponDetailPanel = new WeaponDetailPanel({
+      panelElement: layout.weaponDetailPanel,
       rarityBadge: layout.rarityBadge,
-      detailFooter: layout.detailFooter,
+      footerElement: layout.detailFooter,
     });
+    this.weaponDetailPanel.renderEmpty();
 
-    this.hudController.init({
+    const weaponsByCategory = this.groupWeaponsByCategory();
+    this.weaponCategorySelector = new WeaponCategorySelector({
+      element: layout.weaponCategorySelectorElement,
+      weaponsByCategory,
       categories: this.categories,
-      weaponsByCategory: this.groupWeaponsByCategory(),
-      defaultCategory: this.activeCategory,
-      defaultWeaponId: null,
+      onSelect: (weaponId) => this.handleWeaponSelection(weaponId),
     });
+    this.weaponCategorySelector.render();
+
+    this.mapList = new LibraryItemList({
+      element: layout.mapListElement,
+      items: this.librarySections.maps,
+      onSelect: (item) => this.handleLibrarySelection('Map', item),
+    });
+    this.mapList.render();
+
+    this.modeList = new LibraryItemList({
+      element: layout.modeListElement,
+      items: this.librarySections.gameModes,
+      onSelect: (item) => this.handleLibrarySelection('Game Mode', item),
+    });
+    this.modeList.render();
 
     this.critterSelector = new CritterSelector({
       element: layout.critterSelectorElement,
@@ -90,15 +106,6 @@ export class WeaponDisplayApp {
   }
 
   buildLayout() {
-    const mapsMarkup = this.renderNavList(
-      this.librarySections.maps,
-      'Map catalog entries are on deck.'
-    );
-    const modesMarkup = this.renderNavList(
-      this.librarySections.gameModes,
-      'Game mode catalog entries are on deck.'
-    );
-
     this.root.innerHTML = `
       <div class="app-shell">
         <div class="hud-brand">Critz Library</div>
@@ -112,39 +119,30 @@ export class WeaponDisplayApp {
           <details class="nav-section nav-section--categories">
             <summary class="nav-section__summary">Weapons &amp; Tools</summary>
             <div class="nav-section__content">
-              <ul class="nav-tabs" data-component="nav-tabs"></ul>
+              <div data-component="weapon-category-selector"></div>
             </div>
           </details>
           <details class="nav-section nav-section--maps">
             <summary class="nav-section__summary">Maps</summary>
             <div class="nav-section__content">
-              ${mapsMarkup}
+              <div data-component="map-list"></div>
             </div>
           </details>
           <details class="nav-section nav-section--modes">
             <summary class="nav-section__summary">Game Modes</summary>
             <div class="nav-section__content">
-              ${modesMarkup}
+              <div data-component="mode-list"></div>
             </div>
           </details>
         </nav>
-        <section class="panel hud-panel hud-list" data-component="weapon-list">
-          <div class="panel-header">
-            <span data-role="list-context"></span>
-          </div>
-          <div class="weapon-cards" data-role="weapon-cards"></div>
-          <div class="panel-footer" data-role="list-footer">
-            Choose a category to see its weapons &amp; tools.
-          </div>
-        </section>
         <section class="panel hud-panel hud-detail" data-component="weapon-detail">
           <div class="panel-header">
-            <span>Equipment Info</span>
+            <span>Library Info</span>
             <span data-role="rarity-badge"></span>
           </div>
           <div class="detail-content">
             <div class="detail-scroll" data-role="detail-content">
-              <p class="description">Pick a tool to see its details.</p>
+              <p class="description">Select an item to see its details.</p>
             </div>
           </div>
           <div class="panel-footer" data-role="detail-footer">Awaiting selection</div>
@@ -166,37 +164,20 @@ export class WeaponDisplayApp {
     return {
       stageElement: this.root.querySelector('[data-component="stage"]'),
       stageViewportElement: this.root.querySelector('[data-role="stage-viewport"]'),
-      navTabsElement: this.root.querySelector('[data-component="nav-tabs"]'),
       critterSelectorElement: this.root.querySelector('[data-component="critter-selector"]'),
-      weaponListPanel: this.root.querySelector('[data-component="weapon-list"]'),
+      weaponCategorySelectorElement: this.root.querySelector(
+        '[data-component="weapon-category-selector"]'
+      ),
+      mapListElement: this.root.querySelector('[data-component="map-list"]'),
+      modeListElement: this.root.querySelector('[data-component="mode-list"]'),
       weaponDetailPanel: this.root.querySelector('[data-component="weapon-detail"]'),
-      listContextLabel: this.root.querySelector('[data-role="list-context"]'),
-      listFooter: this.root.querySelector('[data-role="list-footer"]'),
       rarityBadge: this.root.querySelector('[data-role="rarity-badge"]'),
       detailFooter: this.root.querySelector('[data-role="detail-footer"]'),
       rigControlsElement: this.root.querySelector('[data-component="rig-controls"]'),
     };
   }
 
-  renderNavList(items, emptyMessage) {
-    if (!items || items.length === 0) {
-      return `<p class="nav-empty">${emptyMessage}</p>`;
-    }
-
-    return `
-      <ul class="nav-list">
-        ${items
-          .map((item) => `<li>${item.label ?? item.name}</li>`)
-          .join('')}
-      </ul>
-    `;
-  }
-
   registerEventHandlers() {
-    this.eventBus.on('hud:category-changed', (category) => {
-      this.activeCategory = category;
-    });
-
     this.eventBus.on('hud:weapon-selected', (weaponId) => {
       const weapon = this.weaponMap.get(weaponId);
       if (!weapon) {
@@ -229,6 +210,38 @@ export class WeaponDisplayApp {
 
     this.eventBus.on('rig:refresh-requested', () => {
       this.refreshActiveCritter();
+    });
+  }
+
+  handleWeaponSelection(weaponId) {
+    const weapon = this.weaponMap.get(weaponId);
+    if (!weapon) {
+      console.warn(`Weapon with id "${weaponId}" was not found.`);
+      return;
+    }
+
+    this.activeWeapon = weapon;
+    this.mapList?.clearSelection();
+    this.modeList?.clearSelection();
+    this.weaponDetailPanel.render(weapon);
+    this.eventBus.emit('hud:weapon-selected', weapon.id);
+  }
+
+  handleLibrarySelection(typeLabel, item) {
+    if (!item) return;
+    this.activeWeapon = null;
+    this.weaponCategorySelector?.clearSelection();
+    if (typeLabel === 'Map') {
+      this.modeList?.clearSelection();
+    }
+    if (typeLabel === 'Game Mode') {
+      this.mapList?.clearSelection();
+    }
+    const title = item.label ?? item.name ?? typeLabel;
+    this.weaponDetailPanel.renderPlaceholder({
+      title,
+      message: 'No info yet. Info coming soon.',
+      footer: `${typeLabel} entry pending`,
     });
   }
 

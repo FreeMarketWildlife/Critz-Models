@@ -73,7 +73,7 @@ body::after {
   width: 100%;
   height: 100%;
   display: grid;
-  grid-template-columns: 200px 300px minmax(216px, 312px) minmax(520px, 1fr);
+  grid-template-columns: 220px minmax(300px, 420px) minmax(520px, 1fr);
   grid-template-rows: auto minmax(0, 1fr);
   gap: 1.5rem;
   padding: 2.25rem 2.75rem;
@@ -86,7 +86,7 @@ body::after {
 }
 
 .hud-brand {
-  grid-column: 1 / span 3;
+  grid-column: 1 / span 2;
   grid-row: 1;
   align-self: end;
   display: flex;
@@ -121,7 +121,8 @@ body::after {
   flex-direction: column;
   gap: 1.35rem;
   position: relative;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   box-shadow: var(--shadow-soft);
 }
 
@@ -405,13 +406,8 @@ body::after {
   min-height: 0;
 }
 
-.hud-list {
-  grid-column: 2;
-  grid-row: 2;
-}
-
 .hud-detail {
-  grid-column: 3;
+  grid-column: 2;
   grid-row: 2;
 }
 
@@ -717,7 +713,8 @@ dl dt {
 .weapon-cards,
 .detail-scroll,
 .nav-section__content,
-.rig-panel__content {
+.rig-panel__content,
+.hud-nav {
   scrollbar-width: thin;
   scrollbar-color: rgba(90, 169, 201, 0.55) transparent;
 }
@@ -725,21 +722,24 @@ dl dt {
 .weapon-cards::-webkit-scrollbar,
 .detail-scroll::-webkit-scrollbar,
 .nav-section__content::-webkit-scrollbar,
-.rig-panel__content::-webkit-scrollbar {
+.rig-panel__content::-webkit-scrollbar,
+.hud-nav::-webkit-scrollbar {
   width: 6px;
 }
 
 .weapon-cards::-webkit-scrollbar-track,
 .detail-scroll::-webkit-scrollbar-track,
 .nav-section__content::-webkit-scrollbar-track,
-.rig-panel__content::-webkit-scrollbar-track {
+.rig-panel__content::-webkit-scrollbar-track,
+.hud-nav::-webkit-scrollbar-track {
   background: transparent;
 }
 
 .weapon-cards::-webkit-scrollbar-thumb,
 .detail-scroll::-webkit-scrollbar-thumb,
 .nav-section__content::-webkit-scrollbar-thumb,
-.rig-panel__content::-webkit-scrollbar-thumb {
+.rig-panel__content::-webkit-scrollbar-thumb,
+.hud-nav::-webkit-scrollbar-thumb {
   background: linear-gradient(180deg, rgba(90, 169, 201, 0.65), rgba(124, 200, 111, 0.55));
   border-radius: 6px;
 }
@@ -797,7 +797,7 @@ dl dt {
 }
 
 .stage {
-  grid-column: 4;
+  grid-column: 3;
   grid-row: 1 / span 2;
   position: relative;
   display: flex;
@@ -1277,7 +1277,7 @@ dl dt {
   }
 
   .app-shell {
-    grid-template-columns: 160px 300px minmax(340px, 1fr);
+    grid-template-columns: 160px minmax(340px, 1fr);
     grid-template-rows: auto minmax(0, 1fr) minmax(280px, auto);
     padding: 2rem;
   }
@@ -1286,13 +1286,8 @@ dl dt {
     grid-column: 1 / span 2;
   }
 
-  .hud-list {
-    grid-column: 2;
-    grid-row: 2;
-  }
-
   .hud-detail {
-    grid-column: 3;
+    grid-column: 2;
     grid-row: 2;
   }
 
