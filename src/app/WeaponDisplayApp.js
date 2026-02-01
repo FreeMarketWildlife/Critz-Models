@@ -3,6 +3,7 @@ import { HUDController } from '../hud/HUDController.js';
 import { sampleWeapons } from '../data/sampleWeapons.js';
 import { createEventBus } from '../utils/eventBus.js';
 import { critters } from '../data/critters.js';
+import { critterGroups } from '../data/critterGroups.js';
 import { librarySections } from '../data/librarySections.js';
 import { CritterSelector } from '../hud/components/CritterSelector.js';
 import { ViewportOverlay } from '../hud/components/ViewportOverlay.js';
@@ -34,6 +35,7 @@ export class WeaponDisplayApp {
     this.librarySections = librarySections;
 
     this.critters = critters;
+    this.critterGroups = critterGroups;
     this.critterMap = new Map();
     this.activeCritter = null;
   }
@@ -81,6 +83,7 @@ export class WeaponDisplayApp {
     this.critterSelector = new CritterSelector({
       element: layout.critterSelectorElement,
       critters: this.critters,
+      groups: this.critterGroups,
       bus: this.eventBus,
     });
 
