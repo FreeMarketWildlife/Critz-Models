@@ -8,6 +8,7 @@ import { critterCategories } from '../data/critterCategories.js';
 import { CritterSelector } from '../hud/components/CritterSelector.js';
 import { ViewportOverlay } from '../hud/components/ViewportOverlay.js';
 import { RigControlPanel } from '../hud/components/RigControlPanel.js';
+import { NavButtonList } from '../hud/components/NavButtonList.js';
 
 const RARITY_ORDER = {
   common: 0,
@@ -25,6 +26,8 @@ export class WeaponDisplayApp {
     this.critterSelector = null;
     this.viewportOverlay = null;
     this.rigControlPanel = null;
+    this.mapsList = null;
+    this.modesList = null;
     this.activeAnimationId = null;
 
     this.weapons = sampleWeapons;
@@ -56,13 +59,10 @@ export class WeaponDisplayApp {
 
     this.hudController = new HUDController({
       bus: this.eventBus,
-      navElement: layout.navTabsElement,
-      listPanel: layout.weaponListPanel,
       detailPanel: layout.weaponDetailPanel,
-      listContextLabel: layout.listContextLabel,
-      listFooter: layout.listFooter,
       rarityBadge: layout.rarityBadge,
       detailFooter: layout.detailFooter,
+      categoryMenuElement: layout.categoryMenuElement,
     });
 
     this.hudController.init({
@@ -85,20 +85,41 @@ export class WeaponDisplayApp {
     });
     this.rigControlPanel.init();
 
+    this.mapsList = new NavButtonList({
+      element: layout.mapsListElement,
+      items: this.librarySections.maps,
+      emptyMessage: 'Map catalog entries are on deck.',
+      onSelect: (item) => {
+        this.modesList?.setActive(null);
+        this.hudController.showLibraryInfo({
+          title: item.label,
+          description: 'Info coming soon.',
+          footer: 'Map info coming soon',
+        });
+      },
+    });
+    this.mapsList.render();
+
+    this.modesList = new NavButtonList({
+      element: layout.modesListElement,
+      items: this.librarySections.gameModes,
+      emptyMessage: 'Game mode catalog entries are on deck.',
+      onSelect: (item) => {
+        this.mapsList?.setActive(null);
+        this.hudController.showLibraryInfo({
+          title: item.label,
+          description: 'Info coming soon.',
+          footer: 'Game mode info coming soon',
+        });
+      },
+    });
+    this.modesList.render();
+
     this.activeAnimationId = null;
     this.critterSelector.render(null);
   }
 
   buildLayout() {
-    const mapsMarkup = this.renderNavList(
-      this.librarySections.maps,
-      'Map catalog entries are on deck.'
-    );
-    const modesMarkup = this.renderNavList(
-      this.librarySections.gameModes,
-      'Game mode catalog entries are on deck.'
-    );
-
     this.root.innerHTML = `
       <div class="app-shell">
         <div class="hud-brand">Critz Library</div>
@@ -112,31 +133,22 @@ export class WeaponDisplayApp {
           <details class="nav-section nav-section--categories">
             <summary class="nav-section__summary">Weapons &amp; Tools</summary>
             <div class="nav-section__content">
-              <ul class="nav-tabs" data-component="nav-tabs"></ul>
+              <div data-component="weapon-category-menu"></div>
             </div>
           </details>
           <details class="nav-section nav-section--maps">
             <summary class="nav-section__summary">Maps</summary>
             <div class="nav-section__content">
-              ${mapsMarkup}
+              <div data-component="maps-list"></div>
             </div>
           </details>
           <details class="nav-section nav-section--modes">
             <summary class="nav-section__summary">Game Modes</summary>
             <div class="nav-section__content">
-              ${modesMarkup}
+              <div data-component="modes-list"></div>
             </div>
           </details>
         </nav>
-        <section class="panel hud-panel hud-list" data-component="weapon-list">
-          <div class="panel-header">
-            <span data-role="list-context"></span>
-          </div>
-          <div class="weapon-cards" data-role="weapon-cards"></div>
-          <div class="panel-footer" data-role="list-footer">
-            Choose a category to see its weapons &amp; tools.
-          </div>
-        </section>
         <section class="panel hud-panel hud-detail" data-component="weapon-detail">
           <div class="panel-header">
             <span>Equipment Info</span>
@@ -166,30 +178,15 @@ export class WeaponDisplayApp {
     return {
       stageElement: this.root.querySelector('[data-component="stage"]'),
       stageViewportElement: this.root.querySelector('[data-role="stage-viewport"]'),
-      navTabsElement: this.root.querySelector('[data-component="nav-tabs"]'),
+      categoryMenuElement: this.root.querySelector('[data-component="weapon-category-menu"]'),
       critterSelectorElement: this.root.querySelector('[data-component="critter-selector"]'),
-      weaponListPanel: this.root.querySelector('[data-component="weapon-list"]'),
       weaponDetailPanel: this.root.querySelector('[data-component="weapon-detail"]'),
-      listContextLabel: this.root.querySelector('[data-role="list-context"]'),
-      listFooter: this.root.querySelector('[data-role="list-footer"]'),
       rarityBadge: this.root.querySelector('[data-role="rarity-badge"]'),
       detailFooter: this.root.querySelector('[data-role="detail-footer"]'),
       rigControlsElement: this.root.querySelector('[data-component="rig-controls"]'),
+      mapsListElement: this.root.querySelector('[data-component="maps-list"]'),
+      modesListElement: this.root.querySelector('[data-component="modes-list"]'),
     };
-  }
-
-  renderNavList(items, emptyMessage) {
-    if (!items || items.length === 0) {
-      return `<p class="nav-empty">${emptyMessage}</p>`;
-    }
-
-    return `
-      <ul class="nav-list">
-        ${items
-          .map((item) => `<li>${item.label ?? item.name}</li>`)
-          .join('')}
-      </ul>
-    `;
   }
 
   registerEventHandlers() {
@@ -205,6 +202,8 @@ export class WeaponDisplayApp {
       }
       this.activeWeapon = weapon;
       this.sceneManager.applyRarityGlow();
+      this.mapsList?.setActive(null);
+      this.modesList?.setActive(null);
     });
 
     this.eventBus.on('critter:selected', (critterId) => {
