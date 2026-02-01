@@ -81,7 +81,7 @@ export class HUDController {
   selectWeapon(weaponId, { emit }) {
     this.activeWeaponId = weaponId;
     this.weaponCategoryMenu?.setActiveWeapon(weaponId);
-    const weapon = this.weaponMap.get(weaponId) || null;
+    const weapon = weaponId ? this.weaponMap.get(weaponId) || null : null;
     this.weaponDetailPanel.render(weapon);
 
     if (weapon && emit) {
@@ -100,5 +100,11 @@ export class HUDController {
     this.activeWeaponId = null;
     this.weaponCategoryMenu?.setActiveWeapon(null);
     this.weaponDetailPanel.renderPlaceholder({ title, description, footer });
+  }
+
+  clearSelection() {
+    this.activeWeaponId = null;
+    this.weaponCategoryMenu?.setActiveWeapon(null);
+    this.weaponDetailPanel.renderEmpty();
   }
 }

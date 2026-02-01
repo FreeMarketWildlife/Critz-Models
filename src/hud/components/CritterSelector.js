@@ -21,7 +21,7 @@ export class CritterSelector {
 
     this.element.innerHTML = '';
     this.buttons.clear();
-    this.element.setAttribute('role', 'radiogroup');
+    this.element.setAttribute('role', 'group');
     this.element.classList.add('critter-selector');
 
     const grouped = this.groupCrittersByCategory();
@@ -44,7 +44,7 @@ export class CritterSelector {
         button.className = 'critter-button';
         button.dataset.critterId = critter.id;
         button.textContent = critter.name;
-        button.setAttribute('role', 'radio');
+        button.setAttribute('role', 'button');
         button.setAttribute('aria-pressed', 'false');
         button.setAttribute('aria-checked', 'false');
         button.addEventListener('click', () => this.selectCritter(critter.id, { emit: true }));
@@ -95,24 +95,18 @@ export class CritterSelector {
   }
 
   selectCritter(id, { emit }) {
-    if (!id || this.activeId === id) {
-      if (emit && id) {
-        this.bus?.emit?.('critter:selected', id);
-      }
-      return;
-    }
-
-    this.activeId = id;
+    const nextId = this.activeId === id ? null : id;
+    this.activeId = nextId;
 
     this.buttons.forEach((button, critterId) => {
-      const isActive = critterId === id;
+      const isActive = critterId === nextId;
       button.classList.toggle('active', isActive);
       button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
       button.setAttribute('aria-checked', isActive ? 'true' : 'false');
     });
 
     if (emit) {
-      this.bus?.emit?.('critter:selected', id);
+      this.bus?.emit?.('critter:selected', nextId);
     }
   }
 }

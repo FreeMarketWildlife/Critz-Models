@@ -41,6 +41,12 @@ export class NavButtonList {
   }
 
   handleSelect(item) {
+    if (this.activeId === item.id) {
+      this.setActive(null);
+      this.onSelect?.(null);
+      return;
+    }
+
     this.setActive(item.id);
     this.onSelect?.(item);
   }

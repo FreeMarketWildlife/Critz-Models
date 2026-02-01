@@ -29,6 +29,7 @@ export class WeaponDisplayApp {
     this.mapsList = null;
     this.modesList = null;
     this.activeAnimationId = null;
+    this.stageElement = null;
 
     this.weapons = sampleWeapons;
     this.weaponMap = new Map();
@@ -44,6 +45,7 @@ export class WeaponDisplayApp {
 
   init() {
     const layout = this.buildLayout();
+    this.stageElement = layout.stageElement;
     this.indexWeapons();
     this.indexCritters();
     this.registerEventHandlers();
@@ -90,6 +92,10 @@ export class WeaponDisplayApp {
       items: this.librarySections.maps,
       emptyMessage: 'Map catalog entries are on deck.',
       onSelect: (item) => {
+        if (!item) {
+          this.hudController.clearSelection();
+          return;
+        }
         this.modesList?.setActive(null);
         this.hudController.showLibraryInfo({
           title: item.label,
@@ -105,6 +111,10 @@ export class WeaponDisplayApp {
       items: this.librarySections.gameModes,
       emptyMessage: 'Game mode catalog entries are on deck.',
       onSelect: (item) => {
+        if (!item) {
+          this.hudController.clearSelection();
+          return;
+        }
         this.mapsList?.setActive(null);
         this.hudController.showLibraryInfo({
           title: item.label,
@@ -117,6 +127,7 @@ export class WeaponDisplayApp {
 
     this.activeAnimationId = null;
     this.critterSelector.render(null);
+    this.setViewportOpen(false);
   }
 
   buildLayout() {
@@ -162,6 +173,9 @@ export class WeaponDisplayApp {
           <div class="panel-footer" data-role="detail-footer">Awaiting selection</div>
         </section>
         <section class="stage" data-component="stage">
+          <div class="stage-closed" data-role="stage-closed">
+            <p>Select a critter to open the viewport.</p>
+          </div>
           <div
             class="stage-viewport"
             data-role="stage-viewport"
@@ -207,13 +221,21 @@ export class WeaponDisplayApp {
     });
 
     this.eventBus.on('critter:selected', (critterId) => {
+      if (!critterId) {
+        this.clearActiveCritter();
+        return;
+      }
       const critter = this.critterMap.get(critterId);
       if (!critter || this.activeCritter?.id === critterId) {
         return;
       }
 
+      this.setViewportOpen(true);
       this.activeCritter = critter;
       this.emitCritterStats(critter);
+      this.mapsList?.setActive(null);
+      this.modesList?.setActive(null);
+      this.showCritterInfo(critter);
       this.activeAnimationId = this.resolveAnimationId(critter);
       const activeAnimation = this.findAnimation(critter, this.activeAnimationId);
 
@@ -228,6 +250,41 @@ export class WeaponDisplayApp {
 
     this.eventBus.on('rig:refresh-requested', () => {
       this.refreshActiveCritter();
+    });
+  }
+
+  setViewportOpen(isOpen) {
+    if (!this.stageElement) {
+      return;
+    }
+    this.stageElement.classList.toggle('is-closed', !isOpen);
+  }
+
+  clearActiveCritter() {
+    if (this.activeCritter) {
+      this.sceneManager?.stopAnimation();
+      this.sceneManager?.disposeCurrentModel();
+    }
+    this.activeCritter = null;
+    this.activeAnimationId = null;
+    this.emitCritterStats(null);
+    this.hudController?.clearSelection();
+    this.setViewportOpen(false);
+  }
+
+  showCritterInfo(critter) {
+    const stats = critter?.stats || {};
+    const statLine = [
+      stats.health != null ? `Health: ${stats.health}` : null,
+      stats.speed != null ? `Speed: ${stats.speed}` : null,
+      stats.stamina != null ? `Stamina: ${stats.stamina}` : null,
+    ]
+      .filter(Boolean)
+      .join(' • ');
+    this.hudController.showLibraryInfo({
+      title: critter?.name ?? 'Critter Profile',
+      description: statLine || 'Critter profile details are on the way.',
+      footer: stats.bonus ? `Bonus: ${stats.bonus}` : 'Critter profile loaded.',
     });
   }
 

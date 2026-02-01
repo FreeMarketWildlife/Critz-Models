@@ -73,7 +73,7 @@ body::after {
   width: 100%;
   height: 100%;
   display: grid;
-  grid-template-columns: 220px minmax(260px, 340px) minmax(520px, 1fr);
+  grid-template-columns: 220px minmax(520px, 1fr) minmax(240px, 320px);
   grid-template-rows: auto minmax(0, 1fr);
   gap: 1.5rem;
   padding: 2.25rem 2.75rem;
@@ -813,6 +813,34 @@ dl dt {
   min-height: 0;
 }
 
+.stage.is-closed {
+  justify-content: center;
+}
+
+.stage.is-closed .stage-viewport,
+.stage.is-closed .stage-toolbar {
+  display: none;
+}
+
+.stage-closed {
+  position: relative;
+  z-index: 1;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  text-align: center;
+  padding: 2rem;
+  font-family: var(--font-display);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(247, 255, 244, 0.8);
+}
+
+.stage.is-closed .stage-closed {
+  display: flex;
+}
+
 .stage::before {
   content: '';
   position: absolute;
@@ -1223,7 +1251,7 @@ dl dt {
   border: 1px solid rgba(210, 243, 220, 0.32);
   border-radius: 999px;
   padding: 0.55rem 1.35rem;
-  background: rgba(9, 26, 18, 0.78);
+  background: rgba(5, 14, 10, 0.92);
   color: var(--color-text-primary);
   font-family: var(--font-display);
   letter-spacing: 0.14em;
