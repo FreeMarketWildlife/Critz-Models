@@ -173,7 +173,7 @@ export class WeaponDetailPanel {
   renderEmpty() {
     if (this.contentElement) {
       this.contentElement.innerHTML =
-        '<p class="description">Pick a tool to see its story and statistics.</p>';
+        '<p class="description">Select an item to see its story and statistics.</p>';
     }
 
     if (this.rarityBadge) {
@@ -183,6 +183,26 @@ export class WeaponDetailPanel {
 
     if (this.footerElement) {
       this.footerElement.textContent = 'Awaiting selection';
+    }
+
+    this.panelElement.classList.add('is-empty');
+  }
+
+  renderPlaceholder({ title, message, footer }) {
+    if (this.contentElement) {
+      this.contentElement.innerHTML = `
+        <h3>${title}</h3>
+        <p class="description">${message}</p>
+      `;
+    }
+
+    if (this.rarityBadge) {
+      this.rarityBadge.textContent = '';
+      this.rarityBadge.className = 'rarity-badge';
+    }
+
+    if (this.footerElement) {
+      this.footerElement.textContent = footer || 'Info coming soon.';
     }
 
     this.panelElement.classList.add('is-empty');
