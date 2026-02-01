@@ -126,20 +126,22 @@ const buildStatValueMarkup = ({ key, value, decorate }) => {
 };
 
 export class WeaponDetailPanel {
-  constructor({ panelElement, rarityBadge, footerElement }) {
+  constructor({ panelElement, rarityBadge, footerElement, titleElement }) {
     this.panelElement = panelElement;
     this.contentElement = panelElement.querySelector('[data-role="detail-content"]');
     this.rarityBadge = rarityBadge;
     this.footerElement = footerElement;
+    this.titleElement = titleElement;
   }
 
-  render(weapon) {
+  renderWeapon(weapon) {
     if (!weapon) {
       this.renderEmpty();
       return;
     }
 
     this.panelElement.classList.remove('is-empty');
+    this.setTitle('Equipment Info');
     this.renderHeader(weapon);
     this.renderContent(weapon);
   }
@@ -173,7 +175,7 @@ export class WeaponDetailPanel {
   renderEmpty() {
     if (this.contentElement) {
       this.contentElement.innerHTML =
-        '<p class="description">Pick a tool to see its story and statistics.</p>';
+        '<p class="description">Select a catalog entry to see its details.</p>';
     }
 
     if (this.rarityBadge) {
@@ -186,6 +188,34 @@ export class WeaponDetailPanel {
     }
 
     this.panelElement.classList.add('is-empty');
+    this.setTitle('Library Info');
+  }
+
+  renderPlaceholder(title, message = 'Info coming soon.') {
+    this.panelElement.classList.remove('is-empty');
+    this.setTitle('Library Info');
+
+    if (this.contentElement) {
+      this.contentElement.innerHTML = `
+        <h3>${title}</h3>
+        <p class="description">${message}</p>
+      `;
+    }
+
+    if (this.rarityBadge) {
+      this.rarityBadge.textContent = '';
+      this.rarityBadge.className = 'rarity-badge';
+    }
+
+    if (this.footerElement) {
+      this.footerElement.textContent = 'No details available yet.';
+    }
+  }
+
+  setTitle(title) {
+    if (this.titleElement) {
+      this.titleElement.textContent = title;
+    }
   }
 
   prettify(value) {
