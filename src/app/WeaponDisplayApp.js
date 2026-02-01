@@ -4,6 +4,7 @@ import { sampleWeapons } from '../data/sampleWeapons.js';
 import { createEventBus } from '../utils/eventBus.js';
 import { critters } from '../data/critters.js';
 import { librarySections } from '../data/librarySections.js';
+import { critterCategories } from '../data/critterCategories.js';
 import { CritterSelector } from '../hud/components/CritterSelector.js';
 import { ViewportOverlay } from '../hud/components/ViewportOverlay.js';
 import { RigControlPanel } from '../hud/components/RigControlPanel.js';
@@ -81,6 +82,7 @@ export class WeaponDisplayApp {
     this.critterSelector = new CritterSelector({
       element: layout.critterSelectorElement,
       critters: this.critters,
+      categories: critterCategories,
       bus: this.eventBus,
     });
 

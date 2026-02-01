@@ -2,6 +2,7 @@ export const critters = [
   {
     id: 'frog',
     name: 'Frog',
+    category: 'amphibians',
     modelPath: 'assets/models/critters/models/SK_TH_Frog_Rigged_01.glb',
     scale: 1.15,
     offset: { y: -0.6 },
@@ -83,6 +84,7 @@ export const critters = [
   {
     id: 'lizard',
     name: 'Lizard',
+    category: 'reptiles',
     modelPath: 'assets/models/critters/models/SK_TH_Lizard_Rigged_01.glb',
     scale: 1.25,
     offset: { y: -0.6 },
@@ -160,5 +162,53 @@ export const critters = [
         path: 'assets/models/critters/animations/TH_Lizard_Push_Up.glb',
       },
     ],
+  },
+  {
+    id: 'turtle',
+    name: 'Turtle',
+    category: 'reptiles',
+    modelPath: '',
+  },
+  {
+    id: 'salamander',
+    name: 'Salamander',
+    category: 'amphibians',
+    modelPath: '',
+  },
+  {
+    id: 'hedgehog',
+    name: 'Hedgehog',
+    category: 'mammals',
+    modelPath: '',
+  },
+  {
+    id: 'ferret',
+    name: 'Ferret',
+    category: 'mammals',
+    modelPath: '',
+  },
+  {
+    id: 'finch',
+    name: 'Finch',
+    category: 'birds',
+    modelPath: '',
+  },
+  {
+    id: 'sparrow',
+    name: 'Sparrow',
+    category: 'birds',
+    modelPath: '',
+  },
+  {
+    id: 'mantis',
+    name: 'Mantis',
+    category: 'insects',
+    modelPath: '',
+  },
+  {
+    id: 'beetle',
+    name: 'Beetle',
+    category: 'insects',
+    modelPath: '',
   },
 ];
