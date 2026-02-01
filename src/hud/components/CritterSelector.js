@@ -95,10 +95,13 @@ export class CritterSelector {
   }
 
   selectCritter(id, { emit }) {
-    if (!id || this.activeId === id) {
-      if (emit && id) {
-        this.bus?.emit?.('critter:selected', id);
-      }
+    if (!id) {
+      this.clearSelection({ emit });
+      return;
+    }
+
+    if (this.activeId === id) {
+      this.clearSelection({ emit });
       return;
     }
 
@@ -113,6 +116,18 @@ export class CritterSelector {
 
     if (emit) {
       this.bus?.emit?.('critter:selected', id);
+    }
+  }
+
+  clearSelection({ emit } = {}) {
+    this.activeId = null;
+    this.buttons.forEach((button) => {
+      button.classList.remove('active');
+      button.setAttribute('aria-pressed', 'false');
+      button.setAttribute('aria-checked', 'false');
+    });
+    if (emit) {
+      this.bus?.emit?.('critter:selected', null);
     }
   }
 }

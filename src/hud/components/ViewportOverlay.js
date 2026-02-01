@@ -168,6 +168,9 @@ export class ViewportOverlay {
       }),
       this.bus.on('viewport:critter-info', (payload) => {
         this.updateStats(payload);
+      }),
+      this.bus.on('viewport:critter-cleared', () => {
+        this.handleCritterCleared();
       })
     );
   }
@@ -271,6 +274,18 @@ export class ViewportOverlay {
       this.statFields.bonus.textContent = bonus;
       this.statFields.bonus.classList.toggle('is-empty', !bonus);
     }
+  }
+
+  handleCritterCleared() {
+    this.setStatus('idle', 'Select a critter to preview.');
+    this.setControlsAvailability({
+      focus: false,
+      reset: false,
+      autorotate: false,
+    });
+    this.autoRotateEnabled = false;
+    this.updateAutoRotateButton();
+    this.updateStats(null);
   }
 
   destroy() {

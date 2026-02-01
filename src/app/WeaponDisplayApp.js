@@ -29,6 +29,7 @@ export class WeaponDisplayApp {
     this.mapsList = null;
     this.modesList = null;
     this.activeAnimationId = null;
+    this.stageElement = null;
 
     this.weapons = sampleWeapons;
     this.weaponMap = new Map();
@@ -44,6 +45,7 @@ export class WeaponDisplayApp {
 
   init() {
     const layout = this.buildLayout();
+    this.stageElement = layout.stageElement;
     this.indexWeapons();
     this.indexCritters();
     this.registerEventHandlers();
@@ -117,6 +119,7 @@ export class WeaponDisplayApp {
 
     this.activeAnimationId = null;
     this.critterSelector.render(null);
+    this.setStageActive(false);
   }
 
   buildLayout() {
@@ -207,6 +210,11 @@ export class WeaponDisplayApp {
     });
 
     this.eventBus.on('critter:selected', (critterId) => {
+      if (!critterId) {
+        this.clearActiveCritter();
+        return;
+      }
+
       const critter = this.critterMap.get(critterId);
       if (!critter || this.activeCritter?.id === critterId) {
         return;
@@ -214,9 +222,11 @@ export class WeaponDisplayApp {
 
       this.activeCritter = critter;
       this.emitCritterStats(critter);
+      this.hudController.showCritterInfo(critter);
       this.activeAnimationId = this.resolveAnimationId(critter);
       const activeAnimation = this.findAnimation(critter, this.activeAnimationId);
 
+      this.setStageActive(true);
       this.sceneManager.loadCritter(critter).then(() => {
         if (activeAnimation) {
           this.sceneManager.playAnimation(activeAnimation);
@@ -310,5 +320,23 @@ export class WeaponDisplayApp {
       name: critter.name,
       stats: critter.stats ?? null,
     });
+  }
+
+  clearActiveCritter() {
+    this.activeCritter = null;
+    this.activeAnimationId = null;
+    this.emitCritterStats(null);
+    this.sceneManager?.disposeCurrentModel?.();
+    this.setStageActive(false);
+    this.eventBus.emit('viewport:critter-cleared');
+    if (this.activeWeapon?.id) {
+      this.hudController.selectWeapon(this.activeWeapon.id, { emit: false });
+    } else {
+      this.hudController.selectWeapon(null, { emit: false });
+    }
+  }
+
+  setStageActive(isActive) {
+    this.stageElement?.classList.toggle('has-critter', Boolean(isActive));
   }
 }
