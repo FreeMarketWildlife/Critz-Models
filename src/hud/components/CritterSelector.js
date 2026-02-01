@@ -27,10 +27,10 @@ export class CritterSelector {
     const grouped = this.groupCrittersByCategory();
 
     grouped.forEach(({ id, label, critters }) => {
-      const section = document.createElement('div');
+      const section = document.createElement('details');
       section.className = 'critter-category';
 
-      const heading = document.createElement('h3');
+      const heading = document.createElement('summary');
       heading.className = 'critter-category__title';
       heading.textContent = label;
       section.appendChild(heading);
@@ -56,7 +56,7 @@ export class CritterSelector {
       this.element.appendChild(section);
     });
 
-    const initialId = defaultId || this.critters[0]?.id || null;
+    const initialId = defaultId || null;
     if (initialId) {
       this.selectCritter(initialId, { emit: false });
     }
