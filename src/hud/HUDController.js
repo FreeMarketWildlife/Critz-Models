@@ -101,4 +101,25 @@ export class HUDController {
     this.weaponCategoryMenu?.setActiveWeapon(null);
     this.weaponDetailPanel.renderPlaceholder({ title, description, footer });
   }
+
+  showCritterInfo(critter) {
+    if (!critter) {
+      this.weaponDetailPanel.renderEmpty();
+      return;
+    }
+
+    const stats = critter.stats ?? {};
+    const health = stats.health ?? '--';
+    const speed = stats.speed ?? '--';
+    const stamina = stats.stamina ?? '--';
+    const bonus = stats.bonus ? `<br /><br />Bonus: ${stats.bonus}` : '';
+
+    this.activeWeaponId = null;
+    this.weaponCategoryMenu?.setActiveWeapon(null);
+    this.weaponDetailPanel.renderPlaceholder({
+      title: critter.name ?? 'Critter',
+      description: `Health: ${health} · Speed: ${speed} · Stamina: ${stamina}${bonus}`,
+      footer: `Critter ID: ${critter.id}`,
+    });
+  }
 }

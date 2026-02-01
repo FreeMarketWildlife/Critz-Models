@@ -73,7 +73,7 @@ body::after {
   width: 100%;
   height: 100%;
   display: grid;
-  grid-template-columns: 220px minmax(260px, 340px) minmax(520px, 1fr);
+  grid-template-columns: 220px minmax(540px, 1fr) minmax(220px, 320px);
   grid-template-rows: auto minmax(0, 1fr);
   gap: 1.5rem;
   padding: 2.25rem 2.75rem;
@@ -1055,12 +1055,26 @@ dl dt {
   min-height: 0;
 }
 
+.stage:not(.has-critter) .stage-viewport {
+  pointer-events: none;
+}
+
+.stage:not(.has-critter) canvas {
+  opacity: 0;
+}
+
+.stage:not(.has-critter) .viewport-controls-panel,
+.stage:not(.has-critter) .viewport-stats {
+  display: none;
+}
+
 .stage canvas {
   width: 100%;
   height: 100%;
   display: block;
   position: absolute;
   inset: 0;
+  transition: opacity 0.2s ease;
 }
 
 .viewport-ui {
@@ -1223,7 +1237,7 @@ dl dt {
   border: 1px solid rgba(210, 243, 220, 0.32);
   border-radius: 999px;
   padding: 0.55rem 1.35rem;
-  background: rgba(9, 26, 18, 0.78);
+  background: rgba(5, 16, 12, 0.92);
   color: var(--color-text-primary);
   font-family: var(--font-display);
   letter-spacing: 0.14em;
@@ -1237,8 +1251,8 @@ dl dt {
 .viewport-button:hover,
 .viewport-button:focus-visible {
   transform: translateY(-1px);
-  border-color: rgba(159, 217, 127, 0.65);
-  box-shadow: 0 16px 32px rgba(8, 24, 17, 0.45);
+  border-color: rgba(159, 217, 127, 0.7);
+  box-shadow: 0 16px 34px rgba(4, 16, 11, 0.55);
   outline: none;
 }
 
