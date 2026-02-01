@@ -1,79 +1,73 @@
-import { NavigationTabs } from './components/NavigationTabs.js';
-import { WeaponList } from './components/WeaponList.js';
 import { WeaponDetailPanel } from './components/WeaponDetailPanel.js';
-import { WEAPON_CATEGORIES } from '../data/weaponSchema.js';
-
-const CATEGORY_LABELS = {
-  primary: 'Primary',
-  secondary: 'Secondary',
-  melee: 'Melee',
-  utility: 'Utility',
-};
+import { WeaponCategoryNav } from './components/WeaponCategoryNav.js';
+import { NavButtonList } from './components/NavButtonList.js';
 
 export class HUDController {
   constructor({
     bus,
-    navElement,
-    listPanel,
+    weaponNavElement,
+    mapsNavElement,
+    modesNavElement,
     detailPanel,
-    listContextLabel,
-    listFooter,
     rarityBadge,
     detailFooter,
+    detailTitle,
   }) {
     this.bus = bus;
-    this.navElement = navElement;
-    this.listPanel = listPanel;
+    this.weaponNavElement = weaponNavElement;
+    this.mapsNavElement = mapsNavElement;
+    this.modesNavElement = modesNavElement;
     this.detailPanelElement = detailPanel;
-    this.listContextLabel = listContextLabel;
-    this.listFooter = listFooter;
 
-    this.navigationTabs = null;
-    this.weaponList = null;
+    this.weaponNavigation = null;
+    this.mapsList = null;
+    this.modesList = null;
     this.weaponDetailPanel = null;
 
     this.weaponsByCategory = {};
     this.weaponMap = new Map();
-
-    this.activeCategory = WEAPON_CATEGORIES[0];
-    this.activeWeaponId = null;
     this.rarityBadge = rarityBadge;
     this.detailFooter = detailFooter;
+    this.detailTitle = detailTitle;
+    this.activeContext = null;
   }
 
-  init({ categories, weaponsByCategory, defaultCategory, defaultWeaponId }) {
+  init({ categories, weaponsByCategory, maps, modes }) {
     this.weaponsByCategory = weaponsByCategory;
-    this.activeCategory = defaultCategory || categories[0] || WEAPON_CATEGORIES[0];
-    this.activeWeaponId = defaultWeaponId || null;
     this.buildWeaponIndex();
 
-    this.navigationTabs = new NavigationTabs({
-      element: this.navElement,
-      categories: categories.map((category) => ({
-        id: category,
-        label: CATEGORY_LABELS[category] || this.prettify(category),
-      })),
-      activeCategory: this.activeCategory,
-      onSelect: (category) => this.handleCategoryChange(category),
-    });
-    this.navigationTabs.render();
-
-    this.weaponList = new WeaponList({
-      panelElement: this.listPanel,
-      footerElement: this.listFooter,
+    this.weaponNavigation = new WeaponCategoryNav({
+      element: this.weaponNavElement,
+      categories,
+      weaponsByCategory,
       onSelect: (weaponId) => this.handleWeaponSelection(weaponId),
     });
+    this.weaponNavigation.render();
+
+    this.mapsList = new NavButtonList({
+      element: this.mapsNavElement,
+      items: maps,
+      onSelect: (id) => this.handleLibrarySelection('map', id),
+      emptyMessage: 'No maps have been catalogued yet.',
+    });
+    this.mapsList.render();
+
+    this.modesList = new NavButtonList({
+      element: this.modesNavElement,
+      items: modes,
+      onSelect: (id) => this.handleLibrarySelection('mode', id),
+      emptyMessage: 'No game modes have been catalogued yet.',
+    });
+    this.modesList.render();
 
     this.weaponDetailPanel = new WeaponDetailPanel({
       panelElement: this.detailPanelElement,
       rarityBadge: this.rarityBadge,
       footerElement: this.detailFooter,
+      titleElement: this.detailTitle,
     });
 
-    this.refreshCategory(this.activeCategory, { announce: false });
-    if (this.activeWeaponId) {
-      this.selectWeapon(this.activeWeaponId, { emit: false });
-    }
+    this.weaponDetailPanel.renderEmpty();
   }
 
   buildWeaponIndex() {
@@ -83,48 +77,31 @@ export class HUDController {
     });
   }
 
-  handleCategoryChange(category) {
-    if (category === this.activeCategory) return;
-    this.activeCategory = category;
-    this.activeWeaponId = null;
-    this.refreshCategory(category, { announce: true });
-  }
-
-  refreshCategory(category, { announce }) {
-    const weapons = this.weaponsByCategory[category] || [];
-    const label = CATEGORY_LABELS[category] || this.prettify(category);
-    if (this.listContextLabel) {
-      this.listContextLabel.textContent = label;
-    }
-    this.navigationTabs.setActive(category);
-    this.weaponList.setWeapons(weapons, null);
-
-    if (announce) {
-      this.bus.emit('hud:category-changed', category);
-    }
-
-    this.selectWeapon(null, { emit: false });
-  }
-
   handleWeaponSelection(weaponId) {
     this.selectWeapon(weaponId, { emit: true });
+    this.mapsList?.setActive(null);
+    this.modesList?.setActive(null);
   }
 
   selectWeapon(weaponId, { emit }) {
-    this.activeWeaponId = weaponId;
-    this.weaponList.setActiveWeapon(weaponId);
+    this.weaponNavigation.setActiveWeapon(weaponId);
     const weapon = this.weaponMap.get(weaponId) || null;
-    this.weaponDetailPanel.render(weapon);
+    this.weaponDetailPanel.renderWeapon(weapon);
+    this.activeContext = weapon ? { type: 'weapon', id: weaponId } : null;
 
     if (weapon && emit) {
       this.bus.emit('hud:weapon-selected', weapon.id);
     }
   }
 
-  prettify(value) {
-    return value
-      .replace(/([a-z])([A-Z])/g, '$1 $2')
-      .replace(/[-_]/g, ' ')
-      .replace(/^\w/, (char) => char.toUpperCase());
+  handleLibrarySelection(type, id) {
+    const source = type === 'map' ? this.mapsList : this.modesList;
+    const items = type === 'map' ? this.mapsList?.items : this.modesList?.items;
+    const entry = items?.find((item) => item.id === id);
+    if (!entry) return;
+    source?.setActive(id);
+    this.weaponNavigation.setActiveWeapon(null);
+    this.weaponDetailPanel.renderPlaceholder(entry.label ?? entry.name ?? entry.id);
+    this.activeContext = { type, id };
   }
 }

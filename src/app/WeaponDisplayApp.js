@@ -56,20 +56,20 @@ export class WeaponDisplayApp {
 
     this.hudController = new HUDController({
       bus: this.eventBus,
-      navElement: layout.navTabsElement,
-      listPanel: layout.weaponListPanel,
+      weaponNavElement: layout.weaponNavElement,
+      mapsNavElement: layout.mapsNavElement,
+      modesNavElement: layout.modesNavElement,
       detailPanel: layout.weaponDetailPanel,
-      listContextLabel: layout.listContextLabel,
-      listFooter: layout.listFooter,
       rarityBadge: layout.rarityBadge,
       detailFooter: layout.detailFooter,
+      detailTitle: layout.detailTitle,
     });
 
     this.hudController.init({
       categories: this.categories,
       weaponsByCategory: this.groupWeaponsByCategory(),
-      defaultCategory: this.activeCategory,
-      defaultWeaponId: null,
+      maps: this.librarySections.maps,
+      modes: this.librarySections.gameModes,
     });
 
     this.critterSelector = new CritterSelector({
@@ -90,15 +90,6 @@ export class WeaponDisplayApp {
   }
 
   buildLayout() {
-    const mapsMarkup = this.renderNavList(
-      this.librarySections.maps,
-      'Map catalog entries are on deck.'
-    );
-    const modesMarkup = this.renderNavList(
-      this.librarySections.gameModes,
-      'Game mode catalog entries are on deck.'
-    );
-
     this.root.innerHTML = `
       <div class="app-shell">
         <div class="hud-brand">Critz Library</div>
@@ -112,39 +103,30 @@ export class WeaponDisplayApp {
           <details class="nav-section nav-section--categories">
             <summary class="nav-section__summary">Weapons &amp; Tools</summary>
             <div class="nav-section__content">
-              <ul class="nav-tabs" data-component="nav-tabs"></ul>
+              <div data-component="weapon-nav"></div>
             </div>
           </details>
           <details class="nav-section nav-section--maps">
             <summary class="nav-section__summary">Maps</summary>
             <div class="nav-section__content">
-              ${mapsMarkup}
+              <div data-component="maps-list"></div>
             </div>
           </details>
           <details class="nav-section nav-section--modes">
             <summary class="nav-section__summary">Game Modes</summary>
             <div class="nav-section__content">
-              ${modesMarkup}
+              <div data-component="modes-list"></div>
             </div>
           </details>
         </nav>
-        <section class="panel hud-panel hud-list" data-component="weapon-list">
-          <div class="panel-header">
-            <span data-role="list-context"></span>
-          </div>
-          <div class="weapon-cards" data-role="weapon-cards"></div>
-          <div class="panel-footer" data-role="list-footer">
-            Choose a category to see its weapons &amp; tools.
-          </div>
-        </section>
         <section class="panel hud-panel hud-detail" data-component="weapon-detail">
           <div class="panel-header">
-            <span>Equipment Info</span>
+            <span data-role="detail-title">Library Info</span>
             <span data-role="rarity-badge"></span>
           </div>
           <div class="detail-content">
             <div class="detail-scroll" data-role="detail-content">
-              <p class="description">Pick a tool to see its details.</p>
+              <p class="description">Select a catalog entry to see its details.</p>
             </div>
           </div>
           <div class="panel-footer" data-role="detail-footer">Awaiting selection</div>
@@ -166,37 +148,19 @@ export class WeaponDisplayApp {
     return {
       stageElement: this.root.querySelector('[data-component="stage"]'),
       stageViewportElement: this.root.querySelector('[data-role="stage-viewport"]'),
-      navTabsElement: this.root.querySelector('[data-component="nav-tabs"]'),
+      weaponNavElement: this.root.querySelector('[data-component="weapon-nav"]'),
+      mapsNavElement: this.root.querySelector('[data-component="maps-list"]'),
+      modesNavElement: this.root.querySelector('[data-component="modes-list"]'),
       critterSelectorElement: this.root.querySelector('[data-component="critter-selector"]'),
-      weaponListPanel: this.root.querySelector('[data-component="weapon-list"]'),
       weaponDetailPanel: this.root.querySelector('[data-component="weapon-detail"]'),
-      listContextLabel: this.root.querySelector('[data-role="list-context"]'),
-      listFooter: this.root.querySelector('[data-role="list-footer"]'),
       rarityBadge: this.root.querySelector('[data-role="rarity-badge"]'),
       detailFooter: this.root.querySelector('[data-role="detail-footer"]'),
+      detailTitle: this.root.querySelector('[data-role="detail-title"]'),
       rigControlsElement: this.root.querySelector('[data-component="rig-controls"]'),
     };
   }
 
-  renderNavList(items, emptyMessage) {
-    if (!items || items.length === 0) {
-      return `<p class="nav-empty">${emptyMessage}</p>`;
-    }
-
-    return `
-      <ul class="nav-list">
-        ${items
-          .map((item) => `<li>${item.label ?? item.name}</li>`)
-          .join('')}
-      </ul>
-    `;
-  }
-
   registerEventHandlers() {
-    this.eventBus.on('hud:category-changed', (category) => {
-      this.activeCategory = category;
-    });
-
     this.eventBus.on('hud:weapon-selected', (weaponId) => {
       const weapon = this.weaponMap.get(weaponId);
       if (!weapon) {
