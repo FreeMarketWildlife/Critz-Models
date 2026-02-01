@@ -56,11 +56,8 @@ export class WeaponDisplayApp {
 
     this.hudController = new HUDController({
       bus: this.eventBus,
-      navElement: layout.navTabsElement,
-      listPanel: layout.weaponListPanel,
       detailPanel: layout.weaponDetailPanel,
-      listContextLabel: layout.listContextLabel,
-      listFooter: layout.listFooter,
+      catalogElement: layout.weaponCatalogElement,
       rarityBadge: layout.rarityBadge,
       detailFooter: layout.detailFooter,
     });
@@ -92,11 +89,13 @@ export class WeaponDisplayApp {
   buildLayout() {
     const mapsMarkup = this.renderNavList(
       this.librarySections.maps,
-      'Map catalog entries are on deck.'
+      'Map catalog entries are on deck.',
+      'map'
     );
     const modesMarkup = this.renderNavList(
       this.librarySections.gameModes,
-      'Game mode catalog entries are on deck.'
+      'Game mode catalog entries are on deck.',
+      'mode'
     );
 
     this.root.innerHTML = `
@@ -112,7 +111,7 @@ export class WeaponDisplayApp {
           <details class="nav-section nav-section--categories">
             <summary class="nav-section__summary">Weapons &amp; Tools</summary>
             <div class="nav-section__content">
-              <ul class="nav-tabs" data-component="nav-tabs"></ul>
+              <div data-component="weapon-catalog"></div>
             </div>
           </details>
           <details class="nav-section nav-section--maps">
@@ -128,23 +127,14 @@ export class WeaponDisplayApp {
             </div>
           </details>
         </nav>
-        <section class="panel hud-panel hud-list" data-component="weapon-list">
-          <div class="panel-header">
-            <span data-role="list-context"></span>
-          </div>
-          <div class="weapon-cards" data-role="weapon-cards"></div>
-          <div class="panel-footer" data-role="list-footer">
-            Choose a category to see its weapons &amp; tools.
-          </div>
-        </section>
         <section class="panel hud-panel hud-detail" data-component="weapon-detail">
           <div class="panel-header">
-            <span>Equipment Info</span>
+            <span>Library Info</span>
             <span data-role="rarity-badge"></span>
           </div>
           <div class="detail-content">
             <div class="detail-scroll" data-role="detail-content">
-              <p class="description">Pick a tool to see its details.</p>
+              <p class="description">Select an item to see its details.</p>
             </div>
           </div>
           <div class="panel-footer" data-role="detail-footer">Awaiting selection</div>
@@ -166,29 +156,38 @@ export class WeaponDisplayApp {
     return {
       stageElement: this.root.querySelector('[data-component="stage"]'),
       stageViewportElement: this.root.querySelector('[data-role="stage-viewport"]'),
-      navTabsElement: this.root.querySelector('[data-component="nav-tabs"]'),
+      weaponCatalogElement: this.root.querySelector('[data-component="weapon-catalog"]'),
       critterSelectorElement: this.root.querySelector('[data-component="critter-selector"]'),
-      weaponListPanel: this.root.querySelector('[data-component="weapon-list"]'),
       weaponDetailPanel: this.root.querySelector('[data-component="weapon-detail"]'),
-      listContextLabel: this.root.querySelector('[data-role="list-context"]'),
-      listFooter: this.root.querySelector('[data-role="list-footer"]'),
       rarityBadge: this.root.querySelector('[data-role="rarity-badge"]'),
       detailFooter: this.root.querySelector('[data-role="detail-footer"]'),
       rigControlsElement: this.root.querySelector('[data-component="rig-controls"]'),
     };
   }
 
-  renderNavList(items, emptyMessage) {
+  renderNavList(items, emptyMessage, type) {
     if (!items || items.length === 0) {
       return `<p class="nav-empty">${emptyMessage}</p>`;
     }
 
     return `
-      <ul class="nav-list">
+      <div class="catalog-category__list nav-info-list">
         ${items
-          .map((item) => `<li>${item.label ?? item.name}</li>`)
+          .map(
+            (item) => `
+              <button
+                type="button"
+                class="catalog-button"
+                data-info-type="${type}"
+                data-info-id="${item.id}"
+                data-info-label="${item.label ?? item.name}"
+              >
+                ${item.label ?? item.name}
+              </button>
+            `
+          )
           .join('')}
-      </ul>
+      </div>
     `;
   }
 
@@ -229,6 +228,24 @@ export class WeaponDisplayApp {
 
     this.eventBus.on('rig:refresh-requested', () => {
       this.refreshActiveCritter();
+    });
+
+    this.root.querySelectorAll('[data-info-type][data-info-id]').forEach((button) => {
+      const handleSelect = () => {
+        this.eventBus.emit('nav:info-selected', {
+          type: button.dataset.infoType,
+          id: button.dataset.infoId,
+          label: button.dataset.infoLabel,
+        });
+      };
+
+      button.addEventListener('click', handleSelect);
+      button.addEventListener('keyup', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          handleSelect();
+        }
+      });
     });
   }
 

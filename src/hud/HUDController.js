@@ -1,5 +1,4 @@
-import { NavigationTabs } from './components/NavigationTabs.js';
-import { WeaponList } from './components/WeaponList.js';
+import { WeaponCatalogNav } from './components/WeaponCatalogNav.js';
 import { WeaponDetailPanel } from './components/WeaponDetailPanel.js';
 import { WEAPON_CATEGORIES } from '../data/weaponSchema.js';
 
@@ -13,23 +12,16 @@ const CATEGORY_LABELS = {
 export class HUDController {
   constructor({
     bus,
-    navElement,
-    listPanel,
     detailPanel,
-    listContextLabel,
-    listFooter,
+    catalogElement,
     rarityBadge,
     detailFooter,
   }) {
     this.bus = bus;
-    this.navElement = navElement;
-    this.listPanel = listPanel;
+    this.catalogElement = catalogElement;
     this.detailPanelElement = detailPanel;
-    this.listContextLabel = listContextLabel;
-    this.listFooter = listFooter;
 
-    this.navigationTabs = null;
-    this.weaponList = null;
+    this.weaponCatalogNav = null;
     this.weaponDetailPanel = null;
 
     this.weaponsByCategory = {};
@@ -47,22 +39,16 @@ export class HUDController {
     this.activeWeaponId = defaultWeaponId || null;
     this.buildWeaponIndex();
 
-    this.navigationTabs = new NavigationTabs({
-      element: this.navElement,
+    this.weaponCatalogNav = new WeaponCatalogNav({
+      element: this.catalogElement,
       categories: categories.map((category) => ({
         id: category,
         label: CATEGORY_LABELS[category] || this.prettify(category),
       })),
-      activeCategory: this.activeCategory,
-      onSelect: (category) => this.handleCategoryChange(category),
-    });
-    this.navigationTabs.render();
-
-    this.weaponList = new WeaponList({
-      panelElement: this.listPanel,
-      footerElement: this.listFooter,
+      weaponsByCategory: this.weaponsByCategory,
       onSelect: (weaponId) => this.handleWeaponSelection(weaponId),
     });
+    this.weaponCatalogNav.render();
 
     this.weaponDetailPanel = new WeaponDetailPanel({
       panelElement: this.detailPanelElement,
@@ -70,10 +56,13 @@ export class HUDController {
       footerElement: this.detailFooter,
     });
 
-    this.refreshCategory(this.activeCategory, { announce: false });
     if (this.activeWeaponId) {
       this.selectWeapon(this.activeWeaponId, { emit: false });
     }
+
+    this.bus.on('nav:info-selected', (payload) => {
+      this.showPlaceholder(payload);
+    });
   }
 
   buildWeaponIndex() {
@@ -83,42 +72,37 @@ export class HUDController {
     });
   }
 
-  handleCategoryChange(category) {
-    if (category === this.activeCategory) return;
-    this.activeCategory = category;
-    this.activeWeaponId = null;
-    this.refreshCategory(category, { announce: true });
-  }
-
-  refreshCategory(category, { announce }) {
-    const weapons = this.weaponsByCategory[category] || [];
-    const label = CATEGORY_LABELS[category] || this.prettify(category);
-    if (this.listContextLabel) {
-      this.listContextLabel.textContent = label;
-    }
-    this.navigationTabs.setActive(category);
-    this.weaponList.setWeapons(weapons, null);
-
-    if (announce) {
-      this.bus.emit('hud:category-changed', category);
-    }
-
-    this.selectWeapon(null, { emit: false });
-  }
-
   handleWeaponSelection(weaponId) {
     this.selectWeapon(weaponId, { emit: true });
   }
 
   selectWeapon(weaponId, { emit }) {
     this.activeWeaponId = weaponId;
-    this.weaponList.setActiveWeapon(weaponId);
+    this.weaponCatalogNav.setActiveWeapon(weaponId);
     const weapon = this.weaponMap.get(weaponId) || null;
     this.weaponDetailPanel.render(weapon);
 
     if (weapon && emit) {
+      this.activeCategory = weapon.category || this.activeCategory;
       this.bus.emit('hud:weapon-selected', weapon.id);
+      if (weapon.category) {
+        this.bus.emit('hud:category-changed', weapon.category);
+      }
+    } else if (!weapon) {
+      this.activeWeaponId = null;
     }
+  }
+
+  showPlaceholder({ type, label } = {}) {
+    this.activeWeaponId = null;
+    this.weaponCatalogNav?.setActiveWeapon(null);
+
+    const typeLabel = type === 'mode' ? 'Game Mode' : type === 'map' ? 'Map' : 'Entry';
+    this.weaponDetailPanel.renderPlaceholder({
+      title: label || 'Info',
+      description: 'Info coming soon.',
+      footer: `${typeLabel} details are on deck.`,
+    });
   }
 
   prettify(value) {
