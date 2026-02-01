@@ -1,6 +1,5 @@
-import { NavigationTabs } from './components/NavigationTabs.js';
-import { WeaponList } from './components/WeaponList.js';
 import { WeaponDetailPanel } from './components/WeaponDetailPanel.js';
+import { WeaponCategoryMenu } from './components/WeaponCategoryMenu.js';
 import { WEAPON_CATEGORIES } from '../data/weaponSchema.js';
 
 const CATEGORY_LABELS = {
@@ -11,25 +10,12 @@ const CATEGORY_LABELS = {
 };
 
 export class HUDController {
-  constructor({
-    bus,
-    navElement,
-    listPanel,
-    detailPanel,
-    listContextLabel,
-    listFooter,
-    rarityBadge,
-    detailFooter,
-  }) {
+  constructor({ bus, categoryMenuElement, detailPanel, rarityBadge, detailFooter }) {
     this.bus = bus;
-    this.navElement = navElement;
-    this.listPanel = listPanel;
+    this.categoryMenuElement = categoryMenuElement;
     this.detailPanelElement = detailPanel;
-    this.listContextLabel = listContextLabel;
-    this.listFooter = listFooter;
 
-    this.navigationTabs = null;
-    this.weaponList = null;
+    this.weaponCategoryMenu = null;
     this.weaponDetailPanel = null;
 
     this.weaponsByCategory = {};
@@ -47,22 +33,19 @@ export class HUDController {
     this.activeWeaponId = defaultWeaponId || null;
     this.buildWeaponIndex();
 
-    this.navigationTabs = new NavigationTabs({
-      element: this.navElement,
+    this.weaponCategoryMenu = new WeaponCategoryMenu({
+      element: this.categoryMenuElement,
       categories: categories.map((category) => ({
         id: category,
         label: CATEGORY_LABELS[category] || this.prettify(category),
       })),
+      weaponsByCategory: this.weaponsByCategory,
       activeCategory: this.activeCategory,
-      onSelect: (category) => this.handleCategoryChange(category),
-    });
-    this.navigationTabs.render();
-
-    this.weaponList = new WeaponList({
-      panelElement: this.listPanel,
-      footerElement: this.listFooter,
+      activeWeaponId: this.activeWeaponId,
       onSelect: (weaponId) => this.handleWeaponSelection(weaponId),
+      onCategorySelect: (category) => this.handleCategoryChange(category),
     });
+    this.weaponCategoryMenu.render();
 
     this.weaponDetailPanel = new WeaponDetailPanel({
       panelElement: this.detailPanelElement,
@@ -70,7 +53,6 @@ export class HUDController {
       footerElement: this.detailFooter,
     });
 
-    this.refreshCategory(this.activeCategory, { announce: false });
     if (this.activeWeaponId) {
       this.selectWeapon(this.activeWeaponId, { emit: false });
     }
@@ -87,23 +69,9 @@ export class HUDController {
     if (category === this.activeCategory) return;
     this.activeCategory = category;
     this.activeWeaponId = null;
-    this.refreshCategory(category, { announce: true });
-  }
-
-  refreshCategory(category, { announce }) {
-    const weapons = this.weaponsByCategory[category] || [];
-    const label = CATEGORY_LABELS[category] || this.prettify(category);
-    if (this.listContextLabel) {
-      this.listContextLabel.textContent = label;
-    }
-    this.navigationTabs.setActive(category);
-    this.weaponList.setWeapons(weapons, null);
-
-    if (announce) {
-      this.bus.emit('hud:category-changed', category);
-    }
-
-    this.selectWeapon(null, { emit: false });
+    this.weaponCategoryMenu?.setActiveWeapon(null);
+    this.weaponDetailPanel.renderEmpty();
+    this.bus.emit('hud:category-changed', category);
   }
 
   handleWeaponSelection(weaponId) {
@@ -112,7 +80,7 @@ export class HUDController {
 
   selectWeapon(weaponId, { emit }) {
     this.activeWeaponId = weaponId;
-    this.weaponList.setActiveWeapon(weaponId);
+    this.weaponCategoryMenu?.setActiveWeapon(weaponId);
     const weapon = this.weaponMap.get(weaponId) || null;
     this.weaponDetailPanel.render(weapon);
 
@@ -126,5 +94,11 @@ export class HUDController {
       .replace(/([a-z])([A-Z])/g, '$1 $2')
       .replace(/[-_]/g, ' ')
       .replace(/^\w/, (char) => char.toUpperCase());
+  }
+
+  showLibraryInfo({ title, description, footer }) {
+    this.activeWeaponId = null;
+    this.weaponCategoryMenu?.setActiveWeapon(null);
+    this.weaponDetailPanel.renderPlaceholder({ title, description, footer });
   }
 }

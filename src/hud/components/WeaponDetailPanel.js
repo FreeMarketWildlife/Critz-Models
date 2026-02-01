@@ -188,6 +188,26 @@ export class WeaponDetailPanel {
     this.panelElement.classList.add('is-empty');
   }
 
+  renderPlaceholder({ title, description, footer }) {
+    if (this.contentElement) {
+      this.contentElement.innerHTML = `
+        <h3>${title}</h3>
+        <p class="description">${description}</p>
+      `;
+    }
+
+    if (this.rarityBadge) {
+      this.rarityBadge.textContent = '';
+      this.rarityBadge.className = 'rarity-badge';
+    }
+
+    if (this.footerElement) {
+      this.footerElement.textContent = footer || 'Info coming soon';
+    }
+
+    this.panelElement.classList.remove('is-empty');
+  }
+
   prettify(value) {
     return value
       .replace(/([a-z])([A-Z])/g, '$1 $2')
