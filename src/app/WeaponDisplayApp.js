@@ -65,19 +65,12 @@ export class WeaponDisplayApp {
       detailFooter: layout.detailFooter,
     });
 
-    const defaultWeapon = this.findDefaultWeapon();
-
     this.hudController.init({
       categories: this.categories,
       weaponsByCategory: this.groupWeaponsByCategory(),
       defaultCategory: this.activeCategory,
-      defaultWeaponId: defaultWeapon ? defaultWeapon.id : null,
+      defaultWeaponId: null,
     });
-
-    if (defaultWeapon) {
-      this.activeWeapon = defaultWeapon;
-      this.sceneManager.applyRarityGlow();
-    }
 
     this.critterSelector = new CritterSelector({
       element: layout.critterSelectorElement,
@@ -92,23 +85,8 @@ export class WeaponDisplayApp {
     });
     this.rigControlPanel.init();
 
-    const defaultCritter = this.findDefaultCritter();
-    if (defaultCritter) {
-      this.activeCritter = defaultCritter;
-      this.activeAnimationId = this.resolveAnimationId(defaultCritter);
-      const activeAnimation = this.findAnimation(defaultCritter, this.activeAnimationId);
-
-      this.sceneManager.loadCritter(defaultCritter).then(() => {
-        if (activeAnimation) {
-          this.sceneManager.playAnimation(activeAnimation);
-        }
-      });
-      this.emitCritterStats(defaultCritter);
-    } else {
-      this.activeAnimationId = null;
-    }
-
-    this.critterSelector.render(defaultCritter?.id);
+    this.activeAnimationId = null;
+    this.critterSelector.render();
   }
 
   buildLayout() {
@@ -125,22 +103,30 @@ export class WeaponDisplayApp {
       <div class="app-shell">
         <div class="hud-brand">Critz Library</div>
         <nav class="hud-nav" aria-label="Interface options">
-          <div class="nav-section nav-section--critters">
-            <h2>Critters</h2>
-            <div data-component="critter-selector"></div>
-          </div>
-          <div class="nav-section nav-section--categories">
-            <h2>Weapons &amp; Tools</h2>
-            <ul class="nav-tabs" data-component="nav-tabs"></ul>
-          </div>
-          <div class="nav-section nav-section--maps">
-            <h2>Maps</h2>
-            ${mapsMarkup}
-          </div>
-          <div class="nav-section nav-section--modes">
-            <h2>Game Modes</h2>
-            ${modesMarkup}
-          </div>
+          <details class="nav-section nav-section--critters">
+            <summary class="nav-section__summary">Critters</summary>
+            <div class="nav-section__content">
+              <div data-component="critter-selector"></div>
+            </div>
+          </details>
+          <details class="nav-section nav-section--categories">
+            <summary class="nav-section__summary">Weapons &amp; Tools</summary>
+            <div class="nav-section__content">
+              <ul class="nav-tabs" data-component="nav-tabs"></ul>
+            </div>
+          </details>
+          <details class="nav-section nav-section--maps">
+            <summary class="nav-section__summary">Maps</summary>
+            <div class="nav-section__content">
+              ${mapsMarkup}
+            </div>
+          </details>
+          <details class="nav-section nav-section--modes">
+            <summary class="nav-section__summary">Game Modes</summary>
+            <div class="nav-section__content">
+              ${modesMarkup}
+            </div>
+          </details>
         </nav>
         <section class="panel hud-panel hud-list" data-component="weapon-list">
           <div class="panel-header">
@@ -200,7 +186,18 @@ export class WeaponDisplayApp {
     return `
       <ul class="nav-list">
         ${items
-          .map((item) => `<li>${item.label ?? item.name}</li>`)
+          .map(
+            (item) => `
+              <li>
+                <details class="nav-subsection">
+                  <summary class="nav-subsection__summary">${item.label ?? item.name}</summary>
+                  <div class="nav-subsection__content">
+                    <p class="nav-empty">Details coming soon.</p>
+                  </div>
+                </details>
+              </li>
+            `
+          )
           .join('')}
       </ul>
     `;
