@@ -144,6 +144,28 @@ export class WeaponDetailPanel {
     this.renderContent(weapon);
   }
 
+  renderPlaceholder({ title, description, footer } = {}) {
+    this.panelElement.classList.remove('is-empty');
+
+    if (this.contentElement) {
+      const safeTitle = title || 'Info';
+      const safeDescription = description || 'Info coming soon.';
+      this.contentElement.innerHTML = `
+        <h3>${safeTitle}</h3>
+        <p class="description">${safeDescription}</p>
+      `;
+    }
+
+    if (this.rarityBadge) {
+      this.rarityBadge.textContent = '';
+      this.rarityBadge.className = 'rarity-badge';
+    }
+
+    if (this.footerElement) {
+      this.footerElement.textContent = footer || 'Info coming soon.';
+    }
+  }
+
   renderHeader(weapon) {
     if (!this.rarityBadge) return;
     const rarity = weapon.rarity || 'common';
@@ -173,7 +195,7 @@ export class WeaponDetailPanel {
   renderEmpty() {
     if (this.contentElement) {
       this.contentElement.innerHTML =
-        '<p class="description">Pick a tool to see its story and statistics.</p>';
+        '<p class="description">Select an item to see its details.</p>';
     }
 
     if (this.rarityBadge) {
