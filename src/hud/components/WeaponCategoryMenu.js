@@ -68,6 +68,12 @@ export class WeaponCategoryMenu {
   }
 
   handleSelect(weaponId) {
+    if (this.activeWeaponId === weaponId) {
+      this.setActiveWeapon(null);
+      this.onSelect?.(null);
+      return;
+    }
+
     this.setActiveWeapon(weaponId);
     this.onSelect?.(weaponId);
   }
