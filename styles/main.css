@@ -156,6 +156,26 @@ body::after {
 }
 
 .critter-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.critter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.critter-group-title {
+  margin: 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-highlight);
+}
+
+.critter-group-list {
   display: grid;
   gap: 0.65rem;
 }
