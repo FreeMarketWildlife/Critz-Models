@@ -139,6 +139,7 @@ export class WeaponDetailPanel {
       return;
     }
 
+    this.panelElement.classList.remove('is-hidden');
     this.panelElement.classList.remove('is-empty');
     this.renderHeader(weapon);
     this.renderContent(weapon);
@@ -186,6 +187,7 @@ export class WeaponDetailPanel {
     }
 
     this.panelElement.classList.add('is-empty');
+    this.panelElement.classList.add('is-hidden');
   }
 
   prettify(value) {

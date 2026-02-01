@@ -16,7 +16,7 @@ export class CritterSelector {
     this.buttons = new Map();
   }
 
-  render(defaultId) {
+  render(defaultId, { autoSelect = true } = {}) {
     if (!this.element) return;
 
     this.element.innerHTML = '';
@@ -27,16 +27,17 @@ export class CritterSelector {
     const grouped = this.groupCrittersByCategory();
 
     grouped.forEach(({ id, label, critters }) => {
-      const section = document.createElement('div');
-      section.className = 'critter-category';
+      const section = document.createElement('details');
+      section.className = 'critter-category nav-subsection';
 
-      const heading = document.createElement('h3');
+      const heading = document.createElement('summary');
       heading.className = 'critter-category__title';
       heading.textContent = label;
       section.appendChild(heading);
 
       const list = document.createElement('div');
       list.className = 'critter-category__list';
+      list.dataset.scroll = 'nav-subsection';
 
       critters.forEach((critter) => {
         const button = document.createElement('button');
@@ -56,8 +57,8 @@ export class CritterSelector {
       this.element.appendChild(section);
     });
 
-    const initialId = defaultId || this.critters[0]?.id || null;
-    if (initialId) {
+    const initialId = defaultId || (autoSelect ? this.critters[0]?.id || null : null);
+    if (initialId && autoSelect) {
       this.selectCritter(initialId, { emit: false });
     }
   }
