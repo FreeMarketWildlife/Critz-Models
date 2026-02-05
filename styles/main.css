@@ -14,6 +14,7 @@
   --color-text-secondary: rgba(247, 255, 244, 0.78);
   --font-display: 'Lilita One', cursive;
   --font-body: 'Nunito', sans-serif;
+  --font-pixel: 'Press Start 2P', cursive;
   --shadow-soft: 0 28px 65px rgba(5, 15, 10, 0.6);
   --border-radius-lg: 20px;
 }
@@ -832,6 +833,393 @@ dl dt {
   pointer-events: none;
 }
 
+.minigame-shell {
+  position: absolute;
+  inset: 1.1rem 1.1rem 1.4rem 1.1rem;
+  z-index: 3;
+  display: none;
+}
+
+.stage.has-minigame .minigame-shell {
+  display: block;
+}
+
+.stage.has-minigame .stage-viewport {
+  opacity: 0.12;
+  filter: blur(2px);
+}
+
+.stage.has-minigame .stage-toolbar {
+  opacity: 0.2;
+  pointer-events: none;
+}
+
+.minigame-panel {
+  height: 100%;
+  width: 100%;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 1rem;
+  background: linear-gradient(135deg, rgba(20, 29, 24, 0.95), rgba(13, 22, 20, 0.92));
+  border: 2px solid rgba(244, 237, 200, 0.4);
+  border-radius: 20px;
+  padding: 1.35rem 1.4rem;
+  font-family: var(--font-pixel);
+  text-transform: none;
+  letter-spacing: 0.02em;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 24px 48px rgba(6, 12, 10, 0.55);
+}
+
+.minigame-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  border-bottom: 2px solid rgba(244, 237, 200, 0.2);
+  padding-bottom: 0.75rem;
+}
+
+.minigame-title {
+  margin: 0;
+  font-size: 1rem;
+  color: #f4e9b2;
+}
+
+.minigame-subtitle {
+  margin: 0.35rem 0 0;
+  font-size: 0.6rem;
+  color: rgba(244, 237, 200, 0.7);
+}
+
+.minigame-status {
+  text-align: right;
+  font-size: 0.55rem;
+  line-height: 1.4;
+  color: rgba(244, 237, 200, 0.85);
+}
+
+.minigame-status__label {
+  margin: 0;
+  color: rgba(244, 237, 200, 0.5);
+  font-size: 0.5rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.minigame-status__value {
+  margin: 0 0 0.35rem;
+}
+
+.minigame-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.9fr);
+  gap: 1rem;
+  min-height: 0;
+}
+
+.minigame-screen {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) 170px;
+  gap: 0.85rem;
+  min-height: 0;
+}
+
+.minigame-screen__scene {
+  position: relative;
+  border: 2px solid rgba(244, 237, 200, 0.3);
+  border-radius: 16px;
+  padding: 1rem;
+  overflow: hidden;
+  background: repeating-linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.04) 0 12px,
+      transparent 12px 24px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(255, 255, 255, 0.04) 0 12px,
+      transparent 12px 24px
+    );
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: center;
+  gap: 1rem;
+}
+
+.minigame-screen__scene[data-scene='village'] {
+  background-color: #2f4f39;
+}
+
+.minigame-screen__scene[data-scene='trail'] {
+  background-color: #1f3a2e;
+}
+
+.minigame-screen__scene[data-scene='grotto'] {
+  background-color: #1a2a3a;
+}
+
+.minigame-screen__scene[data-scene='ruins'] {
+  background-color: #2e261f;
+}
+
+.minigame-screen__scene[data-scene='hollow'] {
+  background-color: #2d2a1f;
+}
+
+.pixel-portrait {
+  width: 140px;
+  height: 140px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 2px solid rgba(244, 237, 200, 0.4);
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  justify-self: start;
+}
+
+.pixel-portrait--enemy {
+  justify-self: end;
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.pixel-portrait--enemy.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.pixel-grid {
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 2px;
+  width: 120px;
+  height: 120px;
+  image-rendering: pixelated;
+}
+
+.pixel-cell {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+}
+
+.minigame-dialog {
+  border: 2px solid rgba(244, 237, 200, 0.3);
+  border-radius: 16px;
+  padding: 0.75rem;
+  background: rgba(7, 11, 10, 0.65);
+  overflow-y: auto;
+  font-size: 0.55rem;
+  line-height: 1.6;
+  min-height: 0;
+}
+
+.minigame-log {
+  margin: 0 0 0.6rem;
+  color: rgba(244, 237, 200, 0.82);
+}
+
+.minigame-log--system {
+  color: #f4e9b2;
+}
+
+.minigame-log--story {
+  color: rgba(196, 233, 255, 0.9);
+}
+
+.minigame-log--npc {
+  color: #c6f0a7;
+}
+
+.minigame-log--dialog {
+  color: #f4d3b2;
+}
+
+.minigame-log--combat {
+  color: #f7b1a2;
+}
+
+.minigame-sidebar {
+  display: grid;
+  gap: 0.85rem;
+  min-height: 0;
+}
+
+.minigame-card {
+  border: 2px solid rgba(244, 237, 200, 0.3);
+  border-radius: 16px;
+  padding: 0.75rem;
+  background: rgba(13, 20, 16, 0.8);
+  font-size: 0.55rem;
+  line-height: 1.55;
+}
+
+.minigame-card__title {
+  margin: 0 0 0.4rem;
+  color: #f4e9b2;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+}
+
+.minigame-card__subtitle {
+  margin: 0 0 0.35rem;
+  color: rgba(244, 237, 200, 0.75);
+}
+
+.minigame-card__body {
+  margin: 0;
+  color: rgba(244, 237, 200, 0.7);
+}
+
+.minigame-card__stat {
+  margin: 0.2rem 0 0;
+  color: rgba(244, 237, 200, 0.8);
+}
+
+.minigame-card__hint {
+  margin: 0.6rem 0 0;
+  color: rgba(244, 237, 200, 0.55);
+}
+
+.minigame-quest {
+  margin-bottom: 0.6rem;
+}
+
+.minigame-quest__name {
+  margin: 0 0 0.2rem;
+  color: rgba(244, 237, 200, 0.9);
+}
+
+.minigame-quest__status {
+  margin: 0;
+  color: rgba(244, 237, 200, 0.6);
+}
+
+.minigame-meter {
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(244, 237, 200, 0.15);
+  overflow: hidden;
+  margin-bottom: 0.4rem;
+}
+
+.minigame-meter__fill {
+  height: 100%;
+  background: linear-gradient(90deg, #7adf68, #f4d35e);
+}
+
+.minigame-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.6rem;
+}
+
+.minigame-action {
+  border: 2px solid rgba(244, 237, 200, 0.5);
+  border-radius: 12px;
+  background: rgba(19, 30, 24, 0.95);
+  color: #f4e9b2;
+  font-family: var(--font-pixel);
+  font-size: 0.55rem;
+  padding: 0.6rem 0.7rem;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease;
+}
+
+.minigame-action:hover {
+  transform: translateY(-1px);
+  background: rgba(31, 48, 37, 0.95);
+  border-color: rgba(244, 237, 200, 0.8);
+}
+
+.minigame-select {
+  position: absolute;
+  inset: 0;
+  background: rgba(9, 13, 12, 0.9);
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.minigame-select.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.minigame-select__panel {
+  width: min(720px, 100%);
+  background: rgba(16, 23, 20, 0.95);
+  border: 2px solid rgba(244, 237, 200, 0.35);
+  border-radius: 18px;
+  padding: 1.5rem;
+  box-shadow: 0 20px 40px rgba(5, 10, 8, 0.65);
+}
+
+.minigame-select__title {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #f4e9b2;
+}
+
+.minigame-select__copy {
+  margin: 0.4rem 0 1.2rem;
+  font-size: 0.6rem;
+  color: rgba(244, 237, 200, 0.7);
+}
+
+.minigame-choice-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.9rem;
+}
+
+.minigame-choice {
+  border: 2px solid rgba(244, 237, 200, 0.3);
+  border-radius: 16px;
+  background: rgba(12, 18, 16, 0.9);
+  color: #f4e9b2;
+  padding: 0.8rem;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.8rem;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.minigame-choice:hover {
+  transform: translateY(-2px);
+  border-color: rgba(244, 237, 200, 0.7);
+}
+
+.minigame-choice__portrait {
+  width: 78px;
+  height: 78px;
+  border: 2px solid rgba(244, 237, 200, 0.3);
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+}
+
+.minigame-choice__name {
+  margin: 0;
+  font-size: 0.7rem;
+}
+
+.minigame-choice__title,
+.minigame-choice__stats,
+.minigame-choice__skill {
+  margin: 0.3rem 0 0;
+  font-size: 0.55rem;
+  color: rgba(244, 237, 200, 0.7);
+}
+
 .stage-toolbar {
   position: relative;
   z-index: 1;
@@ -1421,6 +1809,23 @@ dl dt {
   .viewport-stats__list {
     grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
   }
+
+  .minigame-body {
+    grid-template-columns: 1fr;
+  }
+
+  .minigame-screen {
+    grid-template-rows: minmax(0, 1fr) 190px;
+  }
+
+  .minigame-screen__scene {
+    grid-template-columns: 1fr;
+    justify-items: center;
+  }
+
+  .minigame-actions {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
 }
 
 @media (max-width: 700px) {
@@ -1459,5 +1864,32 @@ dl dt {
   .viewport-controls {
     justify-content: center;
     gap: 0.6rem;
+  }
+
+  .minigame-panel {
+    padding: 1rem;
+  }
+
+  .minigame-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .minigame-screen {
+    grid-template-rows: minmax(0, 1fr) 210px;
+  }
+
+  .minigame-screen__scene {
+    padding: 0.8rem;
+  }
+
+  .pixel-portrait {
+    width: 110px;
+    height: 110px;
+  }
+
+  .pixel-grid {
+    width: 96px;
+    height: 96px;
   }
 }

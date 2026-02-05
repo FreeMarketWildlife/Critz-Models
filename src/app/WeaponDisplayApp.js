@@ -9,6 +9,8 @@ import { CritterSelector } from '../hud/components/CritterSelector.js';
 import { ViewportOverlay } from '../hud/components/ViewportOverlay.js';
 import { RigControlPanel } from '../hud/components/RigControlPanel.js';
 import { NavButtonList } from '../hud/components/NavButtonList.js';
+import { MinigamePanel } from '../hud/components/MinigamePanel.js';
+import { minigameCritterQuest } from '../data/minigameCritterQuest.js';
 
 const RARITY_ORDER = {
   common: 0,
@@ -28,8 +30,11 @@ export class WeaponDisplayApp {
     this.rigControlPanel = null;
     this.mapsList = null;
     this.modesList = null;
+    this.minigameList = null;
+    this.minigamePanel = null;
     this.activeAnimationId = null;
     this.stageElement = null;
+    this.minigameActive = false;
 
     this.weapons = sampleWeapons;
     this.weaponMap = new Map();
@@ -92,7 +97,9 @@ export class WeaponDisplayApp {
       items: this.librarySections.maps,
       emptyMessage: 'Map catalog entries are on deck.',
       onSelect: (item) => {
+        this.setMinigameActive(false);
         this.modesList?.setActive(null);
+        this.minigameList?.setActive(null);
         this.hudController.showLibraryInfo({
           title: item.label,
           description: 'Info coming soon.',
@@ -107,7 +114,9 @@ export class WeaponDisplayApp {
       items: this.librarySections.gameModes,
       emptyMessage: 'Game mode catalog entries are on deck.',
       onSelect: (item) => {
+        this.setMinigameActive(false);
         this.mapsList?.setActive(null);
+        this.minigameList?.setActive(null);
         this.hudController.showLibraryInfo({
           title: item.label,
           description: 'Info coming soon.',
@@ -117,9 +126,34 @@ export class WeaponDisplayApp {
     });
     this.modesList.render();
 
+    this.minigamePanel = new MinigamePanel({
+      container: layout.minigameElement,
+      data: minigameCritterQuest,
+    });
+    this.minigamePanel.init();
+
+    this.minigameList = new NavButtonList({
+      element: layout.minigameListElement,
+      items: this.librarySections.minigames,
+      emptyMessage: 'Minigame entries are on deck.',
+      onSelect: (item) => {
+        this.mapsList?.setActive(null);
+        this.modesList?.setActive(null);
+        this.setMinigameActive(true);
+        this.minigamePanel.load(item.id);
+        this.hudController.showLibraryInfo({
+          title: item.label,
+          description: 'Embark on a bite-sized JRPG adventure with tiny heroes.',
+          footer: 'Critter Quest JRPG is ready to play.',
+        });
+      },
+    });
+    this.minigameList.render();
+
     this.activeAnimationId = null;
     this.critterSelector.render(null);
     this.setStageActive(false);
+    this.setMinigameActive(false);
   }
 
   buildLayout() {
@@ -151,6 +185,12 @@ export class WeaponDisplayApp {
               <div data-component="modes-list"></div>
             </div>
           </details>
+          <details class="nav-section nav-section--minigame">
+            <summary class="nav-section__summary">Minigame</summary>
+            <div class="nav-section__content">
+              <div data-component="minigame-list"></div>
+            </div>
+          </details>
         </nav>
         <section class="panel hud-panel hud-detail" data-component="weapon-detail">
           <div class="panel-header">
@@ -171,6 +211,7 @@ export class WeaponDisplayApp {
             aria-label="Critter viewer"
             tabindex="0"
           ></div>
+          <div class="minigame-shell" data-component="minigame"></div>
           <div class="stage-toolbar" data-component="stage-toolbar">
             <div class="stage-tool-panel stage-tool-panel--rig" data-component="rig-controls"></div>
           </div>
@@ -189,6 +230,8 @@ export class WeaponDisplayApp {
       rigControlsElement: this.root.querySelector('[data-component="rig-controls"]'),
       mapsListElement: this.root.querySelector('[data-component="maps-list"]'),
       modesListElement: this.root.querySelector('[data-component="modes-list"]'),
+      minigameListElement: this.root.querySelector('[data-component="minigame-list"]'),
+      minigameElement: this.root.querySelector('[data-component="minigame"]'),
     };
   }
 
@@ -203,6 +246,8 @@ export class WeaponDisplayApp {
         console.warn(`Weapon with id "${weaponId}" was not found.`);
         return;
       }
+      this.setMinigameActive(false);
+      this.minigameList?.setActive(null);
       this.activeWeapon = weapon;
       this.sceneManager.applyRarityGlow();
       this.mapsList?.setActive(null);
@@ -220,6 +265,8 @@ export class WeaponDisplayApp {
         return;
       }
 
+      this.setMinigameActive(false);
+      this.minigameList?.setActive(null);
       this.activeCritter = critter;
       this.emitCritterStats(critter);
       this.hudController.showCritterInfo(critter);
@@ -338,5 +385,11 @@ export class WeaponDisplayApp {
 
   setStageActive(isActive) {
     this.stageElement?.classList.toggle('has-critter', Boolean(isActive));
+  }
+
+  setMinigameActive(isActive) {
+    this.minigameActive = Boolean(isActive);
+    this.stageElement?.classList.toggle('has-minigame', this.minigameActive);
+    this.minigamePanel?.setActive(this.minigameActive);
   }
 }

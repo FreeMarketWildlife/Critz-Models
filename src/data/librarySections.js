@@ -12,4 +12,5 @@ export const librarySections = {
     { id: 'apex', label: 'Apex' },
     { id: 'blitz', label: 'Blitz' },
   ],
+  minigames: [{ id: 'critter-quest', label: 'Critter Quest JRPG' }],
 };
