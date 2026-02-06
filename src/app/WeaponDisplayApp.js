@@ -9,6 +9,7 @@ import { CritterSelector } from '../hud/components/CritterSelector.js';
 import { ViewportOverlay } from '../hud/components/ViewportOverlay.js';
 import { RigControlPanel } from '../hud/components/RigControlPanel.js';
 import { NavButtonList } from '../hud/components/NavButtonList.js';
+import { MinigamePanel } from '../hud/components/MinigamePanel.js';
 
 const RARITY_ORDER = {
   common: 0,
@@ -28,8 +29,12 @@ export class WeaponDisplayApp {
     this.rigControlPanel = null;
     this.mapsList = null;
     this.modesList = null;
+    this.minigameList = null;
+    this.minigamePanel = null;
     this.activeAnimationId = null;
     this.stageElement = null;
+    this.weaponDetailPanelElement = null;
+    this.isMinigameActive = false;
 
     this.weapons = sampleWeapons;
     this.weaponMap = new Map();
