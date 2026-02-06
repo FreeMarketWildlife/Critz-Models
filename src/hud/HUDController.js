@@ -102,6 +102,18 @@ export class HUDController {
     this.weaponDetailPanel.renderPlaceholder({ title, description, footer });
   }
 
+  clearInfo() {
+    this.activeWeaponId = null;
+    this.weaponCategoryMenu?.setActiveWeapon(null);
+    this.weaponDetailPanel.renderEmpty();
+  }
+
+  showCustomPanel({ title, footer, className }) {
+    this.activeWeaponId = null;
+    this.weaponCategoryMenu?.setActiveWeapon(null);
+    return this.weaponDetailPanel.renderCustom({ title, footer, className });
+  }
+
   showCritterInfo(critter) {
     if (!critter) {
       this.weaponDetailPanel.renderEmpty();

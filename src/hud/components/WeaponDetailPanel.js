@@ -131,6 +131,7 @@ export class WeaponDetailPanel {
     this.contentElement = panelElement.querySelector('[data-role="detail-content"]');
     this.rarityBadge = rarityBadge;
     this.footerElement = footerElement;
+    this.customClassName = null;
   }
 
   render(weapon) {
@@ -139,6 +140,7 @@ export class WeaponDetailPanel {
       return;
     }
 
+    this.clearCustomState();
     this.panelElement.classList.remove('is-empty');
     this.renderHeader(weapon);
     this.renderContent(weapon);
@@ -171,6 +173,7 @@ export class WeaponDetailPanel {
   }
 
   renderEmpty() {
+    this.clearCustomState();
     if (this.contentElement) {
       this.contentElement.innerHTML =
         '<p class="description">Pick a tool to see its story and statistics.</p>';
@@ -189,6 +192,7 @@ export class WeaponDetailPanel {
   }
 
   renderPlaceholder({ title, description, footer }) {
+    this.clearCustomState();
     if (this.contentElement) {
       this.contentElement.innerHTML = `
         <h3>${title}</h3>
@@ -213,5 +217,42 @@ export class WeaponDetailPanel {
       .replace(/([a-z])([A-Z])/g, '$1 $2')
       .replace(/[-_]/g, ' ')
       .replace(/^\w/, (char) => char.toUpperCase());
+  }
+
+  renderCustom({ title, footer, className }) {
+    this.clearCustomState();
+    if (className) {
+      this.panelElement.classList.add(className);
+      this.customClassName = className;
+    }
+
+    if (this.contentElement) {
+      this.contentElement.innerHTML = '';
+      if (title) {
+        const heading = document.createElement('h3');
+        heading.textContent = title;
+        this.contentElement.appendChild(heading);
+      }
+      const body = document.createElement('div');
+      body.className = 'minigame-body';
+      this.contentElement.appendChild(body);
+      if (this.rarityBadge) {
+        this.rarityBadge.textContent = '';
+        this.rarityBadge.className = 'rarity-badge';
+      }
+      if (this.footerElement) {
+        this.footerElement.textContent = footer || '';
+      }
+      this.panelElement.classList.remove('is-empty');
+      return body;
+    }
+    return null;
+  }
+
+  clearCustomState() {
+    if (this.customClassName) {
+      this.panelElement.classList.remove(this.customClassName);
+      this.customClassName = null;
+    }
   }
 }

@@ -73,7 +73,11 @@ body::after {
   width: 100%;
   height: 100%;
   display: grid;
-  grid-template-columns: 220px minmax(540px, 1fr) minmax(220px, 320px);
+  --side-panel-width: min(320px, calc(100vh * 0.55));
+  grid-template-columns: minmax(220px, var(--side-panel-width)) minmax(540px, 1fr) minmax(
+      220px,
+      var(--side-panel-width)
+    );
   grid-template-rows: auto minmax(0, 1fr);
   gap: 1.5rem;
   padding: 2.25rem 2.75rem;
@@ -713,6 +717,662 @@ dl dt {
   color: rgba(243, 248, 240, 0.65);
 }
 
+.panel--minigame {
+  padding: 1.1rem 1.3rem 1.25rem;
+}
+
+.panel--minigame .detail-content {
+  flex: 1;
+  min-height: 0;
+}
+
+.panel--minigame .detail-scroll {
+  overflow: hidden;
+  padding-right: 0;
+  gap: 0.75rem;
+}
+
+.minigame-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.minigame-runner {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 180px;
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.minigame-katana {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.minigame-katana__stats {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+}
+
+.minigame-katana__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 190px;
+  gap: 1rem;
+  min-height: 0;
+}
+
+.minigame-katana__leaderboard {
+  background: rgba(10, 28, 20, 0.72);
+  border-radius: 18px;
+  padding: 1rem;
+  border: 1px solid rgba(210, 243, 220, 0.28);
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  min-height: 0;
+}
+
+.minigame-katana__leaderboard h5 {
+  margin: 0;
+  font-family: var(--font-display);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  color: var(--color-highlight);
+}
+
+.minigame-katana__shop {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(8, 20, 14, 0.7);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.minigame-katana__shop.is-active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.minigame-katana__death {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(8, 20, 14, 0.75);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.minigame-katana__death.is-active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.minigame-katana__countdown {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(8, 20, 14, 0.7);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.minigame-katana__countdown.is-active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.minigame-katana__shop-card {
+  min-width: 280px;
+  max-width: 360px;
+}
+
+.minigame-katana__shop-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  text-align: left;
+}
+
+.minigame-katana__shop-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.minigame-katana__shop-item {
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.minigame-katana__shop-detail {
+  font-size: 0.7rem;
+  color: var(--color-text-secondary);
+  letter-spacing: 0.03em;
+}
+
+.minigame-hud {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.6rem 0.85rem;
+  border-radius: 14px;
+  background: rgba(10, 30, 22, 0.68);
+  border: 1px solid rgba(210, 243, 220, 0.3);
+}
+
+.minigame-score {
+  font-family: var(--font-display);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  color: var(--color-highlight);
+}
+
+.minigame-controls {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.minigame-btn {
+  border: 1px solid rgba(210, 243, 220, 0.32);
+  border-radius: 999px;
+  padding: 0.5rem 1.1rem;
+  background: rgba(10, 26, 18, 0.8);
+  color: var(--color-text-primary);
+  font-family: var(--font-display);
+  letter-spacing: 0.14em;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.minigame-btn:hover,
+.minigame-btn:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(159, 217, 127, 0.7);
+  box-shadow: 0 12px 26px rgba(7, 20, 14, 0.4);
+  outline: none;
+}
+
+.minigame-btn--accent {
+  background: linear-gradient(135deg, rgba(255, 209, 102, 0.95), rgba(95, 214, 142, 0.95));
+  color: #0c1a14;
+  border-color: rgba(255, 209, 102, 0.8);
+}
+
+.minigame-btn--ghost {
+  background: rgba(15, 42, 30, 0.4);
+  border-style: dashed;
+}
+
+.minigame-stage {
+  position: relative;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(210, 243, 220, 0.28);
+  background: rgba(8, 20, 14, 0.6);
+  min-height: 320px;
+}
+
+.minigame-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.minigame-overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: rgba(8, 20, 14, 0.65);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.minigame-overlay.is-active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.minigame-card {
+  background: rgba(12, 32, 23, 0.92);
+  border: 1px solid rgba(210, 243, 220, 0.35);
+  border-radius: 18px;
+  padding: 1.4rem 1.5rem;
+  min-width: 240px;
+  text-align: center;
+  box-shadow: 0 18px 32px rgba(6, 18, 12, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.minigame-card h4 {
+  margin: 0;
+  font-family: var(--font-display);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-highlight);
+}
+
+.minigame-card p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+.minigame-input {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.minigame-input input {
+  flex: 1;
+  border-radius: 999px;
+  border: 1px solid rgba(210, 243, 220, 0.35);
+  background: rgba(5, 16, 12, 0.85);
+  color: var(--color-text-primary);
+  padding: 0.5rem 0.8rem;
+  font-family: var(--font-body);
+  letter-spacing: 0.04em;
+}
+
+.minigame-input input:focus {
+  outline: none;
+  border-color: rgba(159, 217, 127, 0.8);
+  box-shadow: 0 0 0 2px rgba(159, 217, 127, 0.2);
+}
+
+.minigame-leaderboard {
+  background: rgba(10, 28, 20, 0.72);
+  border-radius: 18px;
+  padding: 1rem;
+  border: 1px solid rgba(210, 243, 220, 0.28);
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  min-height: 0;
+}
+
+.minigame-leaderboard h5 {
+  margin: 0;
+  font-size: 0.7rem;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--color-water);
+}
+
+.minigame-leaderboard__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--color-text-primary);
+}
+
+.minigame-leaderboard__list li {
+  padding: 0.4rem 0.6rem;
+  border-radius: 12px;
+  background: rgba(9, 26, 18, 0.55);
+  border: 1px solid rgba(210, 243, 220, 0.18);
+}
+
+.minigame-quest {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  position: relative;
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+}
+
+.minigame-quest__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(7, 18, 12, 0.72);
+  display: grid;
+  place-items: center;
+  z-index: 4;
+  transition: opacity 0.2s ease;
+}
+
+.minigame-quest__overlay.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.quest-select {
+  background: rgba(10, 24, 17, 0.95);
+  border: 2px solid rgba(240, 255, 150, 0.5);
+  border-radius: 16px;
+  padding: 1.2rem 1.4rem;
+  text-align: center;
+  max-width: 520px;
+  width: min(92%, 520px);
+  box-shadow: 0 16px 40px rgba(5, 12, 8, 0.5);
+}
+
+.quest-select h4 {
+  margin: 0 0 0.4rem;
+  font-size: 0.95rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-highlight);
+}
+
+.quest-select p {
+  margin: 0 0 1rem;
+  font-size: 0.65rem;
+  color: rgba(247, 255, 244, 0.75);
+}
+
+.quest-select__grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.quest-hero-card {
+  display: grid;
+  grid-template-columns: 52px 1fr;
+  gap: 0.6rem;
+  align-items: center;
+  text-align: left;
+  padding: 0.6rem;
+  border-radius: 12px;
+  border: 2px solid rgba(159, 217, 127, 0.35);
+  background: rgba(13, 34, 24, 0.9);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.quest-hero-card:hover,
+.quest-hero-card:focus-visible {
+  transform: translateY(-2px);
+  border-color: rgba(255, 209, 102, 0.8);
+  box-shadow: 0 12px 24px rgba(6, 16, 11, 0.4);
+  outline: none;
+}
+
+.quest-hero-card__sprite {
+  width: 52px;
+  height: 52px;
+  image-rendering: pixelated;
+  border-radius: 8px;
+  background: rgba(6, 16, 11, 0.75);
+  border: 2px solid rgba(240, 255, 150, 0.25);
+}
+
+.quest-hero-card__info strong {
+  display: block;
+  font-size: 0.6rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.quest-hero-card__info span {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.52rem;
+  color: rgba(247, 255, 244, 0.7);
+}
+
+.minigame-quest__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: 12px;
+  border: 2px solid rgba(210, 243, 220, 0.25);
+  background: rgba(10, 26, 18, 0.7);
+}
+
+.quest-title {
+  font-size: 0.85rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-highlight);
+}
+
+.quest-meta {
+  display: flex;
+  gap: 0.6rem;
+  font-size: 0.55rem;
+  color: rgba(247, 255, 244, 0.7);
+}
+
+.minigame-quest__main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  gap: 1rem;
+  min-height: 0;
+}
+
+.minigame-quest__scene {
+  position: relative;
+  border-radius: 14px;
+  border: 2px solid rgba(159, 217, 127, 0.3);
+  background: rgba(8, 18, 13, 0.8);
+  display: grid;
+  place-items: center;
+  padding: 0.8rem;
+}
+
+.quest-canvas {
+  width: 100%;
+  max-width: 420px;
+  height: auto;
+  image-rendering: pixelated;
+  border-radius: 10px;
+  border: 2px solid rgba(240, 255, 150, 0.25);
+  background: #0b120f;
+}
+
+.quest-scene__label {
+  position: absolute;
+  bottom: 0.6rem;
+  left: 0.6rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 8px;
+  background: rgba(10, 24, 17, 0.8);
+  border: 1px solid rgba(210, 243, 220, 0.25);
+  font-size: 0.52rem;
+  color: rgba(247, 255, 244, 0.75);
+}
+
+.minigame-quest__side {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 0;
+}
+
+.quest-card {
+  border-radius: 12px;
+  border: 2px solid rgba(210, 243, 220, 0.25);
+  background: rgba(10, 26, 18, 0.72);
+  padding: 0.6rem;
+}
+
+.quest-card h5 {
+  margin: 0 0 0.4rem;
+  font-size: 0.6rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-water);
+}
+
+.quest-subtitle {
+  margin: 0 0 0.6rem;
+  font-size: 0.55rem;
+  color: rgba(247, 255, 244, 0.65);
+}
+
+.quest-stat-list {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.55rem;
+}
+
+.quest-stat-list div {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.4rem;
+}
+
+.quest-stat-list span {
+  color: rgba(247, 255, 244, 0.65);
+}
+
+.quest-skill {
+  margin-top: 0.6rem;
+  padding: 0.45rem 0.5rem;
+  border-radius: 8px;
+  background: rgba(20, 46, 30, 0.7);
+  border: 1px solid rgba(159, 217, 127, 0.3);
+  font-size: 0.5rem;
+}
+
+.quest-skill span {
+  display: block;
+  margin-top: 0.25rem;
+  color: rgba(247, 255, 244, 0.65);
+  font-size: 0.48rem;
+}
+
+.quest-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.55rem;
+}
+
+.quest-list li {
+  padding: 0.4rem 0.5rem;
+  border-radius: 8px;
+  border: 1px solid rgba(210, 243, 220, 0.2);
+  background: rgba(9, 22, 16, 0.6);
+  display: grid;
+  gap: 0.2rem;
+}
+
+.quest-list li.complete {
+  opacity: 0.7;
+  text-decoration: line-through;
+}
+
+.quest-list small {
+  color: rgba(247, 255, 244, 0.6);
+}
+
+.minigame-quest__log {
+  border-radius: 12px;
+  border: 2px solid rgba(210, 243, 220, 0.25);
+  background: rgba(10, 24, 17, 0.72);
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  min-height: 120px;
+}
+
+.quest-dialogue {
+  font-size: 0.6rem;
+  line-height: 1.5;
+  color: var(--color-text-primary);
+}
+
+.quest-dialogue__text strong {
+  color: var(--color-highlight);
+}
+
+.quest-log {
+  display: grid;
+  gap: 0.2rem;
+  font-size: 0.5rem;
+  color: rgba(247, 255, 244, 0.6);
+}
+
+.quest-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.quest-action-btn {
+  border: 2px solid rgba(210, 243, 220, 0.3);
+  border-radius: 999px;
+  background: rgba(10, 26, 18, 0.85);
+  color: var(--color-text-primary);
+  font-family: 'Press Start 2P', 'Courier New', monospace;
+  font-size: 0.55rem;
+  padding: 0.45rem 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.quest-action-btn:hover,
+.quest-action-btn:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(255, 209, 102, 0.8);
+  box-shadow: 0 10px 20px rgba(6, 16, 11, 0.35);
+  outline: none;
+}
+
+.quest-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 1100px) {
+  .minigame-quest__main {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .quest-select__grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 1100px) {
+  .minigame-runner {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .minigame-katana__layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 .weapon-cards,
 .detail-scroll,
 .nav-section__content,
@@ -801,7 +1461,7 @@ dl dt {
 
 .stage {
   grid-column: 3;
-  grid-row: 1 / span 2;
+  grid-row: 2;
   position: relative;
   display: flex;
   flex-direction: column;
