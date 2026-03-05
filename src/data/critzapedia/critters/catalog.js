@@ -3,6 +3,11 @@ export const critters = [
     id: 'frog',
     name: 'Frog',
     category: 'amphibians',
+    rarity: 'common',
+    unlock: {
+      type: 'starter',
+      text: 'Starter critter: unlocked automatically.',
+    },
     modelPath: 'assets/models/critters/models/SK_TH_Frog_Rigged_01.glb',
     scale: 1.15,
     offset: { y: -0.6 },
@@ -85,6 +90,11 @@ export const critters = [
     id: 'lizard',
     name: 'Lizard',
     category: 'reptiles',
+    rarity: 'common',
+    unlock: {
+      type: 'starter',
+      text: 'Starter critter: unlocked automatically.',
+    },
     modelPath: 'assets/models/critters/models/SK_TH_Lizard_Rigged_01.glb',
     scale: 1.25,
     offset: { y: -0.6 },
@@ -167,6 +177,13 @@ export const critters = [
     id: 'turtle',
     name: 'Turtle',
     category: 'reptiles',
+    rarity: 'common',
+    unlock: {
+      type: 'level',
+      critterId: 'lizard',
+      level: 5,
+      text: 'Reach Level 5 with Lizard.',
+    },
     modelPath: '',
     stats: {
       health: 125,
@@ -179,6 +196,13 @@ export const critters = [
     id: 'salamander',
     name: 'Salamander',
     category: 'amphibians',
+    rarity: 'common',
+    unlock: {
+      type: 'level',
+      critterId: 'frog',
+      level: 5,
+      text: 'Reach Level 5 with Frog.',
+    },
     modelPath: '',
     stats: {
       health: 100,
@@ -188,9 +212,332 @@ export const critters = [
     },
   },
   {
+    id: 'newt',
+    name: 'Newt',
+    category: 'amphibians',
+    rarity: 'common',
+    unlock: {
+      type: 'level',
+      critterId: 'salamander',
+      level: 15,
+      text: 'Reach Level 15 with Salamander.',
+    },
+    modelPath: '',
+    stats: {
+      bonus: 'Awaiting Data Entry',
+    },
+  },
+  {
+    id: 'bullfrog',
+    name: 'Bullfrog',
+    category: 'amphibians',
+    rarity: 'common',
+    unlock: {
+      type: 'level',
+      critterId: 'frog',
+      level: 15,
+      text: 'Reach Level 15 with Frog.',
+    },
+    modelPath: '',
+    stats: {
+      bonus: 'Awaiting Data Entry',
+    },
+  },
+  {
+    id: 'toad',
+    name: 'Toad',
+    category: 'amphibians',
+    rarity: 'common',
+    unlock: {
+      type: 'level',
+      critterId: 'bullfrog',
+      level: 5,
+      text: 'Reach Level 5 with Bullfrog.',
+    },
+    modelPath: '',
+    stats: {
+      bonus: 'Awaiting Data Entry',
+    },
+  },
+  {
+    id: 'glass-frog',
+    name: 'Glass Frog',
+    category: 'amphibians',
+    rarity: 'uncommon',
+    unlock: {
+      type: 'level',
+      critterId: 'frog',
+      level: 20,
+      text: 'Reach Level 20 with Frog.',
+    },
+    modelPath: '',
+    stats: {
+      bonus: 'Awaiting Data Entry',
+    },
+  },
+  {
+    id: 'slender-salamander',
+    name: 'Slender Salamander',
+    category: 'amphibians',
+    rarity: 'uncommon',
+    unlock: {
+      type: 'level',
+      critterId: 'salamander',
+      level: 20,
+      text: 'Reach Level 20 with Salamander.',
+    },
+    modelPath: '',
+    stats: {
+      bonus: 'Awaiting Data Entry',
+    },
+  },
+  {
+    id: 'rough-skinned-newt',
+    name: 'Rough Skinned Newt',
+    category: 'amphibians',
+    rarity: 'uncommon',
+    unlock: {
+      type: 'level',
+      critterId: 'newt',
+      level: 20,
+      text: 'Reach Level 20 with Newt.',
+    },
+    modelPath: '',
+    stats: {
+      bonus: 'Awaiting Data Entry',
+    },
+  },
+  {
+    id: 'african-bullfrog',
+    name: 'African Bullfrog',
+    category: 'amphibians',
+    rarity: 'uncommon',
+    unlock: {
+      type: 'level',
+      critterId: 'bullfrog',
+      level: 20,
+      text: 'Reach Level 20 with Bullfrog.',
+    },
+    modelPath: '',
+    stats: {
+      bonus: 'Awaiting Data Entry',
+    },
+  },
+  {
+    id: 'fire-bellied-toad',
+    name: 'Fire-bellied Toad',
+    category: 'amphibians',
+    rarity: 'uncommon',
+    unlock: {
+      type: 'level',
+      critterId: 'toad',
+      level: 20,
+      text: 'Reach Level 20 with Toad.',
+    },
+    modelPath: '',
+    stats: {
+      bonus: 'Awaiting Data Entry',
+    },
+  },
+  {
+    id: 'poison-dart-frog',
+    name: 'Poison Dart Frog',
+    category: 'amphibians',
+    rarity: 'rare',
+    unlock: {
+      type: 'requirements',
+      requirements: [
+        { critterId: 'frog', level: 30 },
+        { critterId: 'rough-skinned-newt', level: 10 },
+      ],
+      text: 'Reach Level 30 with Frog and Level 10 with Rough Skinned Newt.',
+    },
+    modelPath: '',
+    stats: {
+      bonus: 'Awaiting Data Entry',
+    },
+  },
+  {
+    id: 'axolotl',
+    name: 'Axolotl',
+    category: 'amphibians',
+    rarity: 'rare',
+    unlock: {
+      type: 'requirements',
+      requirements: [
+        { critterId: 'salamander', level: 30 },
+        { critterId: 'slender-salamander', level: 10 },
+      ],
+      text: 'Reach Level 30 with Salamander and Level 10 with Slender Salamander.',
+    },
+    modelPath: '',
+    stats: {
+      bonus: 'Awaiting Data Entry',
+    },
+  },
+  {
+    id: 'great-crested-newt',
+    name: 'Great Crested Newt',
+    category: 'amphibians',
+    rarity: 'rare',
+    unlock: {
+      type: 'requirements',
+      requirements: [
+        { critterId: 'newt', level: 30 },
+        { critterId: 'rough-skinned-newt', level: 10 },
+      ],
+      text: 'Reach Level 30 with Newt and Level 10 with Rough Skinned Newt.',
+    },
+    modelPath: '',
+    stats: {
+      bonus: 'Awaiting Data Entry',
+    },
+  },
+  {
+    id: 'black-rain-frog',
+    name: 'Black Rain Frog',
+    category: 'amphibians',
+    rarity: 'rare',
+    unlock: {
+      type: 'level',
+      critterId: 'bullfrog',
+      level: 30,
+      text: 'Reach Level 30 with Bullfrog.',
+    },
+    modelPath: '',
+    stats: {
+      bonus: 'Awaiting Data Entry',
+    },
+  },
+  {
+    id: 'surinam-toad',
+    name: 'Surinam Toad',
+    category: 'amphibians',
+    rarity: 'rare',
+    unlock: {
+      type: 'level',
+      critterId: 'toad',
+      level: 30,
+      text: 'Reach Level 30 with Toad.',
+    },
+    modelPath: '',
+    stats: {
+      bonus: 'Awaiting Data Entry',
+    },
+  },
+  {
+    id: 'gastric-brooder',
+    name: 'Gastric Brooder',
+    category: 'amphibians',
+    rarity: 'extinct',
+    unlock: {
+      type: 'requirements',
+      requirements: [
+        { critterId: 'frog', level: 100 },
+        { critterId: 'glass-frog', level: 25 },
+      ],
+      text: 'Reach Level 100 with Frog and Level 25 with Glass Frog.',
+    },
+    modelPath: '',
+    stats: {
+      bonus: 'Awaiting Data Entry',
+    },
+  },
+  {
+    id: 'diplocaulus',
+    name: 'Diplocaulus',
+    category: 'amphibians',
+    rarity: 'extinct',
+    unlock: {
+      type: 'requirements',
+      requirements: [
+        { critterId: 'salamander', level: 100 },
+        { critterId: 'newt', level: 50 },
+        { critterId: 'slender-salamander', level: 100 },
+        { critterId: 'axolotl', level: 100 },
+      ],
+      text: 'Reach Level 100 with Salamander, Level 50 with Newt, Level 100 with Slender Salamander, and Level 100 with Axolotl.',
+    },
+    modelPath: '',
+    stats: {
+      bonus: 'Awaiting Data Entry',
+    },
+  },
+  {
+    id: 'devil-frog',
+    name: 'Devil Frog',
+    category: 'amphibians',
+    rarity: 'extinct',
+    unlock: {
+      type: 'level',
+      critterId: 'african-bullfrog',
+      level: 100,
+      text: 'Reach Level 100 with African Bullfrog.',
+    },
+    modelPath: '',
+    stats: {
+      bonus: 'Awaiting Data Entry',
+    },
+  },
+  {
+    id: 'golden-toad',
+    name: 'Golden Toad',
+    category: 'amphibians',
+    rarity: 'extinct',
+    unlock: {
+      type: 'level',
+      critterId: 'toad',
+      level: 100,
+      text: 'Reach Level 100 with Toad.',
+    },
+    modelPath: '',
+    stats: {
+      bonus: 'Awaiting Data Entry',
+    },
+  },
+  {
+    id: 'fortunate-toad',
+    name: 'Fortunate Toad',
+    category: 'amphibians',
+    rarity: 'mythical',
+    unlock: {
+      type: 'level',
+      critterId: 'golden-toad',
+      level: 100,
+      text: 'Reach Level 100 with Golden Toad.',
+    },
+    modelPath: '',
+    stats: {
+      bonus: 'Awaiting Data Entry',
+    },
+  },
+  {
+    id: 'frog-prince',
+    name: 'Frog Prince',
+    category: 'amphibians',
+    rarity: 'mythical',
+    unlock: {
+      type: 'requirements',
+      requirements: [
+        { critterId: 'frog', level: 100 },
+        { critterId: 'fortunate-toad', level: 25 },
+      ],
+      text: 'Reach Level 100 with Frog and Level 25 with Fortunate Toad.',
+    },
+    modelPath: '',
+    stats: {
+      bonus: 'Awaiting Data Entry',
+    },
+  },
+  {
     id: 'porcupine',
     name: 'Porcupine',
     category: 'mammals',
+    rarity: 'common',
+    unlock: {
+      type: 'pending',
+      text: 'Awaiting Data Entry',
+    },
     modelPath: '',
     stats: {
       health: 110,
@@ -204,6 +551,11 @@ export const critters = [
     id: 'hedgehog',
     name: 'Hedgehog',
     category: 'mammals',
+    rarity: 'common',
+    unlock: {
+      type: 'pending',
+      text: 'Awaiting Data Entry',
+    },
     modelPath: '',
     stats: {
       health: 75,
@@ -216,6 +568,11 @@ export const critters = [
     id: 'ferret',
     name: 'Ferret',
     category: 'mammals',
+    rarity: 'common',
+    unlock: {
+      type: 'pending',
+      text: 'Awaiting Data Entry',
+    },
     modelPath: '',
     stats: {
       health: 100,
@@ -228,6 +585,11 @@ export const critters = [
     id: 'finch',
     name: 'Finch',
     category: 'birds',
+    rarity: 'common',
+    unlock: {
+      type: 'pending',
+      text: 'Awaiting Data Entry',
+    },
     modelPath: '',
     stats: {
       health: 50,
@@ -240,6 +602,11 @@ export const critters = [
     id: 'sparrow',
     name: 'Sparrow',
     category: 'birds',
+    rarity: 'common',
+    unlock: {
+      type: 'pending',
+      text: 'Awaiting Data Entry',
+    },
     modelPath: '',
     stats: {
       health: 50,
@@ -252,6 +619,11 @@ export const critters = [
     id: 'mantis',
     name: 'Mantis',
     category: 'insects',
+    rarity: 'common',
+    unlock: {
+      type: 'pending',
+      text: 'Awaiting Data Entry',
+    },
     modelPath: '',
     stats: {
       health: 75,
@@ -264,6 +636,11 @@ export const critters = [
     id: 'beetle',
     name: 'Beetle',
     category: 'insects',
+    rarity: 'common',
+    unlock: {
+      type: 'pending',
+      text: 'Awaiting Data Entry',
+    },
     modelPath: '',
     stats: {
       health: 125,

@@ -114,24 +114,31 @@ export class HUDController {
     return this.weaponDetailPanel.renderCustom({ title, footer, className });
   }
 
-  showCritterInfo(critter) {
+  showCritterInfo(critter, { categoryLabel } = {}) {
     if (!critter) {
       this.weaponDetailPanel.renderEmpty();
       return;
     }
 
-    const stats = critter.stats ?? {};
-    const health = stats.health ?? '--';
-    const speed = stats.speed ?? '--';
-    const stamina = stats.stamina ?? '--';
-    const bonus = stats.bonus ? `<br /><br />Bonus: ${stats.bonus}` : '';
-
     this.activeWeaponId = null;
     this.weaponCategoryMenu?.setActiveWeapon(null);
+    this.weaponDetailPanel.renderCritter(critter, { categoryLabel });
+  }
+
+  showCritterCategoryGuide({ categoryLabel, critterCount }) {
+    this.activeWeaponId = null;
+    this.weaponCategoryMenu?.setActiveWeapon(null);
+
+    const normalizedCount = Number.isFinite(critterCount) ? critterCount : 0;
+    const plural = normalizedCount === 1 ? '' : 's';
+
     this.weaponDetailPanel.renderPlaceholder({
-      title: critter.name ?? 'Critter',
-      description: `Health: ${health} · Speed: ${speed} · Stamina: ${stamina}${bonus}`,
-      footer: `Critter ID: ${critter.id}`,
+      title: categoryLabel ? `${categoryLabel} Critters` : 'Critters',
+      description:
+        normalizedCount > 0
+          ? `Select a critter box in the center unlock map to view its 3D preview and stats. ${normalizedCount} critter${plural} currently listed in this category.`
+          : 'No critters are listed in this category yet. Awaiting Data Entry.',
+      footer: 'Unlock rules are shown under the map',
     });
   }
 }

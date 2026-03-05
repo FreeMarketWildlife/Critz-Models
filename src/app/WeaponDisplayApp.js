@@ -6,8 +6,8 @@ import { critters } from '../data/critters.js';
 import { librarySections } from '../data/librarySections.js';
 import { critterCategories } from '../data/critterCategories.js';
 import { CritterSelector } from '../hud/components/CritterSelector.js';
+import { CritterUnlockMap } from '../hud/components/CritterUnlockMap.js';
 import { ViewportOverlay } from '../hud/components/ViewportOverlay.js';
-import { RigControlPanel } from '../hud/components/RigControlPanel.js';
 import { NavButtonList } from '../hud/components/NavButtonList.js';
 import { MinigameRunner } from '../hud/components/MinigameRunner.js';
 import { MinigameCritterQuest } from '../hud/components/MinigameCritterQuest.js';
@@ -27,8 +27,8 @@ export class WeaponDisplayApp {
     this.sceneManager = null;
     this.hudController = null;
     this.critterSelector = null;
+    this.critterUnlockMap = null;
     this.viewportOverlay = null;
-    this.rigControlPanel = null;
     this.mapsList = null;
     this.modesList = null;
     this.cosmeticsList = null;
@@ -50,6 +50,8 @@ export class WeaponDisplayApp {
 
     this.critters = critters;
     this.critterMap = new Map();
+    this.critterCategories = critterCategories;
+    this.activeCritterCategory = this.critterCategories[0]?.id ?? null;
     this.activeCritter = null;
   }
 
@@ -88,15 +90,16 @@ export class WeaponDisplayApp {
     this.critterSelector = new CritterSelector({
       element: layout.critterSelectorElement,
       critters: this.critters,
-      categories: critterCategories,
+      categories: this.critterCategories,
       bus: this.eventBus,
     });
 
-    this.rigControlPanel = new RigControlPanel({
-      container: layout.rigControlsElement,
+    this.critterUnlockMap = new CritterUnlockMap({
+      element: layout.critterUnlockMapElement,
+      critters: this.critters,
+      categories: this.critterCategories,
       bus: this.eventBus,
     });
-    this.rigControlPanel.init();
     this.minigameRunner = new MinigameRunner();
     this.minigameQuest = new MinigameCritterQuest();
     this.minigameKatana = new MinigameKatanaMouse();
@@ -250,7 +253,12 @@ export class WeaponDisplayApp {
     this.minigamesList.render();
 
     this.activeAnimationId = null;
-    this.critterSelector.render(null);
+    this.critterSelector.render(this.activeCritterCategory);
+    this.critterUnlockMap.render(this.activeCritterCategory);
+    this.hudController.showCritterCategoryGuide({
+      categoryLabel: this.getCritterCategoryLabel(this.activeCritterCategory),
+      critterCount: this.getCrittersByCategory(this.activeCritterCategory).length,
+    });
     this.setStageActive(false);
   }
 
@@ -259,7 +267,7 @@ export class WeaponDisplayApp {
       <div class="app-shell">
         <div class="hud-brand">Critz Library</div>
         <nav class="hud-nav" aria-label="Interface options">
-          <details class="nav-section nav-section--critters">
+          <details class="nav-section nav-section--critters" open>
             <summary class="nav-section__summary">Critters</summary>
             <div class="nav-section__content">
               <div data-component="critter-selector"></div>
@@ -296,28 +304,36 @@ export class WeaponDisplayApp {
             </div>
           </details>
         </nav>
-        <section class="panel hud-panel hud-detail" data-component="weapon-detail">
+        <section class="panel hud-panel hud-map" data-component="critter-map-panel">
           <div class="panel-header">
-            <span>Equipment Info</span>
-            <span data-role="rarity-badge"></span>
+            <span>Critter Unlock Map</span>
           </div>
           <div class="detail-content">
-            <div class="detail-scroll" data-role="detail-content">
-              <p class="description">Pick a tool to see its details.</p>
-            </div>
+            <div class="detail-scroll detail-scroll--map" data-component="critter-unlock-map"></div>
           </div>
-          <div class="panel-footer" data-role="detail-footer">Awaiting selection</div>
+          <div class="panel-footer">Drag to pan and click a critter to preview it.</div>
         </section>
-        <section class="stage" data-component="stage">
-          <div
-            class="stage-viewport"
-            data-role="stage-viewport"
-            aria-label="Critter viewer"
-            tabindex="0"
-          ></div>
-          <div class="stage-toolbar" data-component="stage-toolbar">
-            <div class="stage-tool-panel stage-tool-panel--rig" data-component="rig-controls"></div>
-          </div>
+        <section class="inspector" data-component="inspector">
+          <section class="stage" data-component="stage">
+            <div
+              class="stage-viewport"
+              data-role="stage-viewport"
+              aria-label="Critter viewer"
+              tabindex="0"
+            ></div>
+          </section>
+          <section class="panel hud-panel hud-detail" data-component="weapon-detail">
+            <div class="panel-header">
+              <span>Critter Intel</span>
+              <span data-role="rarity-badge"></span>
+            </div>
+            <div class="detail-content">
+              <div class="detail-scroll" data-role="detail-content">
+                <p class="description">Pick a critter in the unlock map to preview details.</p>
+              </div>
+            </div>
+            <div class="panel-footer" data-role="detail-footer">Awaiting selection</div>
+          </section>
         </section>
       </div>
     `;
@@ -327,10 +343,10 @@ export class WeaponDisplayApp {
       stageViewportElement: this.root.querySelector('[data-role="stage-viewport"]'),
       categoryMenuElement: this.root.querySelector('[data-component="weapon-category-menu"]'),
       critterSelectorElement: this.root.querySelector('[data-component="critter-selector"]'),
+      critterUnlockMapElement: this.root.querySelector('[data-component="critter-unlock-map"]'),
       weaponDetailPanel: this.root.querySelector('[data-component="weapon-detail"]'),
       rarityBadge: this.root.querySelector('[data-role="rarity-badge"]'),
       detailFooter: this.root.querySelector('[data-role="detail-footer"]'),
-      rigControlsElement: this.root.querySelector('[data-component="rig-controls"]'),
       mapsListElement: this.root.querySelector('[data-component="maps-list"]'),
       modesListElement: this.root.querySelector('[data-component="modes-list"]'),
       cosmeticsListElement: this.root.querySelector('[data-component="cosmetics-list"]'),
@@ -352,6 +368,9 @@ export class WeaponDisplayApp {
       this.minigameRunner?.unmount();
       this.minigameQuest?.unmount();
       this.minigameKatana?.unmount();
+      if (this.activeCritter) {
+        this.clearActiveCritter({ showGuide: false });
+      }
       this.activeCategory = category;
     });
 
@@ -364,12 +383,33 @@ export class WeaponDisplayApp {
       this.minigameRunner?.unmount();
       this.minigameQuest?.unmount();
       this.minigameKatana?.unmount();
+      if (this.activeCritter) {
+        this.clearActiveCritter({ showGuide: false });
+      }
       this.activeWeapon = weapon;
       this.sceneManager.applyRarityGlow();
       this.mapsList?.setActive(null);
       this.modesList?.setActive(null);
       this.cosmeticsList?.setActive(null);
       this.minigamesList?.setActive(null);
+    });
+
+    this.eventBus.on('critter:category-selected', (categoryId) => {
+      if (!categoryId || this.activeCritterCategory === categoryId) {
+        return;
+      }
+
+      this.activeCritterCategory = categoryId;
+      this.clearActiveCritter({ showGuide: false });
+      this.critterUnlockMap?.setCategory(categoryId);
+      this.mapsList?.setActive(null);
+      this.modesList?.setActive(null);
+      this.cosmeticsList?.setActive(null);
+      this.minigamesList?.setActive(null);
+      this.hudController.showCritterCategoryGuide({
+        categoryLabel: this.getCritterCategoryLabel(categoryId),
+        critterCount: this.getCrittersByCategory(categoryId).length,
+      });
     });
 
     this.eventBus.on('critter:selected', (critterId) => {
@@ -379,16 +419,32 @@ export class WeaponDisplayApp {
       }
 
       const critter = this.critterMap.get(critterId);
-      if (!critter || this.activeCritter?.id === critterId) {
+      if (!critter) {
+        return;
+      }
+
+      if (this.activeCritterCategory && critter.category !== this.activeCritterCategory) {
+        this.activeCritterCategory = critter.category;
+        this.critterSelector?.setActiveCategory?.(critter.category, { emit: false });
+        this.critterUnlockMap?.setCategory(critter.category);
+      }
+
+      if (this.activeCritter?.id === critterId) {
         return;
       }
 
       this.minigameRunner?.unmount();
       this.minigameQuest?.unmount();
       this.minigameKatana?.unmount();
+      this.mapsList?.setActive(null);
+      this.modesList?.setActive(null);
+      this.cosmeticsList?.setActive(null);
+      this.minigamesList?.setActive(null);
       this.activeCritter = critter;
-      this.emitCritterStats(critter);
-      this.hudController.showCritterInfo(critter);
+      this.critterUnlockMap?.setActiveCritter(critterId);
+      this.hudController.showCritterInfo(critter, {
+        categoryLabel: this.getCritterCategoryLabel(critter.category),
+      });
       this.activeAnimationId = this.resolveAnimationId(critter);
       const activeAnimation = this.findAnimation(critter, this.activeAnimationId);
 
@@ -400,10 +456,6 @@ export class WeaponDisplayApp {
           this.sceneManager.stopAnimation();
         }
       });
-    });
-
-    this.eventBus.on('rig:refresh-requested', () => {
-      this.refreshActiveCritter();
     });
   }
 
@@ -419,6 +471,25 @@ export class WeaponDisplayApp {
     this.critters.forEach((critter) => {
       this.critterMap.set(critter.id, critter);
     });
+  }
+
+  getCrittersByCategory(categoryId) {
+    if (!categoryId) {
+      return [];
+    }
+    return this.critters.filter((critter) => critter.category === categoryId);
+  }
+
+  getCritterCategoryLabel(categoryId) {
+    const category = this.critterCategories.find((entry) => entry.id === categoryId);
+    if (category?.label) {
+      return category.label;
+    }
+
+    return String(categoryId || 'Critters')
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      .replace(/[-_]/g, ' ')
+      .replace(/^\w/, (char) => char.toUpperCase());
   }
 
   groupWeaponsByCategory() {
@@ -459,46 +530,19 @@ export class WeaponDisplayApp {
     return critter.defaultAnimationId || critter.animations?.[0]?.id || null;
   }
 
-  refreshActiveCritter() {
-    if (!this.activeCritter || !this.sceneManager) {
-      return;
-    }
-
-    const animation = this.findAnimation(this.activeCritter, this.activeAnimationId);
-
-    this.sceneManager.loadCritter(this.activeCritter).then(() => {
-      if (animation) {
-        this.sceneManager.playAnimation(animation);
-      } else {
-        this.sceneManager.stopAnimation();
-      }
-    });
-  }
-
-  emitCritterStats(critter) {
-    if (!critter) {
-      this.eventBus.emit('viewport:critter-info', null);
-      return;
-    }
-
-    this.eventBus.emit('viewport:critter-info', {
-      id: critter.id,
-      name: critter.name,
-      stats: critter.stats ?? null,
-    });
-  }
-
-  clearActiveCritter() {
+  clearActiveCritter({ showGuide = true } = {}) {
     this.activeCritter = null;
     this.activeAnimationId = null;
-    this.emitCritterStats(null);
+    this.critterUnlockMap?.setActiveCritter(null);
     this.sceneManager?.disposeCurrentModel?.();
     this.setStageActive(false);
     this.eventBus.emit('viewport:critter-cleared');
-    if (this.activeWeapon?.id) {
-      this.hudController.selectWeapon(this.activeWeapon.id, { emit: false });
-    } else {
-      this.hudController.selectWeapon(null, { emit: false });
+
+    if (showGuide) {
+      this.hudController.showCritterCategoryGuide({
+        categoryLabel: this.getCritterCategoryLabel(this.activeCritterCategory),
+        critterCount: this.getCrittersByCategory(this.activeCritterCategory).length,
+      });
     }
   }
 

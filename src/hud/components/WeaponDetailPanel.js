@@ -63,9 +63,11 @@ const RARITY_TITLES = {
   common: 'Common',
   uncommon: 'Uncommon',
   rare: 'Rare',
+  extinct: 'Extinct',
   epic: 'Epic',
   legendary: 'Legendary',
   mythic: 'Mythic',
+  mythical: 'Mythical',
 };
 
 const buildStatsMarkup = (weapon, decorate = (value) => value) => {
@@ -125,6 +127,60 @@ const buildStatValueMarkup = ({ key, value, decorate }) => {
   return createTooltipMarkup(decoratedValue, tooltipDescription);
 };
 
+const formatCritterStat = (value) => (value === null || value === undefined || value === '' ? '--' : value);
+
+const getUnlockRequirements = (critter) => {
+  const unlock = critter?.unlock;
+  if (!unlock) {
+    return [];
+  }
+
+  if (Array.isArray(unlock.requirements)) {
+    return unlock.requirements
+      .filter((entry) => entry && entry.critterId && Number.isFinite(Number(entry.level)))
+      .map((entry) => ({
+        critterId: entry.critterId,
+        level: Number(entry.level),
+      }));
+  }
+
+  if (unlock.type === 'level' && unlock.critterId && Number.isFinite(Number(unlock.level))) {
+    return [
+      {
+        critterId: unlock.critterId,
+        level: Number(unlock.level),
+      },
+    ];
+  }
+
+  return [];
+};
+
+const formatUnlockText = (critter, prettifyLabel) => {
+  const unlock = critter?.unlock;
+  if (!unlock) {
+    return 'Awaiting Data Entry';
+  }
+
+  if (typeof unlock.text === 'string' && unlock.text.trim()) {
+    return unlock.text.trim();
+  }
+
+  if (unlock.type === 'starter') {
+    return 'Starter critter: unlocked automatically.';
+  }
+
+  const requirements = getUnlockRequirements(critter);
+  if (requirements.length) {
+    const rules = requirements.map(
+      (requirement) => `Level ${requirement.level} with ${prettifyLabel(requirement.critterId)}`
+    );
+    return `Reach ${rules.join(' and ')}.`;
+  }
+
+  return 'Awaiting Data Entry';
+};
+
 export class WeaponDetailPanel {
   constructor({ panelElement, rarityBadge, footerElement }) {
     this.panelElement = panelElement;
@@ -172,11 +228,61 @@ export class WeaponDetailPanel {
     }
   }
 
+  renderCritter(critter, { categoryLabel } = {}) {
+    if (!critter) {
+      this.renderEmpty();
+      return;
+    }
+
+    this.clearCustomState();
+    this.panelElement.classList.remove('is-empty');
+
+    const stats = critter.stats ?? {};
+    const rarity = critter.rarity || 'common';
+    const rarityLabel = RARITY_TITLES[rarity] || this.prettify(rarity);
+    const unlockText = formatUnlockText(critter, (value) => this.prettify(value));
+    const category = categoryLabel || this.prettify(critter.category || 'Critters');
+    const bonus = stats.bonus || 'Awaiting Data Entry';
+
+    if (this.rarityBadge) {
+      this.rarityBadge.textContent = rarityLabel;
+      this.rarityBadge.className = '';
+      this.rarityBadge.classList.add('rarity-badge', `rarity-${rarity}`);
+    }
+
+    if (this.contentElement) {
+      this.contentElement.innerHTML = `
+        <article class="critter-detail">
+          <h3>${critter.name || 'Critter'}</h3>
+          <p class="description">Unlock path and stats for this critter.</p>
+          <dl class="critter-detail__meta">
+            <div><dt>Category</dt><dd>${category}</dd></div>
+            <div><dt>Rarity Tier</dt><dd>${rarityLabel}</dd></div>
+            <div><dt>Unlock Rule</dt><dd>${unlockText}</dd></div>
+          </dl>
+          <dl class="critter-detail__stats">
+            <div><dt>Health</dt><dd>${formatCritterStat(stats.health)}</dd></div>
+            <div><dt>Speed</dt><dd>${formatCritterStat(stats.speed)}</dd></div>
+            <div><dt>Stamina</dt><dd>${formatCritterStat(stats.stamina)}</dd></div>
+          </dl>
+          <div class="special-section critter-detail__bonus">
+            <h4>Ability</h4>
+            <p class="description">${bonus}</p>
+          </div>
+        </article>
+      `;
+    }
+
+    if (this.footerElement) {
+      this.footerElement.textContent = `Critter ID: ${critter.id}`;
+    }
+  }
+
   renderEmpty() {
     this.clearCustomState();
     if (this.contentElement) {
       this.contentElement.innerHTML =
-        '<p class="description">Pick a tool to see its story and statistics.</p>';
+        '<p class="description">Pick a critter or library entry to see details.</p>';
     }
 
     if (this.rarityBadge) {
