@@ -1,0 +1,42 @@
+export const critterMapDefaultLayout = {
+  reptiles: {
+    lizard: { x: 672, y: 146 },
+    turtle: { x: 672, y: 716 },
+  },
+  amphibians: {
+    frog: { x: 725, y: 163 },
+    'african-bullfrog': { x: 967, y: 1061 },
+    axolotl: { x: 407, y: 1788 },
+    'black-rain-frog': { x: 1051, y: 1801 },
+    bullfrog: { x: 1016, y: 303 },
+    'devil-frog': { x: 940, y: 2588 },
+    diplocaulus: { x: 467, y: 2511 },
+    'fire-bellied-toad': { x: 1112, y: 931 },
+    'fortunate-toad': { x: 1108, y: 3178 },
+    'frog-prince': { x: 581, y: 3364 },
+    'gastric-brooder': { x: 771, y: 2415 },
+    'glass-frog': { x: 783, y: 901 },
+    'golden-toad': { x: 1109, y: 2403 },
+    'great-crested-newt': { x: 191, y: 1756 },
+    newt: { x: 142, y: 473 },
+    'poison-dart-frog': { x: 700, y: 1750 },
+    'rough-skinned-newt': { x: 51, y: 976 },
+    salamander: { x: 435, y: 296 },
+    'slender-salamander': { x: 431, y: 888 },
+    'surinam-toad': { x: 1290, y: 1678 },
+    toad: { x: 1256, y: 470 },
+  },
+  mammals: {
+    ferret: { x: 309, y: 146 },
+    hedgehog: { x: 672, y: 146 },
+    porcupine: { x: 1035, y: 146 },
+  },
+  birds: {
+    finch: { x: 430, y: 146 },
+    sparrow: { x: 914, y: 146 },
+  },
+  insects: {
+    beetle: { x: 430, y: 146 },
+    mantis: { x: 914, y: 146 },
+  },
+};

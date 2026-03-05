@@ -1,16 +1,21 @@
-const MAP_WIDTH = 1440;
-const MAP_HEIGHT = 1660;
+import { critterMapDefaultLayout } from '../../data/critterMapDefaultLayout.js';
+
+const MAP_WIDTH = 1520;
+const MAP_HEIGHT = 3980;
 const LANE_START_Y = 88;
-const LANE_HEIGHT = 292;
+const LANE_HEIGHT = 760;
 const NODE_WIDTH = 176;
 const NODE_HEIGHT = 84;
-const LANE_ROW_OFFSET = 44;
-const DEPTH_ROW_GAP = 108;
+const LANE_ROW_OFFSET = 58;
+const LANE_BOTTOM_PADDING = 48;
 const MIN_NODE_GAP = 26;
+const LANE_X_PADDING = 34;
 const DEFAULT_PAN = { x: 38, y: 30 };
 const PAN_MARGIN = 82;
 const ZOOM_MIN = 0.5;
 const ZOOM_MAX = 2.6;
+const NODE_DRAG_THRESHOLD = 6;
+const NODE_BOUNDARY_PADDING = 10;
 
 const RARITY_LANES = [
   { id: 'common', label: 'Common' },
@@ -55,30 +60,18 @@ const getUnlockRequirements = (critter) => {
 
 const getPrimaryRequirement = (critter) => getUnlockRequirements(critter)[0] || null;
 
-const buildUnlockSummary = (critter, namesById) => {
+const getRequirementLevel = (critter) => {
   const unlock = critter?.unlock;
-  if (!unlock) {
-    return 'Awaiting Data Entry';
-  }
-
-  if (typeof unlock.text === 'string' && unlock.text.trim()) {
-    return unlock.text.trim();
-  }
-
-  if (unlock.type === 'starter') {
-    return 'Starter critter';
+  if (unlock?.type === 'starter') {
+    return 0;
   }
 
   const requirements = getUnlockRequirements(critter);
-  if (requirements.length) {
-    const parts = requirements.map((requirement) => {
-      const sourceName = namesById.get(requirement.critterId) || prettify(requirement.critterId);
-      return `Level ${requirement.level} with ${sourceName}`;
-    });
-    return `Reach ${parts.join(' and ')}`;
+  if (!requirements.length) {
+    return 0;
   }
 
-  return 'Awaiting Data Entry';
+  return Math.max(...requirements.map((requirement) => requirement.level));
 };
 
 const shortUnlockLabel = (critter, namesById) => {
@@ -113,7 +106,7 @@ const critterSortWeight = (critter) => {
 };
 
 export class CritterUnlockMap {
-  constructor({ element, critters = [], categories = [], bus }) {
+  constructor({ element, critters = [], categories = [], bus, zoomElement = null }) {
     this.element = element;
     this.critters = critters;
     this.categories = categories;
@@ -125,17 +118,44 @@ export class CritterUnlockMap {
     this.linksLayer = null;
     this.lanesLayer = null;
     this.nodesLayer = null;
-    this.categoryLabel = null;
-    this.requirements = null;
-    this.zoomLabel = null;
+    this.zoomLabel = zoomElement || null;
 
     this.activeCategoryId = null;
     this.activeCritterId = null;
     this.nodeButtons = new Map();
+    this.currentPositions = new Map();
+    this.linkRecords = [];
+    this.customPositionsByCategory = this.buildPositionOverrides(critterMapDefaultLayout);
 
     this.pan = { ...DEFAULT_PAN };
     this.scale = 1;
-    this.dragState = null;
+    this.panDragState = null;
+  }
+
+  buildPositionOverrides(layoutByCategory = {}) {
+    const positionsByCategory = new Map();
+    Object.entries(layoutByCategory).forEach(([categoryId, critterPoints]) => {
+      if (!critterPoints || typeof critterPoints !== 'object') {
+        return;
+      }
+
+      const positionsByCritter = new Map();
+      Object.entries(critterPoints).forEach(([critterId, point]) => {
+        const x = Number(point?.x);
+        const y = Number(point?.y);
+        if (!Number.isFinite(x) || !Number.isFinite(y)) {
+          return;
+        }
+
+        const bounded = this.clampNodePosition(x, y);
+        positionsByCritter.set(critterId, { x: bounded.x, y: bounded.y });
+      });
+
+      if (positionsByCritter.size) {
+        positionsByCategory.set(categoryId, positionsByCritter);
+      }
+    });
+    return positionsByCategory;
   }
 
   render(defaultCategoryId) {
@@ -147,11 +167,6 @@ export class CritterUnlockMap {
     this.root = document.createElement('div');
     this.root.className = 'unlock-map';
     this.root.innerHTML = `
-      <div class="unlock-map__meta">
-        <p class="unlock-map__category" data-role="map-category"></p>
-        <p class="unlock-map__hint">Drag or scroll to pan. Pinch trackpad to zoom. Click a critter box to preview details.</p>
-        <span class="unlock-map__zoom" data-role="map-zoom">100%</span>
-      </div>
       <div class="unlock-map__viewport" data-role="map-viewport">
         <div class="unlock-map__board" data-role="map-board">
           <svg class="unlock-map__links" data-role="map-links" viewBox="0 0 ${MAP_WIDTH} ${MAP_HEIGHT}" preserveAspectRatio="xMinYMin meet"></svg>
@@ -159,7 +174,6 @@ export class CritterUnlockMap {
           <div class="unlock-map__nodes" data-role="map-nodes"></div>
         </div>
       </div>
-      <div class="unlock-map__requirements" data-role="map-requirements"></div>
     `;
 
     this.element.appendChild(this.root);
@@ -168,9 +182,9 @@ export class CritterUnlockMap {
     this.linksLayer = this.root.querySelector('[data-role="map-links"]');
     this.lanesLayer = this.root.querySelector('[data-role="map-lanes"]');
     this.nodesLayer = this.root.querySelector('[data-role="map-nodes"]');
-    this.categoryLabel = this.root.querySelector('[data-role="map-category"]');
-    this.requirements = this.root.querySelector('[data-role="map-requirements"]');
-    this.zoomLabel = this.root.querySelector('[data-role="map-zoom"]');
+    if (!this.zoomLabel) {
+      this.zoomLabel = this.root.querySelector('[data-role="map-zoom"]');
+    }
 
     this.board.style.width = `${MAP_WIDTH}px`;
     this.board.style.height = `${MAP_HEIGHT}px`;
@@ -199,7 +213,7 @@ export class CritterUnlockMap {
         return;
       }
 
-      this.dragState = {
+      this.panDragState = {
         pointerId: event.pointerId,
         startX: event.clientX,
         startY: event.clientY,
@@ -211,24 +225,24 @@ export class CritterUnlockMap {
     };
 
     const onPointerMove = (event) => {
-      if (!this.dragState || event.pointerId !== this.dragState.pointerId) {
+      if (!this.panDragState || event.pointerId !== this.panDragState.pointerId) {
         return;
       }
 
-      const dx = event.clientX - this.dragState.startX;
-      const dy = event.clientY - this.dragState.startY;
-      this.pan.x = this.dragState.originX + dx;
-      this.pan.y = this.dragState.originY + dy;
+      const dx = event.clientX - this.panDragState.startX;
+      const dy = event.clientY - this.panDragState.startY;
+      this.pan.x = this.panDragState.originX + dx;
+      this.pan.y = this.panDragState.originY + dy;
       this.applyTransform();
     };
 
     const onPointerUp = (event) => {
-      if (!this.dragState || event.pointerId !== this.dragState.pointerId) {
+      if (!this.panDragState || event.pointerId !== this.panDragState.pointerId) {
         return;
       }
 
       this.viewport.releasePointerCapture(event.pointerId);
-      this.dragState = null;
+      this.panDragState = null;
       this.viewport.classList.remove('is-dragging');
     };
 
@@ -336,13 +350,166 @@ export class CritterUnlockMap {
     });
   }
 
-  renderCategoryMap() {
-    if (!this.nodesLayer || !this.lanesLayer || !this.linksLayer || !this.requirements) {
-      return;
+  getAllCategoryIds() {
+    const configured = (this.categories || []).map((category) => category.id);
+    const discovered = this.critters
+      .map((critter) => critter.category)
+      .filter((categoryId) => Boolean(categoryId));
+    return Array.from(new Set([...configured, ...discovered]));
+  }
+
+  buildPoint(x, y, level = 0) {
+    return {
+      x,
+      y,
+      centerX: x + NODE_WIDTH / 2,
+      centerY: y + NODE_HEIGHT / 2,
+      level,
+    };
+  }
+
+  clampNodePosition(x, y) {
+    const minX = NODE_BOUNDARY_PADDING;
+    const maxX = MAP_WIDTH - NODE_WIDTH - NODE_BOUNDARY_PADDING;
+    const minY = NODE_BOUNDARY_PADDING;
+    const maxY = MAP_HEIGHT - NODE_HEIGHT - NODE_BOUNDARY_PADDING;
+    return {
+      x: Math.max(minX, Math.min(maxX, Math.round(x))),
+      y: Math.max(minY, Math.min(maxY, Math.round(y))),
+    };
+  }
+
+  ensureCategoryCustomPositions(categoryId) {
+    if (!categoryId) {
+      return new Map();
     }
 
+    if (!this.customPositionsByCategory.has(categoryId)) {
+      this.customPositionsByCategory.set(categoryId, new Map());
+    }
+
+    return this.customPositionsByCategory.get(categoryId);
+  }
+
+  updateNodePosition(critterId, x, y) {
+    const existing = this.currentPositions.get(critterId);
+    const level = existing?.level ?? 0;
+    const nextPoint = this.buildPoint(x, y, level);
+    this.currentPositions.set(critterId, nextPoint);
+
+    const node = this.nodeButtons.get(critterId);
+    if (node) {
+      node.style.left = `${nextPoint.x}px`;
+      node.style.top = `${nextPoint.y}px`;
+    }
+
+    if (this.activeCategoryId) {
+      const categoryOverrides = this.ensureCategoryCustomPositions(this.activeCategoryId);
+      categoryOverrides.set(critterId, { x: nextPoint.x, y: nextPoint.y });
+    }
+
+    this.updateLinkPaths();
+  }
+
+  updateLinkPaths() {
+    this.linkRecords.forEach((record) => {
+      const source = this.currentPositions.get(record.sourceId);
+      const target = this.currentPositions.get(record.targetId);
+      if (!source || !target) {
+        return;
+      }
+
+      const startX = source.centerX;
+      const startY = source.centerY + NODE_HEIGHT / 2 - 4;
+      const endX = target.centerX;
+      const endY = target.centerY - NODE_HEIGHT / 2 + 4;
+      const controlOffset = Math.max(50, Math.abs(endY - startY) * 0.55);
+      const pathData = `M ${startX} ${startY} C ${startX} ${startY + controlOffset}, ${endX} ${endY - controlOffset}, ${endX} ${endY}`;
+      record.path.setAttribute('d', pathData);
+    });
+  }
+
+  bindNodeDrag(node, critterId) {
+    let nodeDragState = null;
+    let suppressNextClick = false;
+
+    node.addEventListener('pointerdown', (event) => {
+      if (event.button !== 0) {
+        return;
+      }
+
+      const point = this.currentPositions.get(critterId);
+      if (!point) {
+        return;
+      }
+
+      nodeDragState = {
+        pointerId: event.pointerId,
+        startClientX: event.clientX,
+        startClientY: event.clientY,
+        startX: point.x,
+        startY: point.y,
+        moved: false,
+      };
+      node.setPointerCapture(event.pointerId);
+    });
+
+    node.addEventListener('pointermove', (event) => {
+      if (!nodeDragState || event.pointerId !== nodeDragState.pointerId) {
+        return;
+      }
+
+      const dxClient = event.clientX - nodeDragState.startClientX;
+      const dyClient = event.clientY - nodeDragState.startClientY;
+      const travel = Math.hypot(dxClient, dyClient);
+
+      if (!nodeDragState.moved && travel >= NODE_DRAG_THRESHOLD) {
+        nodeDragState.moved = true;
+        node.classList.add('is-dragging-node');
+      }
+
+      if (!nodeDragState.moved) {
+        return;
+      }
+
+      const dx = dxClient / this.scale;
+      const dy = dyClient / this.scale;
+      const bounded = this.clampNodePosition(nodeDragState.startX + dx, nodeDragState.startY + dy);
+      this.updateNodePosition(critterId, bounded.x, bounded.y);
+      event.preventDefault();
+      event.stopPropagation();
+    });
+
+    const onPointerFinish = (event) => {
+      if (!nodeDragState || event.pointerId !== nodeDragState.pointerId) {
+        return;
+      }
+
+      const moved = nodeDragState.moved;
+      node.classList.remove('is-dragging-node');
+      if (node.hasPointerCapture(event.pointerId)) {
+        node.releasePointerCapture(event.pointerId);
+      }
+      nodeDragState = null;
+      if (moved) {
+        suppressNextClick = true;
+        requestAnimationFrame(() => {
+          suppressNextClick = false;
+        });
+        event.preventDefault();
+        event.stopPropagation();
+      }
+    };
+
+    node.addEventListener('pointerup', onPointerFinish);
+    node.addEventListener('pointercancel', onPointerFinish);
+
+    return () => suppressNextClick;
+  }
+
+  buildCategoryLayout(categoryId) {
     const categoryCritters = this.critters
-      .filter((critter) => critter.category === this.activeCategoryId)
+      .filter((critter) => critter.category === categoryId)
       .slice()
       .sort((a, b) => {
         const unlockDiff = critterSortWeight(a) - critterSortWeight(b);
@@ -353,11 +520,8 @@ export class CritterUnlockMap {
       });
 
     const namesById = new Map(this.critters.map((critter) => [critter.id, critter.name]));
-
-    this.nodeButtons.clear();
-    this.linksLayer.innerHTML = '';
-    this.lanesLayer.innerHTML = '';
-    this.nodesLayer.innerHTML = '';
+    const positions = new Map();
+    const lanes = new Map();
 
     const crittersByLane = new Map(RARITY_LANES.map((lane) => [lane.id, []]));
     categoryCritters.forEach((critter) => {
@@ -368,57 +532,153 @@ export class CritterUnlockMap {
       crittersByLane.get(laneId).push(critter);
     });
 
-    const nodePositions = new Map();
-    const categoryIds = new Set(categoryCritters.map((critter) => critter.id));
-    const byId = new Map(categoryCritters.map((critter) => [critter.id, critter]));
+    RARITY_LANES.forEach((lane, laneIndex) => {
+      const laneTop = LANE_START_Y + laneIndex * LANE_HEIGHT;
+      const laneCritters = (crittersByLane.get(lane.id) || []).slice();
+      const levelRows = Array.from(new Set(laneCritters.map((critter) => getRequirementLevel(critter)))).sort(
+        (left, right) => left - right
+      );
+      const rows = new Map(levelRows.map((level) => [level, []]));
+      laneCritters.forEach((critter) => {
+        const level = getRequirementLevel(critter);
+        rows.get(level).push(critter);
+      });
 
-    const resolveRootId = (critter) => {
-      let cursor = critter;
-      const seen = new Set([critter.id]);
-      let primary = getPrimaryRequirement(cursor);
-      while (primary?.critterId && categoryIds.has(primary.critterId)) {
-        if (seen.has(primary.critterId)) {
-          break;
-        }
-        seen.add(primary.critterId);
-        const parent = byId.get(primary.critterId);
-        if (!parent) {
-          break;
-        }
-        cursor = parent;
-        primary = getPrimaryRequirement(cursor);
-      }
-      return cursor?.id || critter.id;
-    };
+      const rowCount = Math.max(levelRows.length, 1);
+      const usableHeight = LANE_HEIGHT - LANE_ROW_OFFSET - NODE_HEIGHT - LANE_BOTTOM_PADDING;
+      const rowGap = rowCount > 1 ? usableHeight / (rowCount - 1) : 0;
 
-    const rootIds = Array.from(new Set(categoryCritters.map((critter) => resolveRootId(critter))));
-    const rootXById = new Map();
-    const rootSpacing = rootIds.length ? MAP_WIDTH / (rootIds.length + 1) : MAP_WIDTH / 2;
-    rootIds.forEach((rootId, index) => {
-      rootXById.set(rootId, Math.round(rootSpacing * (index + 1) - NODE_WIDTH / 2));
+      levelRows.forEach((level, rowIndex) => {
+        const y = Math.round(laneTop + LANE_ROW_OFFSET + rowIndex * rowGap);
+        const rowCritters = rows.get(level) || [];
+        rowCritters.sort((left, right) => {
+          const leftPrimary = getPrimaryRequirement(left)?.critterId || '';
+          const rightPrimary = getPrimaryRequirement(right)?.critterId || '';
+          if (leftPrimary !== rightPrimary) {
+            return leftPrimary.localeCompare(rightPrimary);
+          }
+          return left.name.localeCompare(right.name);
+        });
+
+        const rowCountHorizontal = rowCritters.length;
+        const usableWidth = MAP_WIDTH - LANE_X_PADDING * 2;
+        const spacing = rowCountHorizontal > 0 ? usableWidth / (rowCountHorizontal + 1) : usableWidth;
+        const canUseEvenSpacing = spacing >= NODE_WIDTH + MIN_NODE_GAP;
+        const packedWidth = rowCountHorizontal * NODE_WIDTH + Math.max(0, rowCountHorizontal - 1) * MIN_NODE_GAP;
+        const packedStartX = Math.round((MAP_WIDTH - packedWidth) * 0.5);
+
+        rowCritters.forEach((critter, index) => {
+          const x = canUseEvenSpacing
+            ? Math.round(LANE_X_PADDING + spacing * (index + 1) - NODE_WIDTH / 2)
+            : packedStartX + index * (NODE_WIDTH + MIN_NODE_GAP);
+
+          positions.set(critter.id, this.buildPoint(x, y, level));
+        });
+      });
+
+      lanes.set(lane.id, {
+        laneTop,
+        laneCritters,
+      });
     });
 
-    const laneTopById = new Map(
-      RARITY_LANES.map((lane, laneIndex) => [lane.id, LANE_START_Y + laneIndex * LANE_HEIGHT])
-    );
+    const categoryOverrides = this.customPositionsByCategory.get(categoryId);
+    if (categoryOverrides) {
+      categoryCritters.forEach((critter) => {
+        const override = categoryOverrides.get(critter.id);
+        if (!override) {
+          return;
+        }
 
-    const depthById = new Map();
-    const computeDepth = (critter) => {
-      if (!critter) return 0;
-      if (depthById.has(critter.id)) {
-        return depthById.get(critter.id);
-      }
-      const sourceId = critter?.unlock?.critterId;
-      const source = sourceId ? byId.get(sourceId) : null;
-      const depth = source ? computeDepth(source) + 1 : 0;
-      depthById.set(critter.id, depth);
-      return depth;
+        const existingPoint = positions.get(critter.id);
+        const level = existingPoint?.level ?? getRequirementLevel(critter);
+        const bounded = this.clampNodePosition(override.x, override.y);
+        positions.set(critter.id, this.buildPoint(bounded.x, bounded.y, level));
+      });
+    }
+
+    return {
+      categoryCritters,
+      namesById,
+      positions,
+      lanes,
     };
-    categoryCritters.forEach((critter) => computeDepth(critter));
+  }
+
+  async copyLayoutSnapshot() {
+    const categoryIds = this.getAllCategoryIds();
+    const payload = {
+      generatedAt: new Date().toISOString(),
+      board: {
+        width: MAP_WIDTH,
+        height: MAP_HEIGHT,
+        nodeWidth: NODE_WIDTH,
+        nodeHeight: NODE_HEIGHT,
+      },
+      categories: {},
+    };
+
+    categoryIds.forEach((categoryId) => {
+      const { categoryCritters, positions } = this.buildCategoryLayout(categoryId);
+      const categoryLabel =
+        this.categories.find((category) => category.id === categoryId)?.label || prettify(categoryId);
+
+      payload.categories[categoryId] = {
+        label: categoryLabel,
+        critters: categoryCritters.map((critter) => {
+          const point = positions.get(critter.id) || {};
+          return {
+            id: critter.id,
+            name: critter.name,
+            rarity: critter.rarity || 'common',
+            level: getRequirementLevel(critter),
+            x: point.x ?? 0,
+            y: point.y ?? 0,
+            requirements: getUnlockRequirements(critter),
+          };
+        }),
+      };
+    });
+
+    const text = JSON.stringify(payload, null, 2);
+    await this.copyTextToClipboard(text);
+    return text;
+  }
+
+  async copyTextToClipboard(text) {
+    if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return;
+    }
+
+    const helper = document.createElement('textarea');
+    helper.value = text;
+    helper.setAttribute('readonly', '');
+    helper.style.position = 'fixed';
+    helper.style.opacity = '0';
+    helper.style.left = '-9999px';
+    document.body.appendChild(helper);
+    helper.select();
+    document.execCommand('copy');
+    document.body.removeChild(helper);
+  }
+
+  renderCategoryMap() {
+    if (!this.nodesLayer || !this.lanesLayer || !this.linksLayer) {
+      return;
+    }
+    const { categoryCritters, namesById, positions, lanes } = this.buildCategoryLayout(this.activeCategoryId);
+    this.nodeButtons.clear();
+    this.currentPositions = new Map(positions);
+    this.linkRecords = [];
+    this.linksLayer.innerHTML = '';
+    this.lanesLayer.innerHTML = '';
+    this.nodesLayer.innerHTML = '';
 
     RARITY_LANES.forEach((lane, laneIndex) => {
-      const laneCritters = (crittersByLane.get(lane.id) || []).slice();
-      const laneTop = laneTopById.get(lane.id);
+      const laneInfo = lanes.get(lane.id);
+      const laneCritters = laneInfo?.laneCritters || [];
+      const laneTop = laneInfo?.laneTop ?? LANE_START_Y + laneIndex * LANE_HEIGHT;
 
       const laneRow = document.createElement('div');
       laneRow.className = 'unlock-lane';
@@ -433,51 +693,17 @@ export class CritterUnlockMap {
       if (!laneCritters.length) {
         return;
       }
-
-      const occupiedX = [];
-      laneCritters.forEach((critter, index) => {
-        const rootId = resolveRootId(critter);
-        const baseX = rootXById.get(rootId) ?? Math.round(MAP_WIDTH * 0.5 - NODE_WIDTH / 2);
-        const depth = depthById.get(critter.id) ?? 0;
-
-        const sameRootSameDepth = laneCritters.filter(
-          (entry) => resolveRootId(entry) === rootId && (depthById.get(entry.id) ?? 0) === depth
-        );
-        const branchIndex = sameRootSameDepth.findIndex((entry) => entry.id === critter.id);
-        const siblingOffset =
-          sameRootSameDepth.length > 1
-            ? (branchIndex - (sameRootSameDepth.length - 1) / 2) * (NODE_WIDTH * 0.72)
-            : 0;
-
-        let x = Math.round(baseX + siblingOffset);
-        let attempts = 0;
-        while (occupiedX.some((value) => Math.abs(value - x) < NODE_WIDTH + MIN_NODE_GAP) && attempts < 20) {
-          x += NODE_WIDTH * 0.58;
-          attempts += 1;
+      laneCritters.forEach((critter) => {
+        const point = positions.get(critter.id);
+        if (!point) {
+          return;
         }
-        occupiedX.push(x);
-        x = Math.max(18, Math.min(MAP_WIDTH - NODE_WIDTH - 18, x));
-
-        const primaryRequirement = getPrimaryRequirement(critter);
-        const source = primaryRequirement ? byId.get(primaryRequirement.critterId) : null;
-        const sourceInSameLane = source && (source.rarity || 'common') === lane.id;
-        const y = Math.round(
-          laneTop + LANE_ROW_OFFSET + (sourceInSameLane ? Math.max(1, depth) : depth) * DEPTH_ROW_GAP
-        );
-
-        nodePositions.set(critter.id, {
-          x,
-          y,
-          centerX: x + NODE_WIDTH / 2,
-          centerY: y + NODE_HEIGHT / 2,
-        });
-
         const unlockType = critter?.unlock?.type || 'pending';
         const node = document.createElement('button');
         node.type = 'button';
         node.className = `unlock-node unlock-node--${unlockType} unlock-node--${critter.rarity || 'common'}`;
-        node.style.left = `${x}px`;
-        node.style.top = `${y}px`;
+        node.style.left = `${point.x}px`;
+        node.style.top = `${point.y}px`;
         node.dataset.critterId = critter.id;
         node.setAttribute('aria-pressed', 'false');
         node.innerHTML = `
@@ -486,7 +712,11 @@ export class CritterUnlockMap {
           <span class="unlock-node__unlock">${shortUnlockLabel(critter, namesById)}</span>
         `;
 
+        const shouldSuppressClick = this.bindNodeDrag(node, critter.id);
         node.addEventListener('click', () => {
+          if (shouldSuppressClick()) {
+            return;
+          }
           const nextId = this.activeCritterId === critter.id ? null : critter.id;
           this.setActiveCritter(nextId);
           this.bus?.emit?.('critter:selected', nextId);
@@ -504,38 +734,22 @@ export class CritterUnlockMap {
       }
 
       requirements.forEach((requirement) => {
-        const source = nodePositions.get(requirement.critterId);
-        const target = nodePositions.get(critter.id);
-        if (!source || !target) {
+        if (!positions.has(requirement.critterId) || !positions.has(critter.id)) {
           return;
         }
 
-        const startX = source.centerX;
-        const startY = source.centerY + NODE_HEIGHT / 2 - 4;
-        const endX = target.centerX;
-        const endY = target.centerY - NODE_HEIGHT / 2 + 4;
-        const controlOffset = Math.max(50, Math.abs(endY - startY) * 0.55);
-        const pathData = `M ${startX} ${startY} C ${startX} ${startY + controlOffset}, ${endX} ${endY - controlOffset}, ${endX} ${endY}`;
-
         const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-        path.setAttribute('d', pathData);
         path.setAttribute('class', 'unlock-link');
         this.linksLayer.appendChild(path);
+        this.linkRecords.push({
+          path,
+          sourceId: requirement.critterId,
+          targetId: critter.id,
+        });
       });
     });
 
-    const categoryLabel = this.categories.find((category) => category.id === this.activeCategoryId)?.label
-      || prettify(this.activeCategoryId);
-    this.categoryLabel.textContent = `${categoryLabel} unlock network`;
-
-    const requirementItems = categoryCritters.map((critter) => {
-      const summary = buildUnlockSummary(critter, namesById);
-      return `<li><strong>${critter.name}:</strong> ${summary}</li>`;
-    });
-
-    this.requirements.innerHTML = requirementItems.length
-      ? `<ul class="unlock-map__rules">${requirementItems.join('')}</ul>`
-      : '<p class="unlock-map__empty">Awaiting Data Entry</p>';
+    this.updateLinkPaths();
 
     this.setActiveCritter(null);
   }

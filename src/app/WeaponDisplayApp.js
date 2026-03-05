@@ -37,7 +37,28 @@ export class WeaponDisplayApp {
     this.minigameQuest = null;
     this.minigameKatana = null;
     this.navElement = null;
+    this.mapCopyButton = null;
+    this.mapZoomBadge = null;
     this.boundNavKeydown = (event) => this.handleNavKeydown(event);
+    this.boundMapCopyClick = async () => {
+      if (!this.critterUnlockMap || !this.mapCopyButton) {
+        return;
+      }
+
+      const originalLabel = this.mapCopyButton.textContent;
+      try {
+        await this.critterUnlockMap.copyLayoutSnapshot();
+        this.mapCopyButton.textContent = 'Copied';
+      } catch (error) {
+        this.mapCopyButton.textContent = 'Copy Failed';
+        console.error('Failed to copy critter map layout:', error);
+      }
+      setTimeout(() => {
+        if (this.mapCopyButton) {
+          this.mapCopyButton.textContent = originalLabel || 'Copy Layout';
+        }
+      }, 1200);
+    };
     this.activeAnimationId = null;
     this.stageElement = null;
 
@@ -59,6 +80,8 @@ export class WeaponDisplayApp {
     const layout = this.buildLayout();
     this.stageElement = layout.stageElement;
     this.navElement = layout.navElement;
+    this.mapCopyButton = layout.mapCopyButtonElement;
+    this.mapZoomBadge = layout.mapZoomElement;
     this.indexWeapons();
     this.indexCritters();
     this.registerEventHandlers();
@@ -99,6 +122,7 @@ export class WeaponDisplayApp {
       critters: this.critters,
       categories: this.critterCategories,
       bus: this.eventBus,
+      zoomElement: this.mapZoomBadge,
     });
     this.minigameRunner = new MinigameRunner();
     this.minigameQuest = new MinigameCritterQuest();
@@ -106,6 +130,9 @@ export class WeaponDisplayApp {
 
     if (this.navElement) {
       this.navElement.addEventListener('keydown', this.boundNavKeydown, true);
+    }
+    if (this.mapCopyButton) {
+      this.mapCopyButton.addEventListener('click', this.boundMapCopyClick);
     }
 
     this.mapsList = new NavButtonList({
@@ -265,7 +292,6 @@ export class WeaponDisplayApp {
   buildLayout() {
     this.root.innerHTML = `
       <div class="app-shell">
-        <div class="hud-brand">Critz Library</div>
         <nav class="hud-nav" aria-label="Interface options">
           <details class="nav-section nav-section--critters" open>
             <summary class="nav-section__summary">Critters</summary>
@@ -307,11 +333,16 @@ export class WeaponDisplayApp {
         <section class="panel hud-panel hud-map" data-component="critter-map-panel">
           <div class="panel-header">
             <span>Critter Unlock Map</span>
+            <div class="panel-header__actions">
+              <span class="unlock-map__zoom unlock-map__zoom--header" data-role="map-zoom-header">100%</span>
+              <button type="button" class="panel-copy-button" data-action="copy-map-layout">
+                Copy Layout
+              </button>
+            </div>
           </div>
           <div class="detail-content">
             <div class="detail-scroll detail-scroll--map" data-component="critter-unlock-map"></div>
           </div>
-          <div class="panel-footer">Drag to pan and click a critter to preview it.</div>
         </section>
         <section class="inspector" data-component="inspector">
           <section class="stage" data-component="stage">
@@ -351,6 +382,8 @@ export class WeaponDisplayApp {
       modesListElement: this.root.querySelector('[data-component="modes-list"]'),
       cosmeticsListElement: this.root.querySelector('[data-component="cosmetics-list"]'),
       minigamesListElement: this.root.querySelector('[data-component="minigames-list"]'),
+      mapCopyButtonElement: this.root.querySelector('[data-action="copy-map-layout"]'),
+      mapZoomElement: this.root.querySelector('[data-role="map-zoom-header"]'),
       navElement: this.root.querySelector('.hud-nav'),
     };
   }
