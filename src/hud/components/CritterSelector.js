@@ -1,6 +1,6 @@
 const DEFAULT_CATEGORY_LABELS = {
   reptiles: 'Reptiles',
-  amphibians: 'Amphibians',
+  amphibians: 'Amphians',
   mammals: 'Mammals',
   birds: 'Birds',
   insects: 'Insects',
@@ -12,122 +12,89 @@ export class CritterSelector {
     this.critters = critters;
     this.categories = categories;
     this.bus = bus;
-    this.activeId = null;
+    this.activeCategoryId = null;
     this.buttons = new Map();
   }
 
-  render(defaultId) {
+  render(defaultCategoryId) {
     if (!this.element) return;
 
     this.element.innerHTML = '';
     this.buttons.clear();
-    this.element.setAttribute('role', 'radiogroup');
+    this.element.setAttribute('role', 'listbox');
     this.element.classList.add('critter-selector');
 
-    const grouped = this.groupCrittersByCategory();
+    const categoryList = this.getCategoryList();
+    const list = document.createElement('div');
+    list.className = 'critter-category-list';
 
-    grouped.forEach(({ id, label, critters }) => {
-      const section = document.createElement('details');
-      section.className = 'critter-category';
-
-      const heading = document.createElement('summary');
-      heading.className = 'critter-category__title';
-      heading.textContent = label;
-      section.appendChild(heading);
-
-      const list = document.createElement('div');
-      list.className = 'critter-category__list';
-
-      critters.forEach((critter) => {
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.className = 'critter-button';
-        button.dataset.critterId = critter.id;
-        button.textContent = critter.name;
-        button.setAttribute('role', 'radio');
-        button.setAttribute('aria-pressed', 'false');
-        button.setAttribute('aria-checked', 'false');
-        button.addEventListener('click', () => this.selectCritter(critter.id, { emit: true }));
-        list.appendChild(button);
-        this.buttons.set(critter.id, button);
-      });
-
-      section.appendChild(list);
-      this.element.appendChild(section);
+    categoryList.forEach((category) => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'critter-button critter-button--folder';
+      button.dataset.categoryId = category.id;
+      button.textContent = category.label;
+      button.setAttribute('role', 'option');
+      button.setAttribute('aria-selected', 'false');
+      button.addEventListener('click', () => this.setActiveCategory(category.id, { emit: true }));
+      list.appendChild(button);
+      this.buttons.set(category.id, button);
     });
 
-    const initialId = defaultId || null;
-    if (initialId) {
-      this.selectCritter(initialId, { emit: false });
+    this.element.appendChild(list);
+
+    const initialId = defaultCategoryId || categoryList[0]?.id || null;
+    if (initialId && this.buttons.has(initialId)) {
+      this.setActiveCategory(initialId, { emit: false });
     }
   }
 
-  groupCrittersByCategory() {
-    const categoryOrder = this.categories.length
+  getCategoryList() {
+    const configuredCategories = this.categories.length
       ? this.categories
       : Object.keys(DEFAULT_CATEGORY_LABELS).map((id) => ({
           id,
           label: DEFAULT_CATEGORY_LABELS[id],
         }));
 
-    const bucketed = new Map();
-    categoryOrder.forEach((category) => {
-      bucketed.set(category.id, {
-        id: category.id,
-        label: category.label || DEFAULT_CATEGORY_LABELS[category.id] || category.id,
-        critters: [],
-      });
-    });
+    const derivedIds = new Set(this.critters.map((critter) => critter.category).filter(Boolean));
+    const configuredIds = new Set(configuredCategories.map((category) => category.id));
 
-    this.critters.forEach((critter) => {
-      const categoryId = critter.category || 'other';
-      if (!bucketed.has(categoryId)) {
-        bucketed.set(categoryId, {
-          id: categoryId,
-          label: DEFAULT_CATEGORY_LABELS[categoryId] || categoryId,
-          critters: [],
-        });
+    const extras = Array.from(derivedIds)
+      .filter((id) => !configuredIds.has(id))
+      .map((id) => ({
+        id,
+        label: DEFAULT_CATEGORY_LABELS[id] || id,
+      }));
+
+    return [...configuredCategories, ...extras].map((category) => ({
+      id: category.id,
+      label: category.label || DEFAULT_CATEGORY_LABELS[category.id] || category.id,
+    }));
+  }
+
+  setActiveCategory(categoryId, { emit = true } = {}) {
+    if (!categoryId || !this.buttons.has(categoryId)) {
+      return;
+    }
+
+    if (this.activeCategoryId === categoryId) {
+      if (emit) {
+        this.bus?.emit?.('critter:category-selected', categoryId);
       }
-      bucketed.get(categoryId).critters.push(critter);
-    });
-
-    return Array.from(bucketed.values()).filter((group) => group.critters.length > 0);
-  }
-
-  selectCritter(id, { emit }) {
-    if (!id) {
-      this.clearSelection({ emit });
       return;
     }
 
-    if (this.activeId === id) {
-      this.clearSelection({ emit });
-      return;
-    }
+    this.activeCategoryId = categoryId;
 
-    this.activeId = id;
-
-    this.buttons.forEach((button, critterId) => {
-      const isActive = critterId === id;
+    this.buttons.forEach((button, id) => {
+      const isActive = id === categoryId;
       button.classList.toggle('active', isActive);
-      button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
-      button.setAttribute('aria-checked', isActive ? 'true' : 'false');
+      button.setAttribute('aria-selected', isActive ? 'true' : 'false');
     });
 
     if (emit) {
-      this.bus?.emit?.('critter:selected', id);
-    }
-  }
-
-  clearSelection({ emit } = {}) {
-    this.activeId = null;
-    this.buttons.forEach((button) => {
-      button.classList.remove('active');
-      button.setAttribute('aria-pressed', 'false');
-      button.setAttribute('aria-checked', 'false');
-    });
-    if (emit) {
-      this.bus?.emit?.('critter:selected', null);
+      this.bus?.emit?.('critter:category-selected', categoryId);
     }
   }
 }
