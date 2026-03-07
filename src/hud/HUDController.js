@@ -51,6 +51,7 @@ export class HUDController {
       panelElement: this.detailPanelElement,
       rarityBadge: this.rarityBadge,
       footerElement: this.detailFooter,
+      bus: this.bus,
     });
 
     if (this.activeWeaponId) {
@@ -114,7 +115,7 @@ export class HUDController {
     return this.weaponDetailPanel.renderCustom({ title, footer, className });
   }
 
-  showCritterInfo(critter, { categoryLabel } = {}) {
+  showCritterInfo(critter, { categoryLabel, editorState } = {}) {
     if (!critter) {
       this.weaponDetailPanel.renderEmpty();
       return;
@@ -122,7 +123,7 @@ export class HUDController {
 
     this.activeWeaponId = null;
     this.weaponCategoryMenu?.setActiveWeapon(null);
-    this.weaponDetailPanel.renderCritter(critter, { categoryLabel });
+    this.weaponDetailPanel.renderCritter(critter, { categoryLabel, editorState });
   }
 
   showCritterCategoryGuide({ categoryLabel, critterCount }) {

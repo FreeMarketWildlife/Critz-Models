@@ -38,6 +38,7 @@ export class WeaponDisplayApp {
     this.minigameKatana = null;
     this.navElement = null;
     this.mapCopyButton = null;
+    this.mapPointsToggleButton = null;
     this.mapZoomBadge = null;
     this.boundNavKeydown = (event) => this.handleNavKeydown(event);
     this.boundMapCopyClick = async () => {
@@ -58,6 +59,14 @@ export class WeaponDisplayApp {
           this.mapCopyButton.textContent = originalLabel || 'Copy Layout';
         }
       }, 1200);
+    };
+    this.boundMapPointsToggleClick = () => {
+      if (!this.critterUnlockMap || !this.mapPointsToggleButton) {
+        return;
+      }
+
+      const visible = this.critterUnlockMap.toggleLinkPointsVisibility();
+      this.mapPointsToggleButton.textContent = visible ? 'Hide Dots' : 'Show Dots';
     };
     this.activeAnimationId = null;
     this.stageElement = null;
@@ -81,6 +90,7 @@ export class WeaponDisplayApp {
     this.stageElement = layout.stageElement;
     this.navElement = layout.navElement;
     this.mapCopyButton = layout.mapCopyButtonElement;
+    this.mapPointsToggleButton = layout.mapPointsToggleButtonElement;
     this.mapZoomBadge = layout.mapZoomElement;
     this.indexWeapons();
     this.indexCritters();
@@ -133,6 +143,9 @@ export class WeaponDisplayApp {
     }
     if (this.mapCopyButton) {
       this.mapCopyButton.addEventListener('click', this.boundMapCopyClick);
+    }
+    if (this.mapPointsToggleButton) {
+      this.mapPointsToggleButton.addEventListener('click', this.boundMapPointsToggleClick);
     }
 
     this.mapsList = new NavButtonList({
@@ -282,6 +295,10 @@ export class WeaponDisplayApp {
     this.activeAnimationId = null;
     this.critterSelector.render(this.activeCritterCategory);
     this.critterUnlockMap.render(this.activeCritterCategory);
+    if (this.mapPointsToggleButton) {
+      const visible = this.critterUnlockMap.areLinkPointsVisible();
+      this.mapPointsToggleButton.textContent = visible ? 'Hide Dots' : 'Show Dots';
+    }
     this.hudController.showCritterCategoryGuide({
       categoryLabel: this.getCritterCategoryLabel(this.activeCritterCategory),
       critterCount: this.getCrittersByCategory(this.activeCritterCategory).length,
@@ -335,6 +352,9 @@ export class WeaponDisplayApp {
             <span>Critter Unlock Map</span>
             <div class="panel-header__actions">
               <span class="unlock-map__zoom unlock-map__zoom--header" data-role="map-zoom-header">100%</span>
+              <button type="button" class="panel-copy-button" data-action="toggle-link-points">
+                Hide Dots
+              </button>
               <button type="button" class="panel-copy-button" data-action="copy-map-layout">
                 Copy Layout
               </button>
@@ -383,6 +403,7 @@ export class WeaponDisplayApp {
       cosmeticsListElement: this.root.querySelector('[data-component="cosmetics-list"]'),
       minigamesListElement: this.root.querySelector('[data-component="minigames-list"]'),
       mapCopyButtonElement: this.root.querySelector('[data-action="copy-map-layout"]'),
+      mapPointsToggleButtonElement: this.root.querySelector('[data-action="toggle-link-points"]'),
       mapZoomElement: this.root.querySelector('[data-role="map-zoom-header"]'),
       navElement: this.root.querySelector('.hud-nav'),
     };
@@ -463,6 +484,11 @@ export class WeaponDisplayApp {
       }
 
       if (this.activeCritter?.id === critterId) {
+        const editorState = this.critterUnlockMap?.getCritterEditorState?.(critterId) || null;
+        this.hudController.showCritterInfo(critter, {
+          categoryLabel: this.getCritterCategoryLabel(critter.category),
+          editorState,
+        });
         return;
       }
 
@@ -475,8 +501,10 @@ export class WeaponDisplayApp {
       this.minigamesList?.setActive(null);
       this.activeCritter = critter;
       this.critterUnlockMap?.setActiveCritter(critterId);
+      const editorState = this.critterUnlockMap?.getCritterEditorState?.(critterId) || null;
       this.hudController.showCritterInfo(critter, {
         categoryLabel: this.getCritterCategoryLabel(critter.category),
+        editorState,
       });
       this.activeAnimationId = this.resolveAnimationId(critter);
       const activeAnimation = this.findAnimation(critter, this.activeAnimationId);
@@ -490,6 +518,7 @@ export class WeaponDisplayApp {
         }
       });
     });
+
   }
 
   indexWeapons() {
