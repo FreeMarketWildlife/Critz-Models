@@ -492,6 +492,13 @@ body::after {
   outline: none;
 }
 
+.panel-copy-button:disabled {
+  opacity: 0.62;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
 .weapon-cards {
   display: flex;
   flex-direction: column;
@@ -654,6 +661,15 @@ dl dt {
 
 .unlock-map__viewport.is-dragging {
   cursor: grabbing;
+}
+
+.unlock-map__viewport.is-pan-disabled,
+.unlock-map__viewport.is-pan-disabled.is-dragging {
+  cursor: default;
+}
+
+.unlock-map__viewport.is-add-node-mode .unlock-link-hitbox {
+  cursor: copy;
 }
 
 .unlock-map__board {
@@ -997,6 +1013,59 @@ dl dt {
 
 .unlock-style-menu__actions button:hover,
 .unlock-style-menu__actions button:focus-visible {
+  border-color: rgba(159, 217, 127, 0.82);
+  transform: translateY(-1px);
+  outline: none;
+}
+
+.unlock-action-menu {
+  position: absolute;
+  width: min(220px, calc(100% - 16px));
+  border-radius: 12px;
+  border: 1px solid rgba(210, 243, 220, 0.4);
+  background: linear-gradient(165deg, rgba(10, 27, 19, 0.98), rgba(7, 19, 14, 0.96));
+  box-shadow: 0 16px 26px rgba(2, 10, 7, 0.62);
+  padding: 0.56rem;
+  z-index: 34;
+  display: grid;
+  gap: 0.48rem;
+}
+
+.unlock-action-menu[hidden] {
+  display: none;
+}
+
+.unlock-action-menu__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(247, 255, 244, 0.76);
+}
+
+.unlock-action-menu__actions {
+  display: grid;
+  gap: 0.36rem;
+}
+
+.unlock-action-menu__actions button {
+  border: 1px solid rgba(210, 243, 220, 0.34);
+  border-radius: 10px;
+  padding: 0.38rem 0.5rem;
+  background: rgba(7, 22, 15, 0.78);
+  color: var(--color-text-primary);
+  font-family: var(--font-display);
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.unlock-action-menu__actions button:hover,
+.unlock-action-menu__actions button:focus-visible {
   border-color: rgba(159, 217, 127, 0.82);
   transform: translateY(-1px);
   outline: none;

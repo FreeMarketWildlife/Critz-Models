@@ -204,6 +204,7 @@ export const critters = [
       text: 'Reach Level 5 with Frog.',
     },
     modelPath: '',
+    imagePath: 'assets/images/Critters/Amphibians/Image_Salamander.png',
     stats: {
       health: 100,
       speed: 90,
@@ -223,6 +224,7 @@ export const critters = [
       text: 'Reach Level 15 with Salamander.',
     },
     modelPath: '',
+    imagePath: 'assets/images/Critters/Amphibians/Image_Newt.png',
     stats: {
       bonus: 'Awaiting Data Entry',
     },
@@ -239,6 +241,7 @@ export const critters = [
       text: 'Reach Level 15 with Frog.',
     },
     modelPath: '',
+    imagePath: 'assets/images/Critters/Amphibians/Image_Bullfrog.png',
     stats: {
       bonus: 'Awaiting Data Entry',
     },
@@ -255,6 +258,7 @@ export const critters = [
       text: 'Reach Level 5 with Bullfrog.',
     },
     modelPath: '',
+    imagePath: 'assets/images/Critters/Amphibians/Image_Toad.png',
     stats: {
       bonus: 'Awaiting Data Entry',
     },
@@ -271,6 +275,7 @@ export const critters = [
       text: 'Reach Level 20 with Frog.',
     },
     modelPath: '',
+    imagePath: 'assets/images/Critters/Amphibians/Image_Glass Frog.png',
     stats: {
       bonus: 'Awaiting Data Entry',
     },
@@ -287,6 +292,7 @@ export const critters = [
       text: 'Reach Level 20 with Salamander.',
     },
     modelPath: '',
+    imagePath: 'assets/images/Critters/Amphibians/Image_Slender Salamander.png',
     stats: {
       bonus: 'Awaiting Data Entry',
     },
@@ -303,6 +309,7 @@ export const critters = [
       text: 'Reach Level 20 with Newt.',
     },
     modelPath: '',
+    imagePath: 'assets/images/Critters/Amphibians/Image_Rough Skinned Newt.png',
     stats: {
       bonus: 'Awaiting Data Entry',
     },
@@ -319,6 +326,7 @@ export const critters = [
       text: 'Reach Level 20 with Bullfrog.',
     },
     modelPath: '',
+    imagePath: 'assets/images/Critters/Amphibians/Image_African Bullfrog.png',
     stats: {
       bonus: 'Awaiting Data Entry',
     },
@@ -335,6 +343,7 @@ export const critters = [
       text: 'Reach Level 20 with Toad.',
     },
     modelPath: '',
+    imagePath: 'assets/images/Critters/Amphibians/Image_Fire-Bellied Toad.png',
     stats: {
       bonus: 'Awaiting Data Entry',
     },
@@ -405,6 +414,7 @@ export const critters = [
       text: 'Reach Level 30 with Bullfrog.',
     },
     modelPath: '',
+    imagePath: 'assets/images/Critters/Amphibians/Image_Black Rain Frog.png',
     stats: {
       bonus: 'Awaiting Data Entry',
     },
@@ -434,9 +444,9 @@ export const critters = [
       type: 'requirements',
       requirements: [
         { critterId: 'frog', level: 100 },
-        { critterId: 'glass-frog', level: 25 },
+        { critterId: 'surinam-toad', level: 25 },
       ],
-      text: 'Reach Level 100 with Frog and Level 25 with Glass Frog.',
+      text: 'Reach Level 100 with Frog and Level 25 with Surinam Toad.',
     },
     modelPath: '',
     stats: {

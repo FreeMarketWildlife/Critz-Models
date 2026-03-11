@@ -38,6 +38,8 @@ export class WeaponDisplayApp {
     this.minigameKatana = null;
     this.navElement = null;
     this.mapCopyButton = null;
+    this.mapAddNodesToggleButton = null;
+    this.mapPanToggleButton = null;
     this.mapPointsToggleButton = null;
     this.mapZoomBadge = null;
     this.boundNavKeydown = (event) => this.handleNavKeydown(event);
@@ -66,7 +68,37 @@ export class WeaponDisplayApp {
       }
 
       const visible = this.critterUnlockMap.toggleLinkPointsVisibility();
-      this.mapPointsToggleButton.textContent = visible ? 'Hide Dots' : 'Show Dots';
+      this.mapPointsToggleButton.textContent = visible ? 'Hide Nodes' : 'Show Nodes';
+    };
+    this.boundMapAddNodesToggleClick = () => {
+      if (!this.critterUnlockMap || !this.mapAddNodesToggleButton) {
+        return;
+      }
+
+      const addNodesEnabled = this.critterUnlockMap.toggleAddNodesModeEnabled();
+      this.mapAddNodesToggleButton.textContent = addNodesEnabled ? 'Add Nodes: On' : 'Add Nodes: Off';
+      if (this.mapPanToggleButton) {
+        if (addNodesEnabled) {
+          this.mapPanToggleButton.disabled = true;
+          this.mapPanToggleButton.textContent = 'Panning Locked';
+        } else {
+          this.mapPanToggleButton.disabled = false;
+          const panningEnabled = this.critterUnlockMap.isPanningEnabled();
+          this.mapPanToggleButton.textContent = panningEnabled ? 'Disable Panning' : 'Enable Panning';
+        }
+      }
+      if (this.mapPointsToggleButton) {
+        const visible = this.critterUnlockMap.areLinkPointsVisible();
+        this.mapPointsToggleButton.textContent = visible ? 'Hide Nodes' : 'Show Nodes';
+      }
+    };
+    this.boundMapPanToggleClick = () => {
+      if (!this.critterUnlockMap || !this.mapPanToggleButton) {
+        return;
+      }
+
+      const panningEnabled = this.critterUnlockMap.togglePanningEnabled();
+      this.mapPanToggleButton.textContent = panningEnabled ? 'Disable Panning' : 'Enable Panning';
     };
     this.activeAnimationId = null;
     this.stageElement = null;
@@ -90,6 +122,8 @@ export class WeaponDisplayApp {
     this.stageElement = layout.stageElement;
     this.navElement = layout.navElement;
     this.mapCopyButton = layout.mapCopyButtonElement;
+    this.mapAddNodesToggleButton = layout.mapAddNodesToggleButtonElement;
+    this.mapPanToggleButton = layout.mapPanToggleButtonElement;
     this.mapPointsToggleButton = layout.mapPointsToggleButtonElement;
     this.mapZoomBadge = layout.mapZoomElement;
     this.indexWeapons();
@@ -146,6 +180,12 @@ export class WeaponDisplayApp {
     }
     if (this.mapPointsToggleButton) {
       this.mapPointsToggleButton.addEventListener('click', this.boundMapPointsToggleClick);
+    }
+    if (this.mapAddNodesToggleButton) {
+      this.mapAddNodesToggleButton.addEventListener('click', this.boundMapAddNodesToggleClick);
+    }
+    if (this.mapPanToggleButton) {
+      this.mapPanToggleButton.addEventListener('click', this.boundMapPanToggleClick);
     }
 
     this.mapsList = new NavButtonList({
@@ -297,7 +337,22 @@ export class WeaponDisplayApp {
     this.critterUnlockMap.render(this.activeCritterCategory);
     if (this.mapPointsToggleButton) {
       const visible = this.critterUnlockMap.areLinkPointsVisible();
-      this.mapPointsToggleButton.textContent = visible ? 'Hide Dots' : 'Show Dots';
+      this.mapPointsToggleButton.textContent = visible ? 'Hide Nodes' : 'Show Nodes';
+    }
+    if (this.mapAddNodesToggleButton) {
+      const addNodesEnabled = this.critterUnlockMap.isAddNodesModeEnabled();
+      this.mapAddNodesToggleButton.textContent = addNodesEnabled ? 'Add Nodes: On' : 'Add Nodes: Off';
+    }
+    if (this.mapPanToggleButton) {
+      const addNodesEnabled = this.critterUnlockMap.isAddNodesModeEnabled();
+      if (addNodesEnabled) {
+        this.mapPanToggleButton.disabled = true;
+        this.mapPanToggleButton.textContent = 'Panning Locked';
+      } else {
+        this.mapPanToggleButton.disabled = false;
+        const panningEnabled = this.critterUnlockMap.isPanningEnabled();
+        this.mapPanToggleButton.textContent = panningEnabled ? 'Disable Panning' : 'Enable Panning';
+      }
     }
     this.hudController.showCritterCategoryGuide({
       categoryLabel: this.getCritterCategoryLabel(this.activeCritterCategory),
@@ -352,8 +407,14 @@ export class WeaponDisplayApp {
             <span>Critter Unlock Map</span>
             <div class="panel-header__actions">
               <span class="unlock-map__zoom unlock-map__zoom--header" data-role="map-zoom-header">100%</span>
+              <button type="button" class="panel-copy-button" data-action="toggle-add-nodes">
+                Add Nodes: Off
+              </button>
+              <button type="button" class="panel-copy-button" data-action="toggle-map-panning">
+                Disable Panning
+              </button>
               <button type="button" class="panel-copy-button" data-action="toggle-link-points">
-                Hide Dots
+                Hide Nodes
               </button>
               <button type="button" class="panel-copy-button" data-action="copy-map-layout">
                 Copy Layout
@@ -403,6 +464,8 @@ export class WeaponDisplayApp {
       cosmeticsListElement: this.root.querySelector('[data-component="cosmetics-list"]'),
       minigamesListElement: this.root.querySelector('[data-component="minigames-list"]'),
       mapCopyButtonElement: this.root.querySelector('[data-action="copy-map-layout"]'),
+      mapAddNodesToggleButtonElement: this.root.querySelector('[data-action="toggle-add-nodes"]'),
+      mapPanToggleButtonElement: this.root.querySelector('[data-action="toggle-map-panning"]'),
       mapPointsToggleButtonElement: this.root.querySelector('[data-action="toggle-link-points"]'),
       mapZoomElement: this.root.querySelector('[data-role="map-zoom-header"]'),
       navElement: this.root.querySelector('.hud-nav'),

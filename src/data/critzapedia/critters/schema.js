@@ -7,6 +7,7 @@ export const createEmptyCritter = () => ({
   habitat: '',
   rarity: 'common',
   modelPath: '',
+  imagePath: '',
   preview: {
     rotation: { x: 0, y: 0, z: 0 },
     scale: 1,
