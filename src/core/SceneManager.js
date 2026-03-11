@@ -11,6 +11,8 @@ const CAMERA_DEFAULT_TARGET = new THREE.Vector3(0, 0.65, 0);
 const CAMERA_TRANSITION_SPEED = 2.25;
 const FOCUS_OFFSET_DIRECTION = new THREE.Vector3(0.45, 0.3, 1).normalize();
 const FOCUS_PADDING = 1.25;
+const IMAGE_PLACEHOLDER_HEIGHT = 2.1;
+const IMAGE_PLACEHOLDER_EXTENSIONS = ['png', 'webp', 'jpg', 'jpeg'];
 
 const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
 
@@ -410,6 +412,10 @@ export class SceneManager {
       model = await this.resourceLoader.loadModel(critter.modelPath);
     }
 
+    if (!model || model.userData?.isPlaceholder) {
+      model = await this.createCritterImagePlaceholder(critter);
+    }
+
     if (this.pendingCritterId !== requestId) {
       return;
     }
@@ -440,10 +446,14 @@ export class SceneManager {
     this.currentCritterId = critter.id;
     this.stageGroup.add(model);
 
-    this.setupRigController(model);
-
-    this.mixer = new THREE.AnimationMixer(model);
-    this.activeAction = null;
+    const usesImagePlaceholder = Boolean(model.userData?.isImagePlaceholder);
+    this.setupRigController(usesImagePlaceholder ? null : model);
+    if (usesImagePlaceholder) {
+      this.stopAnimation();
+    } else {
+      this.mixer = new THREE.AnimationMixer(model);
+      this.activeAction = null;
+    }
     this.resetView(true);
     this.emitStageEvent('stage:model-ready', {
       type: 'critter',
@@ -454,7 +464,7 @@ export class SceneManager {
   }
 
   async playAnimation(animation) {
-    if (!this.currentModel || !animation?.path) {
+    if (!this.currentModel || this.currentModel.userData?.isImagePlaceholder || !animation?.path) {
       return;
     }
 
@@ -509,6 +519,87 @@ export class SceneManager {
     }
     this.mixer?.stopAllAction?.();
     this.pendingAnimationId = null;
+  }
+
+  async createCritterImagePlaceholder(critter) {
+    const imageCandidates = this.getCritterImageCandidates(critter);
+    const imageHeight = Number.isFinite(critter?.imageHeight) ? critter.imageHeight : IMAGE_PLACEHOLDER_HEIGHT;
+
+    for (const imagePath of imageCandidates) {
+      const texture = await this.resourceLoader.loadTexture(imagePath, { silent: true });
+      if (!texture) {
+        continue;
+      }
+
+      texture.colorSpace = THREE.SRGBColorSpace;
+
+      const width = Number(texture.image?.naturalWidth ?? texture.image?.width ?? 1);
+      const height = Number(texture.image?.naturalHeight ?? texture.image?.height ?? 1);
+      const safeHeight = height > 0 ? height : 1;
+      const aspect = Math.max(width / safeHeight, 0.5);
+
+      const group = new THREE.Group();
+      group.name = 'critter-image-placeholder';
+      group.userData.isImagePlaceholder = true;
+      group.userData.imagePath = imagePath;
+
+      const spriteMaterial = new THREE.SpriteMaterial({
+        map: texture,
+        transparent: true,
+        depthWrite: false,
+        alphaTest: 0.03,
+      });
+
+      const sprite = new THREE.Sprite(spriteMaterial);
+      sprite.scale.set(imageHeight * aspect, imageHeight, 1);
+      group.add(sprite);
+      return group;
+    }
+
+    return null;
+  }
+
+  getCritterImageCandidates(critter) {
+    const candidates = [];
+    if (typeof critter?.imagePath === 'string' && critter.imagePath.trim()) {
+      candidates.push(critter.imagePath.trim());
+    }
+
+    const critterName = String(critter?.name || '').trim().replace(/\s+/g, ' ');
+    const categoryFolder = this.toTitleCase(String(critter?.category || ''));
+    if (!critterName || !categoryFolder) {
+      return candidates;
+    }
+
+    const normalizedName = critterName
+      .split(' ')
+      .filter(Boolean)
+      .map((word) =>
+        word
+          .split('-')
+          .map((part) => this.toTitleCase(part))
+          .join('-')
+      )
+      .join(' ');
+
+    const nameCandidates = Array.from(new Set([critterName, normalizedName].filter(Boolean)));
+    nameCandidates.forEach((nameVariant) => {
+      IMAGE_PLACEHOLDER_EXTENSIONS.forEach((ext) => {
+        candidates.push(`assets/images/Critters/${categoryFolder}/Image_${nameVariant}.${ext}`);
+      });
+    });
+
+    return Array.from(new Set(candidates));
+  }
+
+  toTitleCase(value) {
+    return String(value || '')
+      .trim()
+      .replace(/[-_]/g, ' ')
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((token) => token.charAt(0).toUpperCase() + token.slice(1).toLowerCase())
+      .join(' ');
   }
 
   disposeCurrentModel() {

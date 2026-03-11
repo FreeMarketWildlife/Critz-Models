@@ -331,7 +331,7 @@ export class WeaponDetailPanel {
               </label>
               <label class="critter-editor__toggle">
                 <input data-role="editor-input-enabled" type="checkbox" ${inputEnabled ? 'checked' : ''} />
-                <span>Custom Incoming Line Color</span>
+                <span>Custom Incoming Link Color</span>
               </label>
               <label class="critter-editor__field">
                 <span>Incoming Hue</span>

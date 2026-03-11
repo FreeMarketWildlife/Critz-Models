@@ -78,8 +78,9 @@ export class ResourceLoader {
     return null;
   }
 
-  async loadTexture(path) {
+  async loadTexture(path, options = {}) {
     if (!path) return null;
+    const { silent = false } = options;
     if (this.cache.has(path)) {
       const cached = this.cache.get(path);
       if (cached?.type === 'texture') {
@@ -94,7 +95,9 @@ export class ResourceLoader {
       this.cache.set(path, { type: 'texture', texture });
       return texture;
     } catch (error) {
-      console.warn(`Failed to load texture at ${path}.`, error);
+      if (!silent) {
+        console.warn(`Failed to load texture at ${path}.`, error);
+      }
       return null;
     }
   }

@@ -125,12 +125,17 @@ export class CritterUnlockMap {
     this.wordFitSizeCache = new Map();
     this.styleMenu = null;
     this.dismissStyleMenu = null;
+    this.actionMenu = null;
+    this.dismissActionMenu = null;
     this.removeEditorListeners = [];
     this.editorBusBound = false;
 
     this.pan = { ...DEFAULT_PAN };
     this.scale = 1;
     this.panDragState = null;
+    this.panningEnabled = true;
+    this.addNodesModeEnabled = false;
+    this.panningBeforeAddNodes = null;
     this.linkPointsVisible = true;
     this.linkPointIdSequence = 1;
 
@@ -486,6 +491,75 @@ export class CritterUnlockMap {
     return this.linkPointsVisible;
   }
 
+  setPanningEnabled(nextEnabled) {
+    const requestedEnabled = Boolean(nextEnabled);
+    this.panningEnabled = this.addNodesModeEnabled ? false : requestedEnabled;
+
+    if (!this.panningEnabled) {
+      if (
+        this.viewport &&
+        this.panDragState &&
+        Number.isFinite(this.panDragState.pointerId) &&
+        this.viewport.hasPointerCapture(this.panDragState.pointerId)
+      ) {
+        this.viewport.releasePointerCapture(this.panDragState.pointerId);
+      }
+      this.panDragState = null;
+      if (this.viewport) {
+        this.viewport.classList.remove('is-dragging');
+      }
+    }
+
+    if (this.viewport) {
+      this.viewport.classList.toggle('is-pan-disabled', !this.panningEnabled);
+    }
+
+    return this.panningEnabled;
+  }
+
+  togglePanningEnabled() {
+    return this.setPanningEnabled(!this.panningEnabled);
+  }
+
+  isPanningEnabled() {
+    return this.panningEnabled;
+  }
+
+  setAddNodesModeEnabled(nextEnabled) {
+    const nextModeEnabled = Boolean(nextEnabled);
+    const wasEnabled = this.addNodesModeEnabled;
+    this.addNodesModeEnabled = nextModeEnabled;
+
+    if (this.viewport) {
+      this.viewport.classList.toggle('is-add-node-mode', this.addNodesModeEnabled);
+    }
+    if (this.linksLayer) {
+      this.linksLayer.classList.toggle('is-add-node-mode', this.addNodesModeEnabled);
+    }
+
+    if (this.addNodesModeEnabled && !wasEnabled) {
+      this.panningBeforeAddNodes = this.panningEnabled;
+      this.setPanningEnabled(false);
+      this.setLinkPointsVisible(true);
+    } else if (!this.addNodesModeEnabled && wasEnabled) {
+      const restorePanning = this.panningBeforeAddNodes;
+      this.panningBeforeAddNodes = null;
+      if (typeof restorePanning === 'boolean') {
+        this.setPanningEnabled(restorePanning);
+      }
+    }
+
+    return this.addNodesModeEnabled;
+  }
+
+  toggleAddNodesModeEnabled() {
+    return this.setAddNodesModeEnabled(!this.addNodesModeEnabled);
+  }
+
+  isAddNodesModeEnabled() {
+    return this.addNodesModeEnabled;
+  }
+
   getNodeStyle(categoryId, critterId) {
     return this.nodeStylesByCategory.get(categoryId)?.get(critterId) || null;
   }
@@ -670,6 +744,17 @@ export class CritterUnlockMap {
     }
   }
 
+  hideActionMenu() {
+    if (this.dismissActionMenu) {
+      this.dismissActionMenu();
+      this.dismissActionMenu = null;
+    }
+    if (this.actionMenu) {
+      this.actionMenu.hidden = true;
+      this.actionMenu.innerHTML = '';
+    }
+  }
+
   positionStyleMenu(clientX, clientY) {
     if (!this.styleMenu || !this.viewport) {
       return;
@@ -682,6 +767,20 @@ export class CritterUnlockMap {
     const menuHeight = this.styleMenu.offsetHeight || 320;
     this.styleMenu.style.left = `${Math.max(8, Math.min(offsetX + 8, viewportRect.width - menuWidth - 8))}px`;
     this.styleMenu.style.top = `${Math.max(8, Math.min(offsetY + 8, viewportRect.height - menuHeight - 8))}px`;
+  }
+
+  positionActionMenu(clientX, clientY) {
+    if (!this.actionMenu || !this.viewport) {
+      return;
+    }
+
+    const viewportRect = this.viewport.getBoundingClientRect();
+    const offsetX = clientX - viewportRect.left;
+    const offsetY = clientY - viewportRect.top;
+    const menuWidth = this.actionMenu.offsetWidth || 208;
+    const menuHeight = this.actionMenu.offsetHeight || 120;
+    this.actionMenu.style.left = `${Math.max(8, Math.min(offsetX + 8, viewportRect.width - menuWidth - 8))}px`;
+    this.actionMenu.style.top = `${Math.max(8, Math.min(offsetY + 8, viewportRect.height - menuHeight - 8))}px`;
   }
 
   bindStyleMenuDismiss() {
@@ -711,11 +810,85 @@ export class CritterUnlockMap {
     };
   }
 
+  bindActionMenuDismiss() {
+    const onPointerDown = (event) => {
+      if (!this.actionMenu || this.actionMenu.hidden) {
+        return;
+      }
+
+      if (event.target === this.actionMenu || this.actionMenu.contains(event.target)) {
+        return;
+      }
+
+      this.hideActionMenu();
+    };
+
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        this.hideActionMenu();
+      }
+    };
+
+    document.addEventListener('pointerdown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    this.dismissActionMenu = () => {
+      document.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }
+
+  showActionMenu({ clientX, clientY, title = '', actions = [] }) {
+    if (!this.actionMenu || !Array.isArray(actions)) {
+      return;
+    }
+
+    const resolvedActions = actions.filter(
+      (entry) => entry && typeof entry.label === 'string' && typeof entry.onSelect === 'function'
+    );
+    if (!resolvedActions.length) {
+      this.hideActionMenu();
+      return;
+    }
+
+    this.hideStyleMenu();
+    this.hideActionMenu();
+    this.bindActionMenuDismiss();
+    this.actionMenu.hidden = false;
+    this.actionMenu.innerHTML = `
+      ${
+        title
+          ? `<p class="unlock-action-menu__title">${title}</p>`
+          : ''
+      }
+      <div class="unlock-action-menu__actions">
+        ${resolvedActions
+          .map(
+            (entry, index) =>
+              `<button type="button" data-action-index="${index}">${entry.label}</button>`
+          )
+          .join('')}
+      </div>
+    `;
+    this.positionActionMenu(clientX, clientY);
+
+    this.actionMenu.querySelectorAll('[data-action-index]').forEach((button) => {
+      button.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const index = Number(button.dataset.actionIndex);
+        const selected = Number.isFinite(index) ? resolvedActions[index] : null;
+        this.hideActionMenu();
+        selected?.onSelect?.();
+      });
+    });
+  }
+
   showNodeStyleMenu({ critter, clientX, clientY }) {
     if (!this.styleMenu || !this.activeCategoryId || !critter) {
       return;
     }
 
+    this.hideActionMenu();
     this.hideStyleMenu();
     this.bindStyleMenuDismiss();
     const current = this.getResolvedNodeStyle(this.activeCategoryId, critter.id);
@@ -763,7 +936,7 @@ export class CritterUnlockMap {
       </label>
       <label class="unlock-style-menu__toggle">
         <input data-role="input-enabled" type="checkbox" ${inputEnabled ? 'checked' : ''} />
-        <span>Custom Incoming Line Color</span>
+        <span>Custom Incoming Link Color</span>
       </label>
       <label class="unlock-style-menu__field">
         <span>Incoming Hue</span>
@@ -840,6 +1013,7 @@ export class CritterUnlockMap {
       return;
     }
 
+    this.hideActionMenu();
     this.hideStyleMenu();
     this.bindStyleMenuDismiss();
 
@@ -849,25 +1023,25 @@ export class CritterUnlockMap {
 
     this.styleMenu.hidden = false;
     this.styleMenu.innerHTML = `
-      <p class="unlock-style-menu__title">Line ${prettify(linkRecord.sourceId)} to ${prettify(linkRecord.targetId)}</p>
+      <p class="unlock-style-menu__title">Link ${prettify(linkRecord.sourceId)} to ${prettify(linkRecord.targetId)}</p>
       <label class="unlock-style-menu__field">
-        <span>Line Hue</span>
+        <span>Link Hue</span>
         <input data-role="line-hue" type="range" min="0" max="360" step="1" value="${Math.round(current.hue)}" />
       </label>
       <label class="unlock-style-menu__field">
-        <span>Line Saturation</span>
+        <span>Link Saturation</span>
         <input data-role="line-saturation" type="range" min="10" max="100" step="1" value="${Math.round(current.saturation)}" />
       </label>
       <label class="unlock-style-menu__field">
-        <span>Line Lightness</span>
+        <span>Link Lightness</span>
         <input data-role="line-lightness" type="range" min="14" max="84" step="1" value="${Math.round(current.lightness)}" />
       </label>
       <label class="unlock-style-menu__field">
-        <span>Line Width</span>
+        <span>Link Width</span>
         <input data-role="line-width" type="range" min="1" max="10" step="1" value="${Math.round(current.width)}" />
       </label>
       <div class="unlock-style-menu__actions">
-        <button type="button" data-action="reset-line-style">Reset Line Style</button>
+        <button type="button" data-action="reset-line-style">Reset Link Style</button>
       </div>
     `;
 
@@ -1041,6 +1215,7 @@ export class CritterUnlockMap {
           <div class="unlock-map__nodes" data-role="map-nodes"></div>
         </div>
         <div class="unlock-style-menu" data-role="style-menu" hidden></div>
+        <div class="unlock-action-menu" data-role="action-menu" hidden></div>
       </div>
     `;
 
@@ -1052,12 +1227,15 @@ export class CritterUnlockMap {
     this.lanesLayer = this.root.querySelector('[data-role="map-lanes"]');
     this.nodesLayer = this.root.querySelector('[data-role="map-nodes"]');
     this.styleMenu = this.root.querySelector('[data-role="style-menu"]');
+    this.actionMenu = this.root.querySelector('[data-role="action-menu"]');
     if (!this.zoomLabel) {
       this.zoomLabel = this.root.querySelector('[data-role="map-zoom"]');
     }
 
     this.board.style.width = `${MAP_WIDTH}px`;
     this.board.style.height = `${MAP_HEIGHT}px`;
+    this.setPanningEnabled(this.panningEnabled);
+    this.setAddNodesModeEnabled(this.addNodesModeEnabled);
 
     this.bindPanning();
     this.bindWheelNavigation();
@@ -1083,11 +1261,18 @@ export class CritterUnlockMap {
         return;
       }
 
+      if (!this.panningEnabled) {
+        return;
+      }
+
       if (
         event.target.closest('.unlock-node') ||
         event.target.closest('.unlock-style-menu') ||
+        event.target.closest('.unlock-action-menu') ||
         event.target.closest('.unlock-link-point') ||
-        event.target.closest('.unlock-link')
+        event.target.closest('.unlock-link') ||
+        event.target.closest('.unlock-link-hitbox') ||
+        event.target.closest('[data-link-key]')
       ) {
         return;
       }
@@ -1151,52 +1336,69 @@ export class CritterUnlockMap {
       return;
     }
 
-    const handleAddPoint = (event) => {
-      const isSecondary =
-        event.type === 'contextmenu' ||
-        event.button === 2 ||
-        (event.button === 0 && event.ctrlKey);
-      if (!isSecondary) {
-        return;
-      }
-
-      event.preventDefault();
-      event.stopPropagation();
-
+    const resolveContext = (event, maxDistance = 92) => {
       const boardPoint = this.getBoardCoordinatesFromClient(event.clientX, event.clientY);
       const explicitTarget = event.target?.closest?.('[data-link-key]');
       const explicitKey =
         explicitTarget && typeof explicitTarget.dataset?.linkKey === 'string'
           ? explicitTarget.dataset.linkKey
           : null;
-      const nearestRecord = explicitKey
+      const linkRecord = explicitKey
         ? this.linkRecords.find((record) => record.key === explicitKey) || null
-        : this.findNearestLinkRecord(boardPoint.x, boardPoint.y, 72);
-
-      if (!nearestRecord) {
-        return;
-      }
-
-      this.addLinkPoint(nearestRecord.key, boardPoint.x, boardPoint.y);
+        : this.findNearestLinkRecord(boardPoint.x, boardPoint.y, maxDistance);
+      return { boardPoint, linkRecord };
     };
 
-    this.linksLayer.addEventListener('contextmenu', handleAddPoint);
-    this.linksLayer.addEventListener('dblclick', (event) => {
+    this.linksLayer.addEventListener('contextmenu', (event) => {
       event.preventDefault();
       event.stopPropagation();
-      const boardPoint = this.getBoardCoordinatesFromClient(event.clientX, event.clientY);
-      const explicitTarget = event.target?.closest?.('[data-link-key]');
-      const explicitKey =
-        explicitTarget && typeof explicitTarget.dataset?.linkKey === 'string'
-          ? explicitTarget.dataset.linkKey
-          : null;
-      const nearestRecord = explicitKey
-        ? this.linkRecords.find((record) => record.key === explicitKey) || null
-        : this.findNearestLinkRecord(boardPoint.x, boardPoint.y, 72);
-      if (!nearestRecord) {
+      const { boardPoint, linkRecord } = resolveContext(event);
+      if (!linkRecord) {
+        this.hideActionMenu();
         return;
       }
-      this.addLinkPoint(nearestRecord.key, boardPoint.x, boardPoint.y);
+
+      this.showActionMenu({
+        clientX: event.clientX,
+        clientY: event.clientY,
+        actions: [
+          {
+            label: 'Create New Node',
+            onSelect: () => {
+              this.addLinkPoint(linkRecord.key, boardPoint.x, boardPoint.y);
+            },
+          },
+        ],
+      });
+    });
+
+    this.linksLayer.addEventListener('dblclick', (event) => {
+      if (this.addNodesModeEnabled) {
+        return;
+      }
+      event.preventDefault();
+      event.stopPropagation();
+      this.hideActionMenu();
+      const { boardPoint, linkRecord } = resolveContext(event);
+      if (!linkRecord) {
+        return;
+      }
+      this.addLinkPoint(linkRecord.key, boardPoint.x, boardPoint.y);
+    });
+
+    this.linksLayer.addEventListener('click', (event) => {
+      if (!this.addNodesModeEnabled) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+      this.hideActionMenu();
+      const { boardPoint, linkRecord } = resolveContext(event, 108);
+      if (!linkRecord) {
+        return;
+      }
+      this.addLinkPoint(linkRecord.key, boardPoint.x, boardPoint.y);
     });
   }
 
@@ -1208,7 +1410,7 @@ export class CritterUnlockMap {
     this.viewport.addEventListener(
       'dblclick',
       (event) => {
-        if (event.target.closest('.unlock-style-menu')) {
+        if (event.target.closest('.unlock-style-menu') || event.target.closest('.unlock-action-menu')) {
           return;
         }
         event.preventDefault();
@@ -1225,7 +1427,7 @@ export class CritterUnlockMap {
     this.viewport.addEventListener(
       'wheel',
       (event) => {
-        if (event.target.closest('.unlock-style-menu')) {
+        if (event.target.closest('.unlock-style-menu') || event.target.closest('.unlock-action-menu')) {
           return;
         }
 
@@ -1248,6 +1450,11 @@ export class CritterUnlockMap {
           this.pan.x = pointerX - worldX * nextScale;
           this.pan.y = pointerY - worldY * nextScale;
           this.applyTransform();
+          return;
+        }
+
+        if (!this.panningEnabled) {
+          event.preventDefault();
           return;
         }
 
@@ -1301,6 +1508,7 @@ export class CritterUnlockMap {
       return;
     }
 
+    this.hideActionMenu();
     this.hideStyleMenu();
     this.activeCategoryId = categoryId;
     this.activeCritterId = null;
@@ -1511,13 +1719,29 @@ export class CritterUnlockMap {
   bindLinkPointDrag(element, record, point) {
     let dragState = null;
 
-    const deletePoint = (event) => {
+    element.addEventListener('contextmenu', (event) => {
       event.preventDefault();
       event.stopPropagation();
-      this.removeLinkPoint(record.key, point.id);
-    };
+      this.showActionMenu({
+        clientX: event.clientX,
+        clientY: event.clientY,
+        actions: [
+          {
+            label: 'Delete Node',
+            onSelect: () => {
+              this.removeLinkPoint(record.key, point.id);
+            },
+          },
+        ],
+      });
+    });
 
-    element.addEventListener('contextmenu', deletePoint);
+    element.addEventListener('dblclick', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      this.hideActionMenu();
+      this.removeLinkPoint(record.key, point.id);
+    });
 
     element.addEventListener('pointerdown', (event) => {
       if (event.button !== 0) {
@@ -1584,7 +1808,7 @@ export class CritterUnlockMap {
         handle.className = 'unlock-link-point';
         handle.dataset.linkKey = record.key;
         handle.dataset.pointId = point.id;
-        handle.setAttribute('aria-label', 'Path control point');
+        handle.setAttribute('aria-label', 'Link node');
         this.positionLinkPointElement(handle, point);
         this.bindLinkPointDrag(handle, record, point);
         this.pointsLayer.appendChild(handle);
@@ -2131,6 +2355,7 @@ export class CritterUnlockMap {
     if (!this.nodesLayer || !this.lanesLayer || !this.linksLayer || !this.pointsLayer) {
       return;
     }
+    this.hideActionMenu();
     const { categoryCritters, positions, lanes } = this.buildCategoryLayout(this.activeCategoryId);
     this.nodeButtons.clear();
     this.currentPositions = new Map(positions);
