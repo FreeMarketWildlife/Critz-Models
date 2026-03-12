@@ -1,3 +1,13 @@
+const PASSIVE_DOUBLE_JUMP = 'Double Jump (Player gets an extra jump in the air for no stamina cost.)';
+const PASSIVE_HEALTH_REGEN = 'Health Regeneration (+1 health per second).';
+const PASSIVE_HEAVY = 'Heavy (Sprinting into enemy units bumps them out of the way.)';
+const PASSIVE_POISONOUS =
+  'Poisonous (Melee attacks poison enemies, and enemies that land melee hits on this critter are also poisoned.)';
+const PASSIVE_MINIONS =
+  'Minions (Out of combat, this critter births a baby every 10 seconds; the babies fight for you to the death.)';
+const PASSIVE_BURROW = 'Burrow (Can create and use underground tunnels.)';
+const PASSIVE_FORTUNE = 'Fortune (+20% XP, victory points, and crit value gained while using this critter.)';
+
 export const critters = [
   {
     id: 'frog',
@@ -16,7 +26,7 @@ export const critters = [
       health: 100,
       speed: 100,
       stamina: 100,
-      bonus: 'Double Jump (player gets an extra jump in the air for no stamina cost)',
+      bonus: PASSIVE_DOUBLE_JUMP,
     },
     animations: [
       { id: 'frog_idle', label: 'Idle', path: 'assets/models/critters/animations/TH_Frog_Idle.glb' },
@@ -209,7 +219,7 @@ export const critters = [
       health: 100,
       speed: 90,
       stamina: 100,
-      bonus: 'Health Regeneration (+1 hp per second)',
+      bonus: PASSIVE_HEALTH_REGEN,
     },
   },
   {
@@ -226,6 +236,9 @@ export const critters = [
     modelPath: '',
     imagePath: 'assets/images/Critters/Amphibians/Image_Newt.png',
     stats: {
+      health: 100,
+      speed: 100,
+      stamina: 100,
       bonus: 'Awaiting Data Entry',
     },
   },
@@ -243,7 +256,10 @@ export const critters = [
     modelPath: '',
     imagePath: 'assets/images/Critters/Amphibians/Image_Bullfrog.png',
     stats: {
-      bonus: 'Awaiting Data Entry',
+      health: 150,
+      speed: 80,
+      stamina: 120,
+      bonus: PASSIVE_HEAVY,
     },
   },
   {
@@ -260,7 +276,10 @@ export const critters = [
     modelPath: '',
     imagePath: 'assets/images/Critters/Amphibians/Image_Toad.png',
     stats: {
-      bonus: 'Awaiting Data Entry',
+      health: 120,
+      speed: 80,
+      stamina: 120,
+      bonus: PASSIVE_HEAVY,
     },
   },
   {
@@ -277,7 +296,10 @@ export const critters = [
     modelPath: '',
     imagePath: 'assets/images/Critters/Amphibians/Image_Glass Frog.png',
     stats: {
-      bonus: 'Awaiting Data Entry',
+      health: 50,
+      speed: 120,
+      stamina: 100,
+      bonus: PASSIVE_DOUBLE_JUMP,
     },
   },
   {
@@ -294,7 +316,10 @@ export const critters = [
     modelPath: '',
     imagePath: 'assets/images/Critters/Amphibians/Image_Slender Salamander.png',
     stats: {
-      bonus: 'Awaiting Data Entry',
+      health: 100,
+      speed: 100,
+      stamina: 100,
+      bonus: PASSIVE_HEALTH_REGEN,
     },
   },
   {
@@ -311,7 +336,10 @@ export const critters = [
     modelPath: '',
     imagePath: 'assets/images/Critters/Amphibians/Image_Rough Skinned Newt.png',
     stats: {
-      bonus: 'Awaiting Data Entry',
+      health: 90,
+      speed: 110,
+      stamina: 100,
+      bonus: PASSIVE_POISONOUS,
     },
   },
   {
@@ -328,7 +356,10 @@ export const critters = [
     modelPath: '',
     imagePath: 'assets/images/Critters/Amphibians/Image_African Bullfrog.png',
     stats: {
-      bonus: 'Awaiting Data Entry',
+      health: 160,
+      speed: 70,
+      stamina: 100,
+      bonus: PASSIVE_HEAVY,
     },
   },
   {
@@ -345,6 +376,9 @@ export const critters = [
     modelPath: '',
     imagePath: 'assets/images/Critters/Amphibians/Image_Fire-Bellied Toad.png',
     stats: {
+      health: 100,
+      speed: 90,
+      stamina: 100,
       bonus: 'Awaiting Data Entry',
     },
   },
@@ -363,7 +397,10 @@ export const critters = [
     },
     modelPath: '',
     stats: {
-      bonus: 'Awaiting Data Entry',
+      health: 70,
+      speed: 120,
+      stamina: 100,
+      bonus: PASSIVE_POISONOUS,
     },
   },
   {
@@ -381,7 +418,10 @@ export const critters = [
     },
     modelPath: '',
     stats: {
-      bonus: 'Awaiting Data Entry',
+      health: 90,
+      speed: 100,
+      stamina: 100,
+      bonus: PASSIVE_HEALTH_REGEN,
     },
   },
   {
@@ -399,7 +439,10 @@ export const critters = [
     },
     modelPath: '',
     stats: {
-      bonus: 'Awaiting Data Entry',
+      health: 100,
+      speed: 100,
+      stamina: 100,
+      bonus: PASSIVE_POISONOUS,
     },
   },
   {
@@ -416,7 +459,10 @@ export const critters = [
     modelPath: '',
     imagePath: 'assets/images/Critters/Amphibians/Image_Black Rain Frog.png',
     stats: {
-      bonus: 'Awaiting Data Entry',
+      health: 100,
+      speed: 60,
+      stamina: 100,
+      bonus: PASSIVE_BURROW,
     },
   },
   {
@@ -432,7 +478,10 @@ export const critters = [
     },
     modelPath: '',
     stats: {
-      bonus: 'Awaiting Data Entry',
+      health: 100,
+      speed: 80,
+      stamina: 120,
+      bonus: PASSIVE_MINIONS,
     },
   },
   {
@@ -450,7 +499,10 @@ export const critters = [
     },
     modelPath: '',
     stats: {
-      bonus: 'Awaiting Data Entry',
+      health: 130,
+      speed: 80,
+      stamina: 100,
+      bonus: PASSIVE_MINIONS,
     },
   },
   {
@@ -470,6 +522,9 @@ export const critters = [
     },
     modelPath: '',
     stats: {
+      health: 100,
+      speed: 130,
+      stamina: 100,
       bonus: 'Awaiting Data Entry',
     },
   },
@@ -486,7 +541,10 @@ export const critters = [
     },
     modelPath: '',
     stats: {
-      bonus: 'Awaiting Data Entry',
+      health: 200,
+      speed: 80,
+      stamina: 120,
+      bonus: PASSIVE_HEAVY,
     },
   },
   {
@@ -502,7 +560,10 @@ export const critters = [
     },
     modelPath: '',
     stats: {
-      bonus: 'Awaiting Data Entry',
+      health: 90,
+      speed: 90,
+      stamina: 120,
+      bonus: PASSIVE_FORTUNE,
     },
   },
   {
@@ -518,7 +579,10 @@ export const critters = [
     },
     modelPath: '',
     stats: {
-      bonus: 'Awaiting Data Entry',
+      health: 120,
+      speed: 80,
+      stamina: 100,
+      bonus: PASSIVE_FORTUNE,
     },
   },
   {
@@ -536,7 +600,10 @@ export const critters = [
     },
     modelPath: '',
     stats: {
-      bonus: 'Awaiting Data Entry',
+      health: 80,
+      speed: 120,
+      stamina: 100,
+      bonus: PASSIVE_FORTUNE,
     },
   },
   {
