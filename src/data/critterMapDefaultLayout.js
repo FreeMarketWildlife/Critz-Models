@@ -1,5 +1,5 @@
 export const critterMapDefaultLayout = {
-  "generatedAt": "2026-03-06T15:10:22.327Z",
+  "generatedAt": "2026-03-13T05:51:02.725Z",
   "board": {
     "width": 1700,
     "height": 3980,
@@ -67,8 +67,8 @@ export const critterMapDefaultLayout = {
           "name": "African Bullfrog",
           "rarity": "uncommon",
           "level": 20,
-          "x": 943,
-          "y": 1378,
+          "x": 1125,
+          "y": 1191,
           "style": {
             "textScale": 100,
             "hue": 28,
@@ -92,7 +92,7 @@ export const critterMapDefaultLayout = {
           "rarity": "rare",
           "level": 30,
           "x": 399,
-          "y": 1671,
+          "y": 1951,
           "style": {
             "textScale": 100,
             "hue": 299,
@@ -119,8 +119,8 @@ export const critterMapDefaultLayout = {
           "name": "Black Rain Frog",
           "rarity": "rare",
           "level": 30,
-          "x": 1125,
-          "y": 1764,
+          "x": 762,
+          "y": 1858,
           "style": {
             "textScale": 100,
             "hue": 239,
@@ -144,7 +144,7 @@ export const critterMapDefaultLayout = {
           "rarity": "common",
           "level": 15,
           "x": 943,
-          "y": 431,
+          "y": 524,
           "style": {
             "textScale": 173,
             "hue": 339,
@@ -167,7 +167,7 @@ export const critterMapDefaultLayout = {
           "name": "Devil Frog",
           "rarity": "extinct",
           "level": 100,
-          "x": 943,
+          "x": 1306,
           "y": 2618,
           "style": {
             "textScale": 100,
@@ -183,6 +183,10 @@ export const critterMapDefaultLayout = {
             {
               "critterId": "african-bullfrog",
               "level": 100
+            },
+            {
+              "critterId": "fire-bellied-toad",
+              "level": 25
             }
           ]
         },
@@ -190,9 +194,9 @@ export const critterMapDefaultLayout = {
           "id": "diplocaulus",
           "name": "Diplocaulus",
           "rarity": "extinct",
-          "level": 100,
-          "x": 399,
-          "y": 2618,
+          "level": 25,
+          "x": 218,
+          "y": 2524,
           "style": {
             "textScale": 100,
             "hue": 246,
@@ -205,20 +209,12 @@ export const critterMapDefaultLayout = {
           },
           "requirements": [
             {
-              "critterId": "salamander",
-              "level": 100
-            },
-            {
-              "critterId": "newt",
-              "level": 50
-            },
-            {
-              "critterId": "slender-salamander",
-              "level": 100
+              "critterId": "great-crested-newt",
+              "level": 25
             },
             {
               "critterId": "axolotl",
-              "level": 100
+              "level": 25
             }
           ]
         },
@@ -226,9 +222,9 @@ export const critterMapDefaultLayout = {
           "id": "fire-bellied-toad",
           "name": "Fire-bellied Toad",
           "rarity": "uncommon",
-          "level": 20,
+          "level": 10,
           "x": 1487,
-          "y": 911,
+          "y": 1378,
           "style": {
             "textScale": 100,
             "hue": 360,
@@ -242,7 +238,7 @@ export const critterMapDefaultLayout = {
           "requirements": [
             {
               "critterId": "toad",
-              "level": 20
+              "level": 10
             }
           ]
         },
@@ -274,9 +270,9 @@ export const critterMapDefaultLayout = {
           "id": "frog-prince",
           "name": "Frog Prince",
           "rarity": "mythical",
-          "level": 100,
-          "x": 581,
-          "y": 3471,
+          "level": 25,
+          "x": 1487,
+          "y": 3378,
           "style": {
             "textScale": 100,
             "hue": 285,
@@ -289,10 +285,6 @@ export const critterMapDefaultLayout = {
           },
           "requirements": [
             {
-              "critterId": "frog",
-              "level": 100
-            },
-            {
               "critterId": "fortunate-toad",
               "level": 25
             }
@@ -302,9 +294,9 @@ export const critterMapDefaultLayout = {
           "id": "gastric-brooder",
           "name": "Gastric Brooder",
           "rarity": "extinct",
-          "level": 100,
+          "level": 25,
           "x": 762,
-          "y": 2431,
+          "y": 2524,
           "style": {
             "textScale": 100,
             "hue": 84,
@@ -317,11 +309,11 @@ export const critterMapDefaultLayout = {
           },
           "requirements": [
             {
-              "critterId": "frog",
-              "level": 100
+              "critterId": "surinam-toad",
+              "level": 25
             },
             {
-              "critterId": "glass-frog",
+              "critterId": "poison-dart-frog",
               "level": 25
             }
           ]
@@ -330,7 +322,7 @@ export const critterMapDefaultLayout = {
           "id": "glass-frog",
           "name": "Glass Frog",
           "rarity": "uncommon",
-          "level": 20,
+          "level": 15,
           "x": 762,
           "y": 911,
           "style": {
@@ -346,7 +338,7 @@ export const critterMapDefaultLayout = {
           "requirements": [
             {
               "critterId": "frog",
-              "level": 20
+              "level": 15
             }
           ]
         },
@@ -355,8 +347,8 @@ export const critterMapDefaultLayout = {
           "name": "Golden Toad",
           "rarity": "extinct",
           "level": 100,
-          "x": 1306,
-          "y": 2431,
+          "x": 1487,
+          "y": 2991,
           "style": {
             "textScale": 100,
             "hue": 48,
@@ -430,9 +422,9 @@ export const critterMapDefaultLayout = {
           "id": "poison-dart-frog",
           "name": "Poison Dart Frog",
           "rarity": "rare",
-          "level": 30,
-          "x": 762,
-          "y": 2044,
+          "level": 15,
+          "x": 581,
+          "y": 1671,
           "style": {
             "textScale": 100,
             "hue": 284,
@@ -445,11 +437,11 @@ export const critterMapDefaultLayout = {
           },
           "requirements": [
             {
-              "critterId": "frog",
-              "level": 30
+              "critterId": "rough-skinned-newt",
+              "level": 15
             },
             {
-              "critterId": "rough-skinned-newt",
+              "critterId": "glass-frog",
               "level": 10
             }
           ]
@@ -460,7 +452,7 @@ export const critterMapDefaultLayout = {
           "rarity": "uncommon",
           "level": 20,
           "x": 37,
-          "y": 1004,
+          "y": 1098,
           "style": {
             "textScale": 100,
             "hue": 263,
@@ -484,7 +476,7 @@ export const critterMapDefaultLayout = {
           "rarity": "common",
           "level": 5,
           "x": 581,
-          "y": 338,
+          "y": 431,
           "style": {
             "textScale": 131,
             "hue": 226,
@@ -508,7 +500,7 @@ export const critterMapDefaultLayout = {
           "rarity": "uncommon",
           "level": 20,
           "x": 399,
-          "y": 911,
+          "y": 1004,
           "style": {
             "textScale": 100,
             "hue": 231,
@@ -530,9 +522,9 @@ export const critterMapDefaultLayout = {
           "id": "surinam-toad",
           "name": "Surinam Toad",
           "rarity": "rare",
-          "level": 30,
-          "x": 1487,
-          "y": 1671,
+          "level": 25,
+          "x": 1125,
+          "y": 2138,
           "style": {
             "textScale": 100,
             "hue": 360,
@@ -546,7 +538,7 @@ export const critterMapDefaultLayout = {
           "requirements": [
             {
               "critterId": "toad",
-              "level": 30
+              "level": 25
             }
           ]
         },

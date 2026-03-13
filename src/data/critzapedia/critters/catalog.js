@@ -195,12 +195,61 @@ export const critters = [
       text: 'Reach Level 5 with Lizard.',
     },
     modelPath: '',
+    imagePath: 'assets/images/Critters/Reptiles/Image_Turtle.png',
     stats: {
       health: 125,
       speed: 75,
       stamina: 125,
       bonus: 'Shell (Shell Blocks All Physical Damage)',
     },
+  },
+  {
+    id: 'anole',
+    name: 'Anole',
+    category: 'reptiles',
+    rarity: 'common',
+    unlock: {
+      type: 'pending',
+      text: 'Awaiting Data Entry',
+    },
+    modelPath: '',
+    imagePath: 'assets/images/Critters/Reptiles/Image_Anole.png',
+  },
+  {
+    id: 'basilisk',
+    name: 'Basilisk',
+    category: 'reptiles',
+    rarity: 'common',
+    unlock: {
+      type: 'pending',
+      text: 'Awaiting Data Entry',
+    },
+    modelPath: '',
+    imagePath: 'assets/images/Critters/Reptiles/Image_Basilisk.png',
+  },
+  {
+    id: 'snapper',
+    name: 'Snapper',
+    category: 'reptiles',
+    rarity: 'common',
+    unlock: {
+      type: 'pending',
+      text: 'Awaiting Data Entry',
+    },
+    modelPath: '',
+    imagePath: 'assets/images/Critters/Reptiles/Image_Snapper.png',
+  },
+  {
+    id: 'tortoise',
+    name: 'Tortoise',
+    category: 'reptiles',
+    rarity: 'common',
+    unlock: {
+      type: 'pending',
+      text: 'Awaiting Data Entry',
+    },
+    modelPath: '',
+    imagePath: 'assets/images/Critters/Reptiles/Image_Tortoise.png',
   },
   {
     id: 'salamander',
@@ -290,8 +339,7 @@ export const critters = [
     unlock: {
       type: 'level',
       critterId: 'frog',
-      level: 20,
-      text: 'Reach Level 20 with Frog.',
+      level: 15,
     },
     modelPath: '',
     imagePath: 'assets/images/Critters/Amphibians/Image_Glass Frog.png',
@@ -370,8 +418,7 @@ export const critters = [
     unlock: {
       type: 'level',
       critterId: 'toad',
-      level: 20,
-      text: 'Reach Level 20 with Toad.',
+      level: 10,
     },
     modelPath: '',
     imagePath: 'assets/images/Critters/Amphibians/Image_Fire-Bellied Toad.png',
@@ -390,10 +437,9 @@ export const critters = [
     unlock: {
       type: 'requirements',
       requirements: [
-        { critterId: 'frog', level: 30 },
-        { critterId: 'rough-skinned-newt', level: 10 },
+        { critterId: 'rough-skinned-newt', level: 15 },
+        { critterId: 'glass-frog', level: 10 },
       ],
-      text: 'Reach Level 30 with Frog and Level 10 with Rough Skinned Newt.',
     },
     modelPath: '',
     stats: {
@@ -473,8 +519,7 @@ export const critters = [
     unlock: {
       type: 'level',
       critterId: 'toad',
-      level: 30,
-      text: 'Reach Level 30 with Toad.',
+      level: 25,
     },
     modelPath: '',
     stats: {
@@ -492,10 +537,9 @@ export const critters = [
     unlock: {
       type: 'requirements',
       requirements: [
-        { critterId: 'frog', level: 100 },
         { critterId: 'surinam-toad', level: 25 },
+        { critterId: 'poison-dart-frog', level: 25 },
       ],
-      text: 'Reach Level 100 with Frog and Level 25 with Surinam Toad.',
     },
     modelPath: '',
     stats: {
@@ -513,12 +557,9 @@ export const critters = [
     unlock: {
       type: 'requirements',
       requirements: [
-        { critterId: 'salamander', level: 100 },
-        { critterId: 'newt', level: 50 },
-        { critterId: 'slender-salamander', level: 100 },
-        { critterId: 'axolotl', level: 100 },
+        { critterId: 'great-crested-newt', level: 25 },
+        { critterId: 'axolotl', level: 25 },
       ],
-      text: 'Reach Level 100 with Salamander, Level 50 with Newt, Level 100 with Slender Salamander, and Level 100 with Axolotl.',
     },
     modelPath: '',
     stats: {
@@ -534,10 +575,11 @@ export const critters = [
     category: 'amphibians',
     rarity: 'extinct',
     unlock: {
-      type: 'level',
-      critterId: 'african-bullfrog',
-      level: 100,
-      text: 'Reach Level 100 with African Bullfrog.',
+      type: 'requirements',
+      requirements: [
+        { critterId: 'african-bullfrog', level: 100 },
+        { critterId: 'fire-bellied-toad', level: 25 },
+      ],
     },
     modelPath: '',
     stats: {
@@ -593,10 +635,8 @@ export const critters = [
     unlock: {
       type: 'requirements',
       requirements: [
-        { critterId: 'frog', level: 100 },
         { critterId: 'fortunate-toad', level: 25 },
       ],
-      text: 'Reach Level 100 with Frog and Level 25 with Fortunate Toad.',
     },
     modelPath: '',
     stats: {
