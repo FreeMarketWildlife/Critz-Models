@@ -36,12 +36,17 @@ export class WeaponDisplayApp {
     this.minigameRunner = null;
     this.minigameQuest = null;
     this.minigameKatana = null;
+    this.shellElement = null;
     this.navElement = null;
     this.mapCopyButton = null;
     this.mapAddNodesToggleButton = null;
     this.mapPanToggleButton = null;
     this.mapPointsToggleButton = null;
     this.mapZoomBadge = null;
+    this.leftWindowToggleButton = null;
+    this.rightWindowToggleButton = null;
+    this.leftWindowCollapsed = false;
+    this.rightWindowCollapsed = false;
     this.boundNavKeydown = (event) => this.handleNavKeydown(event);
     this.boundMapCopyClick = async () => {
       if (!this.critterUnlockMap || !this.mapCopyButton) {
@@ -100,6 +105,12 @@ export class WeaponDisplayApp {
       const panningEnabled = this.critterUnlockMap.togglePanningEnabled();
       this.mapPanToggleButton.textContent = panningEnabled ? 'Disable Panning' : 'Enable Panning';
     };
+    this.boundLeftWindowToggleClick = () => {
+      this.toggleWindowCollapse('left');
+    };
+    this.boundRightWindowToggleClick = () => {
+      this.toggleWindowCollapse('right');
+    };
     this.activeAnimationId = null;
     this.stageElement = null;
 
@@ -119,6 +130,7 @@ export class WeaponDisplayApp {
 
   init() {
     const layout = this.buildLayout();
+    this.shellElement = layout.shellElement;
     this.stageElement = layout.stageElement;
     this.navElement = layout.navElement;
     this.mapCopyButton = layout.mapCopyButtonElement;
@@ -126,9 +138,12 @@ export class WeaponDisplayApp {
     this.mapPanToggleButton = layout.mapPanToggleButtonElement;
     this.mapPointsToggleButton = layout.mapPointsToggleButtonElement;
     this.mapZoomBadge = layout.mapZoomElement;
+    this.leftWindowToggleButton = layout.leftWindowToggleButtonElement;
+    this.rightWindowToggleButton = layout.rightWindowToggleButtonElement;
     this.indexWeapons();
     this.indexCritters();
     this.registerEventHandlers();
+    this.applyWindowCollapseState();
 
     this.sceneManager = new SceneManager(layout.stageViewportElement, { bus: this.eventBus });
     this.sceneManager.init();
@@ -186,6 +201,12 @@ export class WeaponDisplayApp {
     }
     if (this.mapPanToggleButton) {
       this.mapPanToggleButton.addEventListener('click', this.boundMapPanToggleClick);
+    }
+    if (this.leftWindowToggleButton) {
+      this.leftWindowToggleButton.addEventListener('click', this.boundLeftWindowToggleClick);
+    }
+    if (this.rightWindowToggleButton) {
+      this.rightWindowToggleButton.addEventListener('click', this.boundRightWindowToggleClick);
     }
 
     this.mapsList = new NavButtonList({
@@ -363,8 +384,8 @@ export class WeaponDisplayApp {
 
   buildLayout() {
     this.root.innerHTML = `
-      <div class="app-shell">
-        <nav class="hud-nav" aria-label="Interface options">
+      <div class="app-shell" data-component="app-shell">
+        <nav class="hud-nav" id="left-window" aria-label="Interface options">
           <details class="nav-section nav-section--critters" open>
             <summary class="nav-section__summary">Critters</summary>
             <div class="nav-section__content">
@@ -407,6 +428,24 @@ export class WeaponDisplayApp {
             <span>Critter Unlock Map</span>
             <div class="panel-header__actions">
               <span class="unlock-map__zoom unlock-map__zoom--header" data-role="map-zoom-header">100%</span>
+              <button
+                type="button"
+                class="panel-copy-button"
+                data-action="toggle-left-window"
+                aria-controls="left-window"
+                aria-expanded="true"
+              >
+                Hide Left
+              </button>
+              <button
+                type="button"
+                class="panel-copy-button"
+                data-action="toggle-right-window"
+                aria-controls="right-window"
+                aria-expanded="true"
+              >
+                Hide Right
+              </button>
               <button type="button" class="panel-copy-button" data-action="toggle-add-nodes">
                 Add Nodes: Off
               </button>
@@ -425,7 +464,7 @@ export class WeaponDisplayApp {
             <div class="detail-scroll detail-scroll--map" data-component="critter-unlock-map"></div>
           </div>
         </section>
-        <section class="inspector" data-component="inspector">
+        <section class="inspector" id="right-window" data-component="inspector">
           <section class="stage" data-component="stage">
             <div
               class="stage-viewport"
@@ -451,6 +490,7 @@ export class WeaponDisplayApp {
     `;
 
     return {
+      shellElement: this.root.querySelector('[data-component="app-shell"]'),
       stageElement: this.root.querySelector('[data-component="stage"]'),
       stageViewportElement: this.root.querySelector('[data-role="stage-viewport"]'),
       categoryMenuElement: this.root.querySelector('[data-component="weapon-category-menu"]'),
@@ -467,9 +507,63 @@ export class WeaponDisplayApp {
       mapAddNodesToggleButtonElement: this.root.querySelector('[data-action="toggle-add-nodes"]'),
       mapPanToggleButtonElement: this.root.querySelector('[data-action="toggle-map-panning"]'),
       mapPointsToggleButtonElement: this.root.querySelector('[data-action="toggle-link-points"]'),
+      leftWindowToggleButtonElement: this.root.querySelector('[data-action="toggle-left-window"]'),
+      rightWindowToggleButtonElement: this.root.querySelector('[data-action="toggle-right-window"]'),
       mapZoomElement: this.root.querySelector('[data-role="map-zoom-header"]'),
       navElement: this.root.querySelector('.hud-nav'),
     };
+  }
+
+  toggleWindowCollapse(side) {
+    if (side === 'left') {
+      this.leftWindowCollapsed = !this.leftWindowCollapsed;
+    } else if (side === 'right') {
+      this.rightWindowCollapsed = !this.rightWindowCollapsed;
+    } else {
+      return;
+    }
+
+    this.applyWindowCollapseState();
+
+    requestAnimationFrame(() => {
+      this.sceneManager?.handleResize?.();
+    });
+  }
+
+  applyWindowCollapseState() {
+    if (!this.shellElement) {
+      return;
+    }
+
+    this.shellElement.classList.toggle('is-left-collapsed', this.leftWindowCollapsed);
+    this.shellElement.classList.toggle('is-right-collapsed', this.rightWindowCollapsed);
+    this.updateWindowToggleButton(this.leftWindowToggleButton, {
+      collapsed: this.leftWindowCollapsed,
+      collapsedLabel: 'Show Left',
+      expandedLabel: 'Hide Left',
+      expandedAriaLabel: 'Collapse left window',
+      collapsedAriaLabel: 'Expand left window',
+    });
+    this.updateWindowToggleButton(this.rightWindowToggleButton, {
+      collapsed: this.rightWindowCollapsed,
+      collapsedLabel: 'Show Right',
+      expandedLabel: 'Hide Right',
+      expandedAriaLabel: 'Collapse right window',
+      collapsedAriaLabel: 'Expand right window',
+    });
+  }
+
+  updateWindowToggleButton(
+    button,
+    { collapsed, collapsedLabel, expandedLabel, expandedAriaLabel, collapsedAriaLabel }
+  ) {
+    if (!button) {
+      return;
+    }
+
+    button.textContent = collapsed ? collapsedLabel : expandedLabel;
+    button.setAttribute('aria-expanded', String(!collapsed));
+    button.setAttribute('aria-label', collapsed ? collapsedAriaLabel : expandedAriaLabel);
   }
 
   handleNavKeydown(event) {

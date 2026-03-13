@@ -129,6 +129,14 @@ const buildStatValueMarkup = ({ key, value, decorate }) => {
 
 const formatCritterStat = (value) => (value === null || value === undefined || value === '' ? '--' : value);
 
+const escapeHtml = (value) =>
+  String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
 const getUnlockRequirements = (critter) => {
   const unlock = critter?.unlock;
   if (!unlock) {
@@ -156,29 +164,32 @@ const getUnlockRequirements = (critter) => {
   return [];
 };
 
-const formatUnlockText = (critter, prettifyLabel) => {
+const buildUnlockRequirementsMarkup = (critter, prettifyLabel) => {
   const unlock = critter?.unlock;
   if (!unlock) {
-    return 'Awaiting Data Entry';
-  }
-
-  if (typeof unlock.text === 'string' && unlock.text.trim()) {
-    return unlock.text.trim();
+    return '<p class="critter-detail__requirement-note">Awaiting Data Entry</p>';
   }
 
   if (unlock.type === 'starter') {
-    return 'Starter critter: unlocked automatically.';
+    return '<p class="critter-detail__requirement-note">Unlocked automatically.</p>';
   }
 
   const requirements = getUnlockRequirements(critter);
   if (requirements.length) {
-    const rules = requirements.map(
-      (requirement) => `Level ${requirement.level} with ${prettifyLabel(requirement.critterId)}`
-    );
-    return `Reach ${rules.join(' and ')}.`;
+    const items = requirements
+      .map(
+        (requirement) =>
+          `<li>Level ${escapeHtml(requirement.level)} ${escapeHtml(prettifyLabel(requirement.critterId))}</li>`
+      )
+      .join('');
+    return `<ul class="critter-detail__requirements">${items}</ul>`;
   }
 
-  return 'Awaiting Data Entry';
+  if (typeof unlock.text === 'string' && unlock.text.trim()) {
+    return `<p class="critter-detail__requirement-note">${escapeHtml(unlock.text.trim())}</p>`;
+  }
+
+  return '<p class="critter-detail__requirement-note">Awaiting Data Entry</p>';
 };
 
 export class WeaponDetailPanel {
@@ -241,7 +252,7 @@ export class WeaponDetailPanel {
     const stats = critter.stats ?? {};
     const rarity = critter.rarity || 'common';
     const rarityLabel = RARITY_TITLES[rarity] || this.prettify(rarity);
-    const unlockText = formatUnlockText(critter, (value) => this.prettify(value));
+    const unlockMarkup = buildUnlockRequirementsMarkup(critter, (value) => this.prettify(value));
     const category = categoryLabel || this.prettify(critter.category || 'Critters');
     const bonus = stats.bonus || 'Awaiting Data Entry';
     const defaultEditorState = {
@@ -299,7 +310,7 @@ export class WeaponDetailPanel {
           <dl class="critter-detail__meta">
             <div><dt>Category</dt><dd>${category}</dd></div>
             <div><dt>Rarity Tier</dt><dd>${rarityLabel}</dd></div>
-            <div><dt>Unlock Rule</dt><dd>${unlockText}</dd></div>
+            <div><dt>Requirements</dt><dd>${unlockMarkup}</dd></div>
           </dl>
           <dl class="critter-detail__stats">
             <div><dt>Health</dt><dd>${formatCritterStat(stats.health)}</dd></div>
