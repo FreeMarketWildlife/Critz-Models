@@ -5,6 +5,7 @@ export class ViewportOverlay {
     this.root = null;
     this.statusElement = null;
     this.statusText = null;
+    this.hintElement = null;
     this.unsubscribe = [];
     this.pulseTimeout = null;
   }
@@ -28,12 +29,13 @@ export class ViewportOverlay {
           <span class="viewport-status__text" data-role="viewport-status-text"></span>
         </div>
       </div>
-      <p class="viewport-ui__hint">Drag to orbit · Scroll to zoom</p>
+      <p class="viewport-ui__hint" data-role="viewport-hint">Drag to orbit · Scroll to zoom</p>
     `;
 
     this.container.appendChild(this.root);
     this.statusElement = this.root.querySelector('[data-role="viewport-status"]');
     this.statusText = this.root.querySelector('[data-role="viewport-status-text"]');
+    this.hintElement = this.root.querySelector('[data-role="viewport-hint"]');
   }
 
   bindBusEvents() {
@@ -49,7 +51,11 @@ export class ViewportOverlay {
       this.bus.on('stage:model-ready', (payload) => {
         const name = payload?.name ?? 'Model';
         this.setStatus('ready', name);
+        this.setHint(payload?.usesImagePlaceholder ? 'image' : 'model');
         this.flashStatus();
+      }),
+      this.bus.on('stage:interaction-mode-changed', (payload) => {
+        this.setHint(payload?.mode);
       }),
       this.bus.on('stage:model-missing', (payload) => {
         const name = payload?.name ?? 'model';
@@ -57,6 +63,7 @@ export class ViewportOverlay {
       }),
       this.bus.on('viewport:critter-cleared', () => {
         this.setStatus('idle', 'Select a critter to preview.');
+        this.setHint('idle');
       })
     );
   }
@@ -68,6 +75,19 @@ export class ViewportOverlay {
     if (this.statusText) {
       this.statusText.textContent = message;
     }
+  }
+
+  setHint(mode) {
+    if (!this.hintElement) {
+      return;
+    }
+
+    if (mode === 'image') {
+      this.hintElement.textContent = 'Drag to move image · Scroll to zoom';
+      return;
+    }
+
+    this.hintElement.textContent = 'Drag to orbit · Scroll to zoom';
   }
 
   flashStatus() {
@@ -106,5 +126,6 @@ export class ViewportOverlay {
     this.root = null;
     this.statusElement = null;
     this.statusText = null;
+    this.hintElement = null;
   }
 }

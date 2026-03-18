@@ -13,6 +13,11 @@ const FOCUS_OFFSET_DIRECTION = new THREE.Vector3(0.45, 0.3, 1).normalize();
 const FOCUS_PADDING = 1.25;
 const IMAGE_PLACEHOLDER_HEIGHT = 2.1;
 const IMAGE_PLACEHOLDER_EXTENSIONS = ['png', 'webp', 'jpg', 'jpeg'];
+const INTERACTION_MODE_HINTS = {
+  idle: 'idle',
+  model: 'model',
+  image: 'image',
+};
 
 const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
 
@@ -40,6 +45,9 @@ export class SceneManager {
     this.rarityLight = null;
     this.rigController = null;
     this.hasRigControls = false;
+    this.currentInteractionMode = INTERACTION_MODE_HINTS.idle;
+    this.currentUsesImagePlaceholder = false;
+    this.critterImagePreviewStates = new Map();
 
     this.handleResize = this.handleResize.bind(this);
     this.animate = this.animate.bind(this);
@@ -135,14 +143,18 @@ export class SceneManager {
     this.orbitControls.maxPolarAngle = Math.PI * 0.58;
     this.orbitControls.minDistance = 1.6;
     this.orbitControls.maxDistance = 6.5;
-    this.orbitControls.target.copy(this.defaultCameraTarget);
-    this.orbitControls.autoRotate = this.autoRotateEnabled;
+    this.orbitControls.target.copy(this.controlsTarget);
+    this.orbitControls.autoRotate = this.currentUsesImagePlaceholder ? false : this.autoRotateEnabled;
     this.orbitControls.autoRotateSpeed = 1.2;
     this.orbitControls.addEventListener('start', () => {
       if (this.autoRotateEnabled) {
         this.setAutoRotate(false);
       }
     });
+    this.orbitControls.addEventListener('change', () => {
+      this.persistActiveImagePreviewState();
+    });
+    this.applyInteractionMode(this.currentInteractionMode);
     this.orbitControls.update();
   }
 
@@ -245,9 +257,13 @@ export class SceneManager {
 
     const safePosition = position || this.defaultCameraPosition;
     const safeTarget = target || this.defaultCameraTarget;
+    this.cameraTargetPosition.copy(safePosition);
+    this.controlsTarget.copy(safeTarget);
 
     if (immediate || !this.orbitControls) {
       this.camera.position.copy(safePosition);
+      this.cameraStartPosition.copy(safePosition);
+      this.controlsStartTarget.copy(safeTarget);
       if (this.orbitControls) {
         this.orbitControls.target.copy(safeTarget);
         this.orbitControls.update();
@@ -259,9 +275,7 @@ export class SceneManager {
     }
 
     this.cameraStartPosition.copy(this.camera.position);
-    this.cameraTargetPosition.copy(safePosition);
     this.controlsStartTarget.copy(this.orbitControls.target);
-    this.controlsTarget.copy(safeTarget);
     this.cameraLerpAlpha = 0;
   }
 
@@ -318,9 +332,173 @@ export class SceneManager {
   setAutoRotate(enabled) {
     this.autoRotateEnabled = Boolean(enabled);
     if (this.orbitControls) {
-      this.orbitControls.autoRotate = this.autoRotateEnabled;
+      this.orbitControls.autoRotate = this.currentInteractionMode !== INTERACTION_MODE_HINTS.image && this.autoRotateEnabled;
     }
     this.emitStageEvent('stage:auto-rotate-changed', { enabled: this.autoRotateEnabled });
+  }
+
+  applyInteractionMode(mode) {
+    const safeMode = Object.values(INTERACTION_MODE_HINTS).includes(mode) ? mode : INTERACTION_MODE_HINTS.model;
+    this.currentInteractionMode = safeMode;
+    this.currentUsesImagePlaceholder = safeMode === INTERACTION_MODE_HINTS.image;
+
+    if (this.orbitControls) {
+      this.orbitControls.enableRotate = !this.currentUsesImagePlaceholder;
+      this.orbitControls.mouseButtons.LEFT = this.currentUsesImagePlaceholder
+        ? THREE.MOUSE.PAN
+        : THREE.MOUSE.ROTATE;
+      this.orbitControls.mouseButtons.MIDDLE = THREE.MOUSE.DOLLY;
+      this.orbitControls.mouseButtons.RIGHT = THREE.MOUSE.PAN;
+      this.orbitControls.touches.ONE = this.currentUsesImagePlaceholder
+        ? THREE.TOUCH.PAN
+        : THREE.TOUCH.ROTATE;
+      this.orbitControls.touches.TWO = THREE.TOUCH.DOLLY_PAN;
+      this.orbitControls.autoRotate = !this.currentUsesImagePlaceholder && this.autoRotateEnabled;
+      this.orbitControls.update();
+    }
+
+    this.emitStageEvent('stage:interaction-mode-changed', {
+      mode: safeMode,
+      usesImagePlaceholder: this.currentUsesImagePlaceholder,
+    });
+  }
+
+  normalizeVector3Like(value) {
+    if (Array.isArray(value) && value.length >= 3) {
+      const [x, y, z] = value.map((entry) => Number(entry));
+      if ([x, y, z].every((entry) => Number.isFinite(entry))) {
+        return { x, y, z };
+      }
+      return null;
+    }
+
+    const x = Number(value?.x);
+    const y = Number(value?.y);
+    const z = Number(value?.z);
+    if ([x, y, z].every((entry) => Number.isFinite(entry))) {
+      return { x, y, z };
+    }
+
+    return null;
+  }
+
+  normalizeImagePreviewState(source) {
+    if (!source || typeof source !== 'object') {
+      return null;
+    }
+
+    const position = this.normalizeVector3Like(
+      source.position ?? source.cameraPosition ?? source.camera?.position
+    );
+    const target = this.normalizeVector3Like(
+      source.target ?? source.cameraTarget ?? source.camera?.target
+    );
+
+    if (!position || !target) {
+      return null;
+    }
+
+    return {
+      position: { ...position },
+      target: { ...target },
+    };
+  }
+
+  cloneImagePreviewState(source) {
+    const normalized = this.normalizeImagePreviewState(source);
+    if (!normalized) {
+      return null;
+    }
+
+    return {
+      position: { ...normalized.position },
+      target: { ...normalized.target },
+    };
+  }
+
+  setCritterImagePreviewLayout(layoutSource) {
+    this.critterImagePreviewStates.clear();
+    if (!layoutSource) {
+      return;
+    }
+
+    if (layoutSource instanceof Map) {
+      layoutSource.forEach((value, critterId) => {
+        const normalized = this.cloneImagePreviewState(value);
+        if (critterId && normalized) {
+          this.critterImagePreviewStates.set(critterId, normalized);
+        }
+      });
+      return;
+    }
+
+    if (typeof layoutSource !== 'object') {
+      return;
+    }
+
+    Object.entries(layoutSource).forEach(([critterId, value]) => {
+      const normalized = this.cloneImagePreviewState(value);
+      if (critterId && normalized) {
+        this.critterImagePreviewStates.set(critterId, normalized);
+      }
+    });
+  }
+
+  getCritterImagePreviewSnapshot() {
+    this.persistActiveImagePreviewState();
+    const snapshot = new Map();
+    this.critterImagePreviewStates.forEach((value, critterId) => {
+      const cloned = this.cloneImagePreviewState(value);
+      if (cloned) {
+        snapshot.set(critterId, cloned);
+      }
+    });
+    return snapshot;
+  }
+
+  getActiveCameraTarget() {
+    if (this.orbitControls) {
+      return this.orbitControls.target.clone();
+    }
+
+    return this.controlsTarget.clone();
+  }
+
+  persistActiveImagePreviewState() {
+    if (!this.currentUsesImagePlaceholder || !this.currentCritterId || !this.camera) {
+      return;
+    }
+
+    const target = this.getActiveCameraTarget();
+    this.critterImagePreviewStates.set(this.currentCritterId, {
+      position: {
+        x: Number(this.camera.position.x.toFixed(4)),
+        y: Number(this.camera.position.y.toFixed(4)),
+        z: Number(this.camera.position.z.toFixed(4)),
+      },
+      target: {
+        x: Number(target.x.toFixed(4)),
+        y: Number(target.y.toFixed(4)),
+        z: Number(target.z.toFixed(4)),
+      },
+    });
+  }
+
+  applyStoredImagePreviewState(critterId, { immediate = true } = {}) {
+    const stored = critterId ? this.critterImagePreviewStates.get(critterId) : null;
+    const normalized = this.normalizeImagePreviewState(stored);
+    if (!normalized) {
+      return false;
+    }
+
+    const position = new THREE.Vector3(
+      normalized.position.x,
+      normalized.position.y,
+      normalized.position.z
+    );
+    const target = new THREE.Vector3(normalized.target.x, normalized.target.y, normalized.target.z);
+    this.startCameraTransition(position, target, { immediate });
+    return true;
   }
 
   setupLights() {
@@ -447,18 +625,29 @@ export class SceneManager {
     this.stageGroup.add(model);
 
     const usesImagePlaceholder = Boolean(model.userData?.isImagePlaceholder);
+    this.applyInteractionMode(usesImagePlaceholder ? INTERACTION_MODE_HINTS.image : INTERACTION_MODE_HINTS.model);
     this.setupRigController(usesImagePlaceholder ? null : model);
     if (usesImagePlaceholder) {
       this.stopAnimation();
+      this.setAutoRotate(false);
     } else {
       this.mixer = new THREE.AnimationMixer(model);
       this.activeAction = null;
     }
-    this.resetView(true);
+    if (usesImagePlaceholder) {
+      const appliedStoredView = this.applyStoredImagePreviewState(critter.id, { immediate: true });
+      if (!appliedStoredView && !this.focusOnCurrentModel({ immediate: true })) {
+        this.resetView(true);
+      }
+      this.persistActiveImagePreviewState();
+    } else {
+      this.resetView(true);
+    }
     this.emitStageEvent('stage:model-ready', {
       type: 'critter',
       id: critter.id,
       name: critter.name,
+      usesImagePlaceholder,
     });
     this.pendingCritterId = null;
   }
@@ -619,6 +808,8 @@ export class SceneManager {
     });
     this.currentModel = null;
     this.currentCritterId = null;
+    this.currentUsesImagePlaceholder = false;
+    this.applyInteractionMode(INTERACTION_MODE_HINTS.idle);
     this.mixer?.stopAllAction?.();
     this.mixer = null;
     this.activeAction = null;

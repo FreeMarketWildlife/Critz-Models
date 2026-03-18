@@ -55,7 +55,9 @@ export class WeaponDisplayApp {
 
       const originalLabel = this.mapCopyButton.textContent;
       try {
-        await this.critterUnlockMap.copyLayoutSnapshot();
+        await this.critterUnlockMap.copyLayoutSnapshot({
+          previewStates: this.sceneManager?.getCritterImagePreviewSnapshot?.() || null,
+        });
         this.mapCopyButton.textContent = 'Copied';
       } catch (error) {
         this.mapCopyButton.textContent = 'Copy Failed';
@@ -183,6 +185,9 @@ export class WeaponDisplayApp {
       bus: this.eventBus,
       zoomElement: this.mapZoomBadge,
     });
+    this.sceneManager.setCritterImagePreviewLayout(
+      this.critterUnlockMap.getCritterImagePreviewStateMap()
+    );
     this.minigameRunner = new MinigameRunner();
     this.minigameQuest = new MinigameCritterQuest();
     this.minigameKatana = new MinigameKatanaMouse();

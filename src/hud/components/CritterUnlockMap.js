@@ -121,6 +121,7 @@ export class CritterUnlockMap {
     this.nodeStylesByCategory = new Map();
     this.linkStylesByCategory = new Map();
     this.linkPointsByCategory = new Map();
+    this.critterImagePreviewStates = new Map();
     this.autoTextSizeCache = new Map();
     this.wordFitSizeCache = new Map();
     this.styleMenu = null;
@@ -187,6 +188,13 @@ export class CritterUnlockMap {
             if (critter?.style && typeof critter.style === 'object') {
               nodeStyles.set(critterId, this.normalizeNodeStyle(critter.style));
             }
+
+            const imageView = this.normalizeImagePreviewState(
+              critter?.imageView ?? critter?.preview?.imageView
+            );
+            if (imageView) {
+              this.critterImagePreviewStates.set(critterId, imageView);
+            }
           });
         }
 
@@ -228,6 +236,80 @@ export class CritterUnlockMap {
     }
     const numeric = Number(value);
     return Math.max(min, Math.min(max, numeric));
+  }
+
+  normalizeVector3Like(value) {
+    if (Array.isArray(value) && value.length >= 3) {
+      const [x, y, z] = value.map((entry) => Number(entry));
+      if ([x, y, z].every((entry) => Number.isFinite(entry))) {
+        return { x, y, z };
+      }
+      return null;
+    }
+
+    const x = Number(value?.x);
+    const y = Number(value?.y);
+    const z = Number(value?.z);
+    if ([x, y, z].every((entry) => Number.isFinite(entry))) {
+      return { x, y, z };
+    }
+
+    return null;
+  }
+
+  normalizeImagePreviewState(source) {
+    if (!source || typeof source !== 'object') {
+      return null;
+    }
+
+    const position = this.normalizeVector3Like(
+      source.position ?? source.cameraPosition ?? source.camera?.position
+    );
+    const target = this.normalizeVector3Like(
+      source.target ?? source.cameraTarget ?? source.camera?.target
+    );
+
+    if (!position || !target) {
+      return null;
+    }
+
+    return {
+      position: { ...position },
+      target: { ...target },
+    };
+  }
+
+  cloneImagePreviewState(source) {
+    const normalized = this.normalizeImagePreviewState(source);
+    if (!normalized) {
+      return null;
+    }
+
+    return {
+      position: { ...normalized.position },
+      target: { ...normalized.target },
+    };
+  }
+
+  resolvePreviewState(previewStates, critterId) {
+    const external =
+      previewStates instanceof Map
+        ? previewStates.get(critterId)
+        : previewStates && typeof previewStates === 'object'
+          ? previewStates[critterId]
+          : null;
+    return this.cloneImagePreviewState(external) || this.cloneImagePreviewState(this.critterImagePreviewStates.get(critterId));
+  }
+
+  getCritterImagePreviewStateMap() {
+    const snapshot = new Map();
+    this.critterImagePreviewStates.forEach((value, critterId) => {
+      const cloned = this.cloneImagePreviewState(value);
+      if (cloned) {
+        snapshot.set(critterId, cloned);
+      }
+    });
+    return snapshot;
   }
 
   normalizeLinkPoints(points = []) {
@@ -2235,7 +2317,8 @@ export class CritterUnlockMap {
     };
   }
 
-  async copyLayoutSnapshot() {
+  async copyLayoutSnapshot(options = {}) {
+    const previewStates = options?.previewStates ?? null;
     const categoryIds = this.getAllCategoryIds();
     const payload = {
       generatedAt: new Date().toISOString(),
@@ -2270,6 +2353,7 @@ export class CritterUnlockMap {
             level: getRequirementLevel(critter),
             x: point.x ?? 0,
             y: point.y ?? 0,
+            imageView: this.resolvePreviewState(previewStates, critter.id),
             style: style
               ? {
                   textScale: style.textScale,
