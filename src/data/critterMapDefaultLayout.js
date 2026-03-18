@@ -1,5 +1,5 @@
 export const critterMapDefaultLayout = {
-  "generatedAt": "2026-03-17T04:17:40.058Z",
+  "generatedAt": "2026-03-18T04:22:10.858Z",
   "board": {
     "width": 1700,
     "height": 3980,
@@ -19,6 +19,7 @@ export const critterMapDefaultLayout = {
           "level": 0,
           "x": 762,
           "y": 151,
+          "imageView": null,
           "style": null,
           "requirements": []
         },
@@ -29,6 +30,7 @@ export const critterMapDefaultLayout = {
           "level": 10,
           "x": 1306,
           "y": 524,
+          "imageView": null,
           "style": {
             "textScale": 100,
             "hue": 193,
@@ -53,6 +55,7 @@ export const critterMapDefaultLayout = {
           "level": 25,
           "x": 1125,
           "y": 911,
+          "imageView": null,
           "style": {
             "textScale": 100,
             "hue": 100,
@@ -77,6 +80,7 @@ export const critterMapDefaultLayout = {
           "level": 15,
           "x": 943,
           "y": 1671,
+          "imageView": null,
           "style": {
             "textScale": 100,
             "hue": 33,
@@ -101,6 +105,7 @@ export const critterMapDefaultLayout = {
           "level": 15,
           "x": 1306,
           "y": 1951,
+          "imageView": null,
           "style": {
             "textScale": 100,
             "hue": 145,
@@ -129,6 +134,7 @@ export const critterMapDefaultLayout = {
           "level": 50,
           "x": 1125,
           "y": 3191,
+          "imageView": null,
           "style": {
             "textScale": 100,
             "hue": 0,
@@ -157,6 +163,7 @@ export const critterMapDefaultLayout = {
           "level": 15,
           "x": 1487,
           "y": 1004,
+          "imageView": null,
           "style": {
             "textScale": 100,
             "hue": 310,
@@ -181,6 +188,7 @@ export const critterMapDefaultLayout = {
           "level": 100,
           "x": 37,
           "y": 3191,
+          "imageView": null,
           "style": null,
           "requirements": [
             {
@@ -204,6 +212,7 @@ export const critterMapDefaultLayout = {
           "level": 15,
           "x": 37,
           "y": 911,
+          "imageView": null,
           "style": {
             "textScale": 100,
             "hue": 287,
@@ -228,6 +237,7 @@ export const critterMapDefaultLayout = {
           "level": 10,
           "x": 581,
           "y": 2044,
+          "imageView": null,
           "style": null,
           "requirements": [
             {
@@ -247,6 +257,7 @@ export const critterMapDefaultLayout = {
           "level": 30,
           "x": 762,
           "y": 2804,
+          "imageView": null,
           "style": {
             "textScale": 100,
             "hue": 238,
@@ -275,6 +286,7 @@ export const critterMapDefaultLayout = {
           "level": 15,
           "x": 37,
           "y": 1858,
+          "imageView": null,
           "style": {
             "textScale": 100,
             "hue": 259,
@@ -299,6 +311,7 @@ export const critterMapDefaultLayout = {
           "level": 15,
           "x": 399,
           "y": 911,
+          "imageView": null,
           "style": {
             "textScale": 112,
             "hue": 143,
@@ -323,6 +336,7 @@ export const critterMapDefaultLayout = {
           "level": 20,
           "x": 762,
           "y": 1858,
+          "imageView": null,
           "style": null,
           "requirements": [
             {
@@ -338,6 +352,7 @@ export const critterMapDefaultLayout = {
           "level": 10,
           "x": 218,
           "y": 618,
+          "imageView": null,
           "style": {
             "textScale": 100,
             "hue": 59,
@@ -362,6 +377,7 @@ export const critterMapDefaultLayout = {
           "level": 5,
           "x": 581,
           "y": 431,
+          "imageView": null,
           "style": {
             "textScale": 100,
             "hue": 19,
@@ -386,6 +402,7 @@ export const critterMapDefaultLayout = {
           "level": 30,
           "x": 1487,
           "y": 2431,
+          "imageView": null,
           "style": {
             "textScale": 100,
             "hue": 327,
@@ -416,6 +433,7 @@ export const critterMapDefaultLayout = {
           "level": 0,
           "x": 762,
           "y": 151,
+          "imageView": null,
           "style": {
             "textScale": 173,
             "hue": 131,
@@ -435,6 +453,7 @@ export const critterMapDefaultLayout = {
           "level": 20,
           "x": 1125,
           "y": 1191,
+          "imageView": null,
           "style": {
             "textScale": 100,
             "hue": 28,
@@ -459,6 +478,7 @@ export const critterMapDefaultLayout = {
           "level": 30,
           "x": 399,
           "y": 1951,
+          "imageView": null,
           "style": {
             "textScale": 100,
             "hue": 299,
@@ -487,6 +507,7 @@ export const critterMapDefaultLayout = {
           "level": 30,
           "x": 762,
           "y": 1858,
+          "imageView": null,
           "style": {
             "textScale": 100,
             "hue": 239,
@@ -511,6 +532,7 @@ export const critterMapDefaultLayout = {
           "level": 15,
           "x": 943,
           "y": 524,
+          "imageView": null,
           "style": {
             "textScale": 173,
             "hue": 339,
@@ -535,6 +557,7 @@ export const critterMapDefaultLayout = {
           "level": 100,
           "x": 1306,
           "y": 2618,
+          "imageView": null,
           "style": {
             "textScale": 100,
             "hue": 0,
@@ -563,6 +586,7 @@ export const critterMapDefaultLayout = {
           "level": 25,
           "x": 218,
           "y": 2524,
+          "imageView": null,
           "style": {
             "textScale": 100,
             "hue": 246,
@@ -591,6 +615,7 @@ export const critterMapDefaultLayout = {
           "level": 10,
           "x": 1487,
           "y": 1378,
+          "imageView": null,
           "style": {
             "textScale": 100,
             "hue": 360,
@@ -615,6 +640,7 @@ export const critterMapDefaultLayout = {
           "level": 100,
           "x": 1306,
           "y": 3191,
+          "imageView": null,
           "style": {
             "textScale": 103,
             "hue": 41,
@@ -639,6 +665,7 @@ export const critterMapDefaultLayout = {
           "level": 25,
           "x": 1487,
           "y": 3378,
+          "imageView": null,
           "style": {
             "textScale": 100,
             "hue": 285,
@@ -663,6 +690,7 @@ export const critterMapDefaultLayout = {
           "level": 25,
           "x": 762,
           "y": 2524,
+          "imageView": null,
           "style": {
             "textScale": 100,
             "hue": 84,
@@ -691,6 +719,7 @@ export const critterMapDefaultLayout = {
           "level": 15,
           "x": 762,
           "y": 911,
+          "imageView": null,
           "style": {
             "textScale": 100,
             "hue": 145,
@@ -715,6 +744,7 @@ export const critterMapDefaultLayout = {
           "level": 100,
           "x": 1487,
           "y": 2991,
+          "imageView": null,
           "style": {
             "textScale": 100,
             "hue": 48,
@@ -739,6 +769,7 @@ export const critterMapDefaultLayout = {
           "level": 30,
           "x": 37,
           "y": 1764,
+          "imageView": null,
           "style": {
             "textScale": 100,
             "hue": 20,
@@ -767,6 +798,7 @@ export const critterMapDefaultLayout = {
           "level": 15,
           "x": 218,
           "y": 618,
+          "imageView": null,
           "style": {
             "textScale": 100,
             "hue": 22,
@@ -791,6 +823,7 @@ export const critterMapDefaultLayout = {
           "level": 15,
           "x": 581,
           "y": 1671,
+          "imageView": null,
           "style": {
             "textScale": 100,
             "hue": 284,
@@ -819,6 +852,7 @@ export const critterMapDefaultLayout = {
           "level": 20,
           "x": 37,
           "y": 1098,
+          "imageView": null,
           "style": {
             "textScale": 100,
             "hue": 263,
@@ -843,6 +877,7 @@ export const critterMapDefaultLayout = {
           "level": 5,
           "x": 581,
           "y": 431,
+          "imageView": null,
           "style": {
             "textScale": 131,
             "hue": 226,
@@ -867,6 +902,7 @@ export const critterMapDefaultLayout = {
           "level": 20,
           "x": 399,
           "y": 1004,
+          "imageView": null,
           "style": {
             "textScale": 100,
             "hue": 231,
@@ -891,6 +927,7 @@ export const critterMapDefaultLayout = {
           "level": 25,
           "x": 1125,
           "y": 2138,
+          "imageView": null,
           "style": {
             "textScale": 100,
             "hue": 360,
@@ -915,6 +952,7 @@ export const critterMapDefaultLayout = {
           "level": 5,
           "x": 1306,
           "y": 711,
+          "imageView": null,
           "style": {
             "textScale": 100,
             "hue": 59,
@@ -939,22 +977,499 @@ export const critterMapDefaultLayout = {
       "label": "Mammals",
       "critters": [
         {
-          "id": "ferret",
-          "name": "Ferret",
+          "id": "mouse",
+          "name": "Mouse",
           "rarity": "common",
           "level": 0,
-          "x": 399,
+          "x": 762,
           "y": 151,
-          "style": null,
+          "imageView": null,
+          "style": {
+            "textScale": 100,
+            "hue": 168,
+            "saturation": 28,
+            "lightness": 84,
+            "inputHue": null,
+            "inputSaturation": null,
+            "inputLightness": null,
+            "inputWidth": 1
+          },
           "requirements": []
+        },
+        {
+          "id": "badger",
+          "name": "Badger",
+          "rarity": "rare",
+          "level": 15,
+          "x": 1125,
+          "y": 1951,
+          "imageView": null,
+          "style": {
+            "textScale": 100,
+            "hue": 243,
+            "saturation": 88,
+            "lightness": 67,
+            "inputHue": null,
+            "inputSaturation": null,
+            "inputLightness": null,
+            "inputWidth": 6
+          },
+          "requirements": [
+            {
+              "critterId": "ferret",
+              "level": 15
+            }
+          ]
+        },
+        {
+          "id": "bandicoot",
+          "name": "Bandicoot",
+          "rarity": "rare",
+          "level": 10,
+          "x": 581,
+          "y": 1858,
+          "imageView": null,
+          "style": {
+            "textScale": 100,
+            "hue": 12,
+            "saturation": 88,
+            "lightness": 52,
+            "inputHue": null,
+            "inputSaturation": null,
+            "inputLightness": null,
+            "inputWidth": 8
+          },
+          "requirements": [
+            {
+              "critterId": "koala",
+              "level": 10
+            }
+          ]
+        },
+        {
+          "id": "bat",
+          "name": "Bat",
+          "rarity": "common",
+          "level": 10,
+          "x": 399,
+          "y": 618,
+          "imageView": null,
+          "style": {
+            "textScale": 100,
+            "hue": 274,
+            "saturation": 10,
+            "lightness": 18,
+            "inputHue": 310,
+            "inputSaturation": 36,
+            "inputLightness": 38,
+            "inputWidth": 6
+          },
+          "requirements": [
+            {
+              "critterId": "flying-squirrel",
+              "level": 10
+            },
+            {
+              "critterId": "sugar-glider",
+              "level": 5
+            }
+          ]
+        },
+        {
+          "id": "chipmunk",
+          "name": "Chipmunk",
+          "rarity": "common",
+          "level": 5,
+          "x": 218,
+          "y": 431,
+          "imageView": null,
+          "style": {
+            "textScale": 100,
+            "hue": 36,
+            "saturation": 88,
+            "lightness": 52,
+            "inputHue": null,
+            "inputSaturation": null,
+            "inputLightness": null,
+            "inputWidth": 7
+          },
+          "requirements": [
+            {
+              "critterId": "mouse",
+              "level": 5
+            }
+          ]
+        },
+        {
+          "id": "ferret",
+          "name": "Ferret",
+          "rarity": "rare",
+          "level": 15,
+          "x": 1306,
+          "y": 1671,
+          "imageView": null,
+          "style": {
+            "textScale": 100,
+            "hue": 34,
+            "saturation": 88,
+            "lightness": 52,
+            "inputHue": null,
+            "inputSaturation": null,
+            "inputLightness": null,
+            "inputWidth": 7
+          },
+          "requirements": [
+            {
+              "critterId": "weasel",
+              "level": 15
+            }
+          ]
+        },
+        {
+          "id": "finger-monkey",
+          "name": "Finger Monkey",
+          "rarity": "rare",
+          "level": 15,
+          "x": 218,
+          "y": 1671,
+          "imageView": null,
+          "style": {
+            "textScale": 100,
+            "hue": 0,
+            "saturation": 88,
+            "lightness": 39,
+            "inputHue": null,
+            "inputSaturation": null,
+            "inputLightness": null,
+            "inputWidth": 8
+          },
+          "requirements": [
+            {
+              "critterId": "sugar-glider",
+              "level": 15
+            }
+          ]
+        },
+        {
+          "id": "flying-squirrel",
+          "name": "Flying Squirrel",
+          "rarity": "uncommon",
+          "level": 25,
+          "x": 762,
+          "y": 1098,
+          "imageView": null,
+          "style": {
+            "textScale": 100,
+            "hue": 44,
+            "saturation": 88,
+            "lightness": 60,
+            "inputHue": null,
+            "inputSaturation": null,
+            "inputLightness": null,
+            "inputWidth": 6
+          },
+          "requirements": [
+            {
+              "critterId": "squirrel",
+              "level": 25
+            }
+          ]
+        },
+        {
+          "id": "gopher",
+          "name": "Gopher",
+          "rarity": "common",
+          "level": 5,
+          "x": 1487,
+          "y": 711,
+          "imageView": null,
+          "style": {
+            "textScale": 100,
+            "hue": 43,
+            "saturation": 88,
+            "lightness": 33,
+            "inputHue": null,
+            "inputSaturation": null,
+            "inputLightness": null,
+            "inputWidth": 8
+          },
+          "requirements": [
+            {
+              "critterId": "vole",
+              "level": 5
+            }
+          ]
+        },
+        {
+          "id": "koala",
+          "name": "Koala",
+          "rarity": "rare",
+          "level": 10,
+          "x": 762,
+          "y": 1671,
+          "imageView": null,
+          "style": {
+            "textScale": 100,
+            "hue": 291,
+            "saturation": 88,
+            "lightness": 52,
+            "inputHue": null,
+            "inputSaturation": null,
+            "inputLightness": null,
+            "inputWidth": 5
+          },
+          "requirements": [
+            {
+              "critterId": "opossum",
+              "level": 10
+            }
+          ]
+        },
+        {
+          "id": "mole",
+          "name": "Mole",
+          "rarity": "uncommon",
+          "level": 25,
+          "x": 1306,
+          "y": 1098,
+          "imageView": null,
+          "style": {
+            "textScale": 100,
+            "hue": 217,
+            "saturation": 100,
+            "lightness": 54,
+            "inputHue": null,
+            "inputSaturation": null,
+            "inputLightness": null,
+            "inputWidth": 7
+          },
+          "requirements": [
+            {
+              "critterId": "vole",
+              "level": 25
+            },
+            {
+              "critterId": "gopher",
+              "level": 5
+            }
+          ]
+        },
+        {
+          "id": "opossum",
+          "name": "Opossum",
+          "rarity": "uncommon",
+          "level": 10,
+          "x": 943,
+          "y": 1284,
+          "imageView": null,
+          "style": {
+            "textScale": 100,
+            "hue": 23,
+            "saturation": 88,
+            "lightness": 77,
+            "inputHue": null,
+            "inputSaturation": null,
+            "inputLightness": null,
+            "inputWidth": 7
+          },
+          "requirements": [
+            {
+              "critterId": "rabbit",
+              "level": 10
+            }
+          ]
+        },
+        {
+          "id": "prairie-dog",
+          "name": "Prairie Dog",
+          "rarity": "rare",
+          "level": 15,
+          "x": 1487,
+          "y": 1858,
+          "imageView": null,
+          "style": {
+            "textScale": 100,
+            "hue": 54,
+            "saturation": 88,
+            "lightness": 52,
+            "inputHue": null,
+            "inputSaturation": null,
+            "inputLightness": null,
+            "inputWidth": 6
+          },
+          "requirements": [
+            {
+              "critterId": "mole",
+              "level": 15
+            }
+          ]
+        },
+        {
+          "id": "rabbit",
+          "name": "Rabbit",
+          "rarity": "common",
+          "level": 10,
+          "x": 762,
+          "y": 618,
+          "imageView": null,
+          "style": {
+            "textScale": 100,
+            "hue": 292,
+            "saturation": 88,
+            "lightness": 77,
+            "inputHue": null,
+            "inputSaturation": null,
+            "inputLightness": null,
+            "inputWidth": 8
+          },
+          "requirements": [
+            {
+              "critterId": "mouse",
+              "level": 10
+            }
+          ]
+        },
+        {
+          "id": "squirrel",
+          "name": "Squirrel",
+          "rarity": "common",
+          "level": 5,
+          "x": 581,
+          "y": 431,
+          "imageView": null,
+          "style": {
+            "textScale": 100,
+            "hue": 11,
+            "saturation": 88,
+            "lightness": 52,
+            "inputHue": null,
+            "inputSaturation": null,
+            "inputLightness": null,
+            "inputWidth": 7
+          },
+          "requirements": [
+            {
+              "critterId": "mouse",
+              "level": 5
+            }
+          ]
+        },
+        {
+          "id": "sugar-glider",
+          "name": "Sugar Glider",
+          "rarity": "uncommon",
+          "level": 15,
+          "x": 37,
+          "y": 1378,
+          "imageView": null,
+          "style": {
+            "textScale": 100,
+            "hue": 197,
+            "saturation": 88,
+            "lightness": 52,
+            "inputHue": null,
+            "inputSaturation": null,
+            "inputLightness": null,
+            "inputWidth": 7
+          },
+          "requirements": [
+            {
+              "critterId": "flying-squirrel",
+              "level": 10
+            },
+            {
+              "critterId": "chipmunk",
+              "level": 15
+            }
+          ]
+        },
+        {
+          "id": "vole",
+          "name": "Vole",
+          "rarity": "common",
+          "level": 15,
+          "x": 1125,
+          "y": 524,
+          "imageView": null,
+          "style": {
+            "textScale": 100,
+            "hue": 281,
+            "saturation": 90,
+            "lightness": 33,
+            "inputHue": null,
+            "inputSaturation": null,
+            "inputLightness": null,
+            "inputWidth": 8
+          },
+          "requirements": [
+            {
+              "critterId": "mouse",
+              "level": 15
+            }
+          ]
+        },
+        {
+          "id": "wallaby",
+          "name": "Wallaby",
+          "rarity": "rare",
+          "level": 15,
+          "x": 943,
+          "y": 2231,
+          "imageView": null,
+          "style": {
+            "textScale": 100,
+            "hue": 170,
+            "saturation": 85,
+            "lightness": 52,
+            "inputHue": null,
+            "inputSaturation": null,
+            "inputLightness": null,
+            "inputWidth": 6
+          },
+          "requirements": [
+            {
+              "critterId": "koala",
+              "level": 15
+            },
+            {
+              "critterId": "bandicoot",
+              "level": 15
+            }
+          ]
+        },
+        {
+          "id": "weasel",
+          "name": "Weasel",
+          "rarity": "uncommon",
+          "level": 5,
+          "x": 1125,
+          "y": 1004,
+          "imageView": null,
+          "style": {
+            "textScale": 100,
+            "hue": 67,
+            "saturation": 88,
+            "lightness": 52,
+            "inputHue": null,
+            "inputSaturation": null,
+            "inputLightness": null,
+            "inputWidth": 6
+          },
+          "requirements": [
+            {
+              "critterId": "rabbit",
+              "level": 5
+            }
+          ]
         },
         {
           "id": "hedgehog",
           "name": "Hedgehog",
           "rarity": "common",
           "level": 0,
-          "x": 762,
+          "x": 37,
           "y": 151,
+          "imageView": null,
           "style": null,
           "requirements": []
         },
@@ -965,6 +1480,7 @@ export const critterMapDefaultLayout = {
           "level": 0,
           "x": 1125,
           "y": 151,
+          "imageView": null,
           "style": null,
           "requirements": []
         }
@@ -981,6 +1497,7 @@ export const critterMapDefaultLayout = {
           "level": 0,
           "x": 399,
           "y": 151,
+          "imageView": null,
           "style": null,
           "requirements": []
         },
@@ -991,6 +1508,7 @@ export const critterMapDefaultLayout = {
           "level": 0,
           "x": 943,
           "y": 151,
+          "imageView": null,
           "style": null,
           "requirements": []
         }
@@ -1007,6 +1525,7 @@ export const critterMapDefaultLayout = {
           "level": 0,
           "x": 399,
           "y": 151,
+          "imageView": null,
           "style": null,
           "requirements": []
         },
@@ -1017,6 +1536,7 @@ export const critterMapDefaultLayout = {
           "level": 0,
           "x": 943,
           "y": 151,
+          "imageView": null,
           "style": null,
           "requirements": []
         }
