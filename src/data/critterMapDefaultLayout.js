@@ -1,5 +1,5 @@
 export const critterMapDefaultLayout = {
-  "generatedAt": "2026-03-13T05:51:02.725Z",
+  "generatedAt": "2026-03-17T04:17:40.058Z",
   "board": {
     "width": 1700,
     "height": 3980,
@@ -23,17 +23,383 @@ export const critterMapDefaultLayout = {
           "requirements": []
         },
         {
+          "id": "anole",
+          "name": "Anole",
+          "rarity": "common",
+          "level": 10,
+          "x": 1306,
+          "y": 524,
+          "style": {
+            "textScale": 100,
+            "hue": 193,
+            "saturation": 88,
+            "lightness": 52,
+            "inputHue": null,
+            "inputSaturation": null,
+            "inputLightness": null,
+            "inputWidth": 7
+          },
+          "requirements": [
+            {
+              "critterId": "lizard",
+              "level": 10
+            }
+          ]
+        },
+        {
+          "id": "basilisk",
+          "name": "Basilisk",
+          "rarity": "uncommon",
+          "level": 25,
+          "x": 1125,
+          "y": 911,
+          "style": {
+            "textScale": 100,
+            "hue": 100,
+            "saturation": 100,
+            "lightness": 52,
+            "inputHue": null,
+            "inputSaturation": null,
+            "inputLightness": null,
+            "inputWidth": 7
+          },
+          "requirements": [
+            {
+              "critterId": "lizard",
+              "level": 25
+            }
+          ]
+        },
+        {
+          "id": "bearded-dragon",
+          "name": "Bearded Dragon",
+          "rarity": "rare",
+          "level": 15,
+          "x": 943,
+          "y": 1671,
+          "style": {
+            "textScale": 100,
+            "hue": 33,
+            "saturation": 88,
+            "lightness": 52,
+            "inputHue": null,
+            "inputSaturation": null,
+            "inputLightness": null,
+            "inputWidth": 8
+          },
+          "requirements": [
+            {
+              "critterId": "basilisk",
+              "level": 15
+            }
+          ]
+        },
+        {
+          "id": "draco",
+          "name": "Draco",
+          "rarity": "rare",
+          "level": 15,
+          "x": 1306,
+          "y": 1951,
+          "style": {
+            "textScale": 100,
+            "hue": 145,
+            "saturation": 88,
+            "lightness": 52,
+            "inputHue": null,
+            "inputSaturation": null,
+            "inputLightness": null,
+            "inputWidth": 7
+          },
+          "requirements": [
+            {
+              "critterId": "gecko",
+              "level": 15
+            },
+            {
+              "critterId": "bearded-dragon",
+              "level": 5
+            }
+          ]
+        },
+        {
+          "id": "dragon",
+          "name": "Dragon",
+          "rarity": "mythical",
+          "level": 50,
+          "x": 1125,
+          "y": 3191,
+          "style": {
+            "textScale": 100,
+            "hue": 0,
+            "saturation": 100,
+            "lightness": 52,
+            "inputHue": null,
+            "inputSaturation": null,
+            "inputLightness": null,
+            "inputWidth": 9
+          },
+          "requirements": [
+            {
+              "critterId": "draco",
+              "level": 50
+            },
+            {
+              "critterId": "bearded-dragon",
+              "level": 50
+            }
+          ]
+        },
+        {
+          "id": "gecko",
+          "name": "Gecko",
+          "rarity": "uncommon",
+          "level": 15,
+          "x": 1487,
+          "y": 1004,
+          "style": {
+            "textScale": 100,
+            "hue": 310,
+            "saturation": 88,
+            "lightness": 64,
+            "inputHue": null,
+            "inputSaturation": null,
+            "inputLightness": null,
+            "inputWidth": 7
+          },
+          "requirements": [
+            {
+              "critterId": "anole",
+              "level": 15
+            }
+          ]
+        },
+        {
+          "id": "kappa",
+          "name": "Kappa",
+          "rarity": "mythical",
+          "level": 100,
+          "x": 37,
+          "y": 3191,
+          "style": null,
+          "requirements": [
+            {
+              "critterId": "tortoise",
+              "level": 30
+            },
+            {
+              "critterId": "snapper",
+              "level": 25
+            },
+            {
+              "critterId": "turtle",
+              "level": 100
+            }
+          ]
+        },
+        {
+          "id": "pancake-tortoise",
+          "name": "Pancake Tortoise",
+          "rarity": "uncommon",
+          "level": 15,
+          "x": 37,
+          "y": 911,
+          "style": {
+            "textScale": 100,
+            "hue": 287,
+            "saturation": 88,
+            "lightness": 52,
+            "inputHue": null,
+            "inputSaturation": null,
+            "inputLightness": null,
+            "inputWidth": 7
+          },
+          "requirements": [
+            {
+              "critterId": "tortoise",
+              "level": 15
+            }
+          ]
+        },
+        {
+          "id": "pigsnouted-turtle",
+          "name": "Pigsnouted Turtle",
+          "rarity": "rare",
+          "level": 10,
+          "x": 581,
+          "y": 2044,
+          "style": null,
+          "requirements": [
+            {
+              "critterId": "turtle",
+              "level": 10
+            },
+            {
+              "critterId": "snapper",
+              "level": 10
+            }
+          ]
+        },
+        {
+          "id": "pterosaur",
+          "name": "Pterosaur",
+          "rarity": "extinct",
+          "level": 30,
+          "x": 762,
+          "y": 2804,
+          "style": {
+            "textScale": 100,
+            "hue": 238,
+            "saturation": 85,
+            "lightness": 52,
+            "inputHue": null,
+            "inputSaturation": null,
+            "inputLightness": null,
+            "inputWidth": 8
+          },
+          "requirements": [
+            {
+              "critterId": "draco",
+              "level": 30
+            },
+            {
+              "critterId": "bearded-dragon",
+              "level": 15
+            }
+          ]
+        },
+        {
+          "id": "snakeneck-turtle",
+          "name": "Snakeneck Turtle",
+          "rarity": "rare",
+          "level": 15,
+          "x": 37,
+          "y": 1858,
+          "style": {
+            "textScale": 100,
+            "hue": 259,
+            "saturation": 88,
+            "lightness": 52,
+            "inputHue": null,
+            "inputSaturation": null,
+            "inputLightness": null,
+            "inputWidth": 6
+          },
+          "requirements": [
+            {
+              "critterId": "snapper",
+              "level": 15
+            }
+          ]
+        },
+        {
+          "id": "snapper",
+          "name": "Snapper",
+          "rarity": "uncommon",
+          "level": 15,
+          "x": 399,
+          "y": 911,
+          "style": {
+            "textScale": 112,
+            "hue": 143,
+            "saturation": 86,
+            "lightness": 32,
+            "inputHue": null,
+            "inputSaturation": null,
+            "inputLightness": null,
+            "inputWidth": 7
+          },
+          "requirements": [
+            {
+              "critterId": "tortoise",
+              "level": 15
+            }
+          ]
+        },
+        {
+          "id": "softshell-turtle",
+          "name": "Softshell Turtle",
+          "rarity": "rare",
+          "level": 20,
+          "x": 762,
+          "y": 1858,
+          "style": null,
+          "requirements": [
+            {
+              "critterId": "turtle",
+              "level": 20
+            }
+          ]
+        },
+        {
+          "id": "tortoise",
+          "name": "Tortoise",
+          "rarity": "common",
+          "level": 10,
+          "x": 218,
+          "y": 618,
+          "style": {
+            "textScale": 100,
+            "hue": 59,
+            "saturation": 88,
+            "lightness": 52,
+            "inputHue": null,
+            "inputSaturation": null,
+            "inputLightness": null,
+            "inputWidth": 9
+          },
+          "requirements": [
+            {
+              "critterId": "turtle",
+              "level": 10
+            }
+          ]
+        },
+        {
           "id": "turtle",
           "name": "Turtle",
           "rarity": "common",
           "level": 5,
-          "x": 762,
-          "y": 711,
-          "style": null,
+          "x": 581,
+          "y": 431,
+          "style": {
+            "textScale": 100,
+            "hue": 19,
+            "saturation": 88,
+            "lightness": 52,
+            "inputHue": null,
+            "inputSaturation": null,
+            "inputLightness": null,
+            "inputWidth": 9
+          },
           "requirements": [
             {
               "critterId": "lizard",
               "level": 5
+            }
+          ]
+        },
+        {
+          "id": "velociraptor",
+          "name": "Velociraptor",
+          "rarity": "extinct",
+          "level": 30,
+          "x": 1487,
+          "y": 2431,
+          "style": {
+            "textScale": 100,
+            "hue": 327,
+            "saturation": 97,
+            "lightness": 69,
+            "inputHue": null,
+            "inputSaturation": null,
+            "inputLightness": null,
+            "inputWidth": 8
+          },
+          "requirements": [
+            {
+              "critterId": "basilisk",
+              "level": 30
             }
           ]
         }
