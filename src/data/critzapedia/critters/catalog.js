@@ -1044,6 +1044,16 @@ const critterCatalog = [
     modelPath: '',
   },
   {
+    id: 'veratus',
+    name: 'Veratus',
+    category: 'reptiles',
+    rarity: 'mythical',
+    unlock: createLevelUnlock('basilisk', 'Basilisk', 100),
+    modelPath: '',
+    imagePath: 'assets/images/Critters/Reptiles/Image_Veratus.png',
+    stats: createPlaceholderCritterStats(),
+  },
+  {
     id: 'salamander',
     name: 'Salamander',
     category: 'amphibians',
@@ -1401,8 +1411,8 @@ const critterCatalog = [
     },
   },
   {
-    id: 'fortunate-toad',
-    name: 'Fortunate Toad',
+    id: 'jin-chan',
+    name: 'Jin Chan',
     category: 'amphibians',
     rarity: 'mythical',
     unlock: {
@@ -1412,6 +1422,7 @@ const critterCatalog = [
       text: 'Reach Level 100 with Golden Toad.',
     },
     modelPath: '',
+    imagePath: 'assets/images/Critters/Amphibians/Image_Jin Chan.png',
     stats: {
       health: 120,
       speed: 80,
@@ -1427,16 +1438,44 @@ const critterCatalog = [
     unlock: {
       type: 'requirements',
       requirements: [
-        { critterId: 'fortunate-toad', level: 25 },
+        { critterId: 'jin-chan', level: 25 },
       ],
     },
     modelPath: '',
+    imagePath: 'assets/images/Critters/Amphibians/Image_Frog Prince.png',
     stats: {
       health: 80,
       speed: 120,
       stamina: 100,
       bonus: PASSIVE_FORTUNE,
     },
+  },
+  {
+    id: 'koric',
+    name: 'Koric',
+    category: 'amphibians',
+    rarity: 'mythical',
+    unlock: createRequirementsUnlock([
+      { critterId: 'salamander', level: 100 },
+      { critterId: 'great-crested-newt', level: 50 },
+      { critterId: 'diplocaulus', level: 25 },
+    ]),
+    modelPath: '',
+    imagePath: 'assets/images/Critters/Amphibians/Image_Koric.png',
+    stats: createPlaceholderCritterStats(),
+  },
+  {
+    id: 'loveland-frogman',
+    name: 'Loveland Frogman',
+    category: 'amphibians',
+    rarity: 'mythical',
+    unlock: createRequirementsUnlock([
+      { critterId: 'gastric-brooder', level: 15 },
+      { critterId: 'devil-frog', level: 20 },
+    ]),
+    modelPath: '',
+    imagePath: 'assets/images/Critters/Amphibians/Image_Loveland Frogman.png',
+    stats: createPlaceholderCritterStats(),
   },
   {
     id: 'mouse',
@@ -1634,10 +1673,7 @@ const critterCatalog = [
     name: 'Porcupine',
     category: 'mammals',
     rarity: 'common',
-    unlock: {
-      type: 'pending',
-      text: 'Awaiting Data Entry',
-    },
+    unlock: createLevelUnlock('hedgehog', 'Hedgehog', 15),
     modelPath: '',
     stats: {
       health: 110,
@@ -1652,10 +1688,10 @@ const critterCatalog = [
     name: 'Hedgehog',
     category: 'mammals',
     rarity: 'common',
-    unlock: {
-      type: 'pending',
-      text: 'Awaiting Data Entry',
-    },
+    unlock: createRequirementsUnlock([
+      { critterId: 'mouse', level: 15 },
+      { critterId: 'vole', level: 10 },
+    ]),
     modelPath: '',
     stats: {
       health: 75,

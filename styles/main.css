@@ -476,6 +476,7 @@ body::after {
 
 .inspector.inspector--critter-intel .stage {
   flex: 1 1 auto;
+  min-height: 180px;
 }
 
 .inspector.inspector--critter-intel .panel--critter-intel {
@@ -1171,19 +1172,32 @@ dl dt {
   text-decoration-color: rgba(240, 255, 150, 0.55);
 }
 
-.critter-detail__requirements {
-  margin: 0;
-  padding-left: 1.1rem;
-  display: grid;
-  gap: 0.2rem;
+.critter-detail__stats {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.critter-detail__requirements-value {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.26rem 0.32rem;
+}
+
+.critter-detail__requirement-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.12rem 0.42rem;
+  border-radius: 999px;
+  background: rgba(159, 217, 127, 0.12);
+  border: 1px solid rgba(159, 217, 127, 0.2);
+  font-size: 0.68rem;
+  line-height: 1.25;
+  color: var(--color-text-primary);
+  white-space: normal;
 }
 
 .critter-detail__requirement-note {
-  margin: 0;
-}
-
-.critter-detail__stats {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  display: block;
+  line-height: 1.4;
 }
 
 .critter-editor {
@@ -1475,7 +1489,7 @@ dl dt {
 }
 
 .panel--critter-intel {
-  padding: 1.25rem 1.35rem;
+  padding: 1rem 1.1rem;
 }
 
 .panel--critter-intel > .panel-header,
@@ -1484,8 +1498,38 @@ dl dt {
 }
 
 .panel--critter-intel .detail-scroll {
-  gap: 0.8rem;
+  gap: 0.55rem;
   padding-right: 0;
+  overflow: hidden;
+}
+
+.panel--critter-intel .critter-detail {
+  gap: 0.55rem;
+}
+
+.panel--critter-intel .critter-detail__headline {
+  gap: 0.5rem;
+}
+
+.panel--critter-intel .critter-detail__headline h3 {
+  font-size: 1.12rem;
+  letter-spacing: 0.12em;
+}
+
+.panel--critter-intel .critter-detail__stats div,
+.panel--critter-intel .critter-detail__passive div {
+  padding: 0.42rem 0.56rem;
+}
+
+.panel--critter-intel .critter-detail__stats dt,
+.panel--critter-intel .critter-detail__passive dt {
+  font-size: 0.6rem;
+}
+
+.panel--critter-intel .critter-detail__stats dd,
+.panel--critter-intel .critter-detail__passive dd {
+  font-size: 0.82rem;
+  line-height: 1.35;
 }
 
 .panel--minigame .detail-content {

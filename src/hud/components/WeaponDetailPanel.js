@@ -1,4 +1,5 @@
 import { deriveStatsList } from '../../data/weaponSchema.js';
+import { critters as critterRoster } from '../../data/critters.js';
 import {
   getPassiveAbility,
   getCritterPassiveId,
@@ -133,6 +134,12 @@ const buildStatValueMarkup = ({ key, value, decorate }) => {
 
 const formatCritterStat = (value) => (value === null || value === undefined || value === '' ? '--' : value);
 
+const prettifyLabel = (value = '') =>
+  String(value)
+    .replace(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/[-_]/g, ' ')
+    .replace(/^\w/, (char) => char.toUpperCase());
+
 const escapeHtml = (value) =>
   String(value)
     .replace(/&/g, '&amp;')
@@ -141,19 +148,93 @@ const escapeHtml = (value) =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 
-const buildCritterPassiveMarkup = (passive) => {
+const critterNameIndex = new Map(
+  (critterRoster || []).map((critter) => [critter.id, critter.name || prettifyLabel(critter.id)])
+);
+
+const getCritterDisplayName = (critterId) => critterNameIndex.get(critterId) || prettifyLabel(critterId);
+
+const getCritterUnlockRequirements = (unlock) => {
+  if (!unlock || typeof unlock !== 'object') {
+    return [];
+  }
+
+  if (Array.isArray(unlock.requirements)) {
+    return unlock.requirements
+      .filter((entry) => entry && entry.critterId && Number.isFinite(Number(entry.level)))
+      .map((entry) => ({
+        critterId: entry.critterId,
+        level: Number(entry.level),
+      }));
+  }
+
+  if (unlock.type === 'level' && unlock.critterId && Number.isFinite(Number(unlock.level))) {
+    return [
+      {
+        critterId: unlock.critterId,
+        level: Number(unlock.level),
+      },
+    ];
+  }
+
+  return [];
+};
+
+const buildCritterInfoPillMarkup = ({ className, label, content }) => {
   return `
-    <dl class="critter-detail__passive">
+    <dl class="${className}">
       <div>
-      <dt>Passive</dt>
-      <dd>${
-        passive
-          ? createTooltipMarkup(escapeHtml(passive.name), passive.effect)
-          : formatCritterStat('')
-      }</dd>
+      <dt>${label}</dt>
+      <dd>${content}</dd>
       </div>
     </dl>
   `;
+};
+
+const buildCritterPassiveMarkup = (passive) =>
+  buildCritterInfoPillMarkup({
+    className: 'critter-detail__passive',
+    label: 'Passive',
+    content: passive ? createTooltipMarkup(escapeHtml(passive.name), passive.effect) : formatCritterStat(''),
+  });
+
+const buildCritterRequirementsMarkup = (critter) => {
+  const unlock = critter?.unlock;
+
+  if (unlock?.type === 'starter') {
+    return buildCritterInfoPillMarkup({
+      className: 'critter-detail__passive critter-detail__requirements-panel',
+      label: 'Requirements',
+      content: '<span class="critter-detail__requirement-chip">Starter Critter</span>',
+    });
+  }
+
+  const requirements = getCritterUnlockRequirements(unlock);
+  if (requirements.length) {
+    const chips = requirements
+      .map(
+        ({ critterId, level }) =>
+          `<span class="critter-detail__requirement-chip">${escapeHtml(
+            `${getCritterDisplayName(critterId)} Lv. ${level}`
+          )}</span>`
+      )
+      .join('');
+
+    return buildCritterInfoPillMarkup({
+      className: 'critter-detail__passive critter-detail__requirements-panel',
+      label: 'Requirements',
+      content: `<span class="critter-detail__requirements-value">${chips}</span>`,
+    });
+  }
+
+  const fallbackText =
+    typeof unlock?.text === 'string' && unlock.text.trim() ? unlock.text.trim() : 'Awaiting Data Entry';
+
+  return buildCritterInfoPillMarkup({
+    className: 'critter-detail__passive critter-detail__requirements-panel',
+    label: 'Requirements',
+    content: `<span class="critter-detail__requirement-note">${escapeHtml(fallbackText)}</span>`,
+  });
 };
 
 export class WeaponDetailPanel {
@@ -222,6 +303,7 @@ export class WeaponDetailPanel {
     const rarityLabel = RARITY_TITLES[rarity] || this.prettify(rarity);
     const passive = getPassiveAbility(getCritterPassiveId(critter));
     const passiveMarkup = buildCritterPassiveMarkup(passive);
+    const requirementsMarkup = buildCritterRequirementsMarkup(critter);
 
     if (this.rarityBadge) {
       this.rarityBadge.textContent = '';
@@ -241,6 +323,7 @@ export class WeaponDetailPanel {
             <div><dt>Stamina</dt><dd>${formatCritterStat(stats.stamina)}</dd></div>
           </dl>
           ${passiveMarkup}
+          ${requirementsMarkup}
         </article>
       `;
     }
@@ -291,10 +374,7 @@ export class WeaponDetailPanel {
   }
 
   prettify(value) {
-    return value
-      .replace(/([a-z])([A-Z])/g, '$1 $2')
-      .replace(/[-_]/g, ' ')
-      .replace(/^\w/, (char) => char.toUpperCase());
+    return prettifyLabel(value);
   }
 
   renderCustom({ title, footer, className }) {
