@@ -1515,8 +1515,8 @@ export const critterMapDefaultLayout = {
       ],
       "lines": []
     },
-    "insects": {
-      "label": "Insects",
+    "anthropods": {
+      "label": "Anthropods",
       "critters": [
         {
           "id": "beetle",

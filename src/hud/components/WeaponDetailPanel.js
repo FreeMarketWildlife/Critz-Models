@@ -1,4 +1,8 @@
 import { deriveStatsList } from '../../data/weaponSchema.js';
+import {
+  getPassiveAbility,
+  getCritterPassiveId,
+} from '../../data/critzapedia/passives/catalog.js';
 import { applyKeywordTooltips, createTooltipMarkup } from '../../utils/keywordTooltips.js';
 
 const buildAmmoTooltip = (value) => {
@@ -137,64 +141,25 @@ const escapeHtml = (value) =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 
-const getUnlockRequirements = (critter) => {
-  const unlock = critter?.unlock;
-  if (!unlock) {
-    return [];
-  }
-
-  if (Array.isArray(unlock.requirements)) {
-    return unlock.requirements
-      .filter((entry) => entry && entry.critterId && Number.isFinite(Number(entry.level)))
-      .map((entry) => ({
-        critterId: entry.critterId,
-        level: Number(entry.level),
-      }));
-  }
-
-  if (unlock.type === 'level' && unlock.critterId && Number.isFinite(Number(unlock.level))) {
-    return [
-      {
-        critterId: unlock.critterId,
-        level: Number(unlock.level),
-      },
-    ];
-  }
-
-  return [];
-};
-
-const buildUnlockRequirementsMarkup = (critter, prettifyLabel) => {
-  const unlock = critter?.unlock;
-  if (!unlock) {
-    return '<p class="critter-detail__requirement-note">Awaiting Data Entry</p>';
-  }
-
-  if (unlock.type === 'starter') {
-    return '<p class="critter-detail__requirement-note">Unlocked automatically.</p>';
-  }
-
-  const requirements = getUnlockRequirements(critter);
-  if (requirements.length) {
-    const items = requirements
-      .map(
-        (requirement) =>
-          `<li>Level ${escapeHtml(requirement.level)} ${escapeHtml(prettifyLabel(requirement.critterId))}</li>`
-      )
-      .join('');
-    return `<ul class="critter-detail__requirements">${items}</ul>`;
-  }
-
-  if (typeof unlock.text === 'string' && unlock.text.trim()) {
-    return `<p class="critter-detail__requirement-note">${escapeHtml(unlock.text.trim())}</p>`;
-  }
-
-  return '<p class="critter-detail__requirement-note">Awaiting Data Entry</p>';
+const buildCritterPassiveMarkup = (passive) => {
+  return `
+    <dl class="critter-detail__passive">
+      <div>
+      <dt>Passive</dt>
+      <dd>${
+        passive
+          ? createTooltipMarkup(escapeHtml(passive.name), passive.effect)
+          : formatCritterStat('')
+      }</dd>
+      </div>
+    </dl>
+  `;
 };
 
 export class WeaponDetailPanel {
   constructor({ panelElement, rarityBadge, footerElement, bus = null }) {
     this.panelElement = panelElement;
+    this.inspectorElement = panelElement.closest('[data-component="inspector"]');
     this.contentElement = panelElement.querySelector('[data-role="detail-content"]');
     this.rarityBadge = rarityBadge;
     this.footerElement = footerElement;
@@ -240,7 +205,7 @@ export class WeaponDetailPanel {
     }
   }
 
-  renderCritter(critter, { categoryLabel, editorState } = {}) {
+  renderCritter(critter) {
     if (!critter) {
       this.renderEmpty();
       return;
@@ -248,193 +213,40 @@ export class WeaponDetailPanel {
 
     this.clearCustomState();
     this.panelElement.classList.remove('is-empty');
+    this.panelElement.classList.add('panel--critter-intel');
+    this.inspectorElement?.classList.add('inspector--critter-intel');
+    this.customClassName = 'panel--critter-intel';
 
     const stats = critter.stats ?? {};
     const rarity = critter.rarity || 'common';
     const rarityLabel = RARITY_TITLES[rarity] || this.prettify(rarity);
-    const unlockMarkup = buildUnlockRequirementsMarkup(critter, (value) => this.prettify(value));
-    const category = categoryLabel || this.prettify(critter.category || 'Critters');
-    const bonus = stats.bonus || 'Awaiting Data Entry';
-    const defaultEditorState = {
-      textScale: 100,
-      hue: 145,
-      saturation: 88,
-      lightness: 52,
-      inputHue: null,
-      inputSaturation: null,
-      inputLightness: null,
-      inputWidth: 3,
-    };
-    const resolvedEditorState = {
-      ...defaultEditorState,
-      ...(editorState || {}),
-    };
-    const inputEnabled =
-      Number.isFinite(resolvedEditorState.inputHue) || Number.isFinite(resolvedEditorState.outputHue);
-    const inputHueValue = inputEnabled
-      ? Number.isFinite(Number(resolvedEditorState.inputHue))
-        ? Number(resolvedEditorState.inputHue)
-        : Number(resolvedEditorState.outputHue)
-      : Number(resolvedEditorState.hue);
-    const inputSaturationValue = inputEnabled
-      ? Number.isFinite(Number(resolvedEditorState.inputSaturation))
-        ? Number(resolvedEditorState.inputSaturation)
-        : Number.isFinite(Number(resolvedEditorState.outputSaturation))
-          ? Number(resolvedEditorState.outputSaturation)
-        : Number(resolvedEditorState.saturation)
-      : Number(resolvedEditorState.saturation);
-    const inputLightnessValue = inputEnabled
-      ? Number.isFinite(Number(resolvedEditorState.inputLightness))
-        ? Number(resolvedEditorState.inputLightness)
-        : Number.isFinite(Number(resolvedEditorState.outputLightness))
-          ? Number(resolvedEditorState.outputLightness)
-        : Number(resolvedEditorState.lightness)
-      : Number(resolvedEditorState.lightness);
-    const inputWidthValue = Number.isFinite(Number(resolvedEditorState.inputWidth))
-      ? Number(resolvedEditorState.inputWidth)
-      : Number.isFinite(Number(resolvedEditorState.outputWidth))
-        ? Number(resolvedEditorState.outputWidth)
-        : defaultEditorState.inputWidth;
+    const passive = getPassiveAbility(getCritterPassiveId(critter));
+    const passiveMarkup = buildCritterPassiveMarkup(passive);
 
     if (this.rarityBadge) {
-      this.rarityBadge.textContent = rarityLabel;
-      this.rarityBadge.className = '';
-      this.rarityBadge.classList.add('rarity-badge', `rarity-${rarity}`);
+      this.rarityBadge.textContent = '';
+      this.rarityBadge.className = 'rarity-badge';
     }
 
     if (this.contentElement) {
       this.contentElement.innerHTML = `
         <article class="critter-detail">
-          <h3>${critter.name || 'Critter'}</h3>
-          <p class="description">Unlock path and stats for this critter.</p>
-          <dl class="critter-detail__meta">
-            <div><dt>Category</dt><dd>${category}</dd></div>
-            <div><dt>Rarity Tier</dt><dd>${rarityLabel}</dd></div>
-            <div><dt>Requirements</dt><dd>${unlockMarkup}</dd></div>
-          </dl>
+          <header class="critter-detail__headline">
+            <h3>${escapeHtml(critter.name || 'Critter')}</h3>
+            <span class="rarity-badge rarity-${escapeHtml(rarity)} critter-detail__rarity">${escapeHtml(rarityLabel)}</span>
+          </header>
           <dl class="critter-detail__stats">
             <div><dt>Health</dt><dd>${formatCritterStat(stats.health)}</dd></div>
             <div><dt>Speed</dt><dd>${formatCritterStat(stats.speed)}</dd></div>
             <div><dt>Stamina</dt><dd>${formatCritterStat(stats.stamina)}</dd></div>
           </dl>
-          <div class="special-section critter-detail__bonus">
-            <h4>Ability</h4>
-            <p class="description">${bonus}</p>
-          </div>
-          <details class="critter-editor">
-            <summary>Critter Box Editor</summary>
-            <div class="critter-editor__body">
-              <label class="critter-editor__field">
-                <span>Text Scale</span>
-                <input data-role="editor-text-scale" type="range" min="65" max="220" step="1" value="${Math.round(Number(resolvedEditorState.textScale) || defaultEditorState.textScale)}" />
-              </label>
-              <label class="critter-editor__field">
-                <span>Box Hue</span>
-                <input data-role="editor-hue" type="range" min="0" max="360" step="1" value="${Math.round(Number(resolvedEditorState.hue) || defaultEditorState.hue)}" />
-              </label>
-              <label class="critter-editor__field">
-                <span>Box Saturation</span>
-                <input data-role="editor-saturation" type="range" min="10" max="100" step="1" value="${Math.round(Number(resolvedEditorState.saturation) || defaultEditorState.saturation)}" />
-              </label>
-              <label class="critter-editor__field">
-                <span>Box Lightness</span>
-                <input data-role="editor-lightness" type="range" min="14" max="84" step="1" value="${Math.round(Number(resolvedEditorState.lightness) || defaultEditorState.lightness)}" />
-              </label>
-              <label class="critter-editor__toggle">
-                <input data-role="editor-input-enabled" type="checkbox" ${inputEnabled ? 'checked' : ''} />
-                <span>Custom Incoming Link Color</span>
-              </label>
-              <label class="critter-editor__field">
-                <span>Incoming Hue</span>
-                <input data-role="editor-input-hue" type="range" min="0" max="360" step="1" value="${Math.round(inputHueValue)}" ${inputEnabled ? '' : 'disabled'} />
-              </label>
-              <label class="critter-editor__field">
-                <span>Incoming Saturation</span>
-                <input data-role="editor-input-saturation" type="range" min="10" max="100" step="1" value="${Math.round(inputSaturationValue)}" ${inputEnabled ? '' : 'disabled'} />
-              </label>
-              <label class="critter-editor__field">
-                <span>Incoming Lightness</span>
-                <input data-role="editor-input-lightness" type="range" min="14" max="84" step="1" value="${Math.round(inputLightnessValue)}" ${inputEnabled ? '' : 'disabled'} />
-              </label>
-              <label class="critter-editor__field">
-                <span>Incoming Width</span>
-                <input data-role="editor-input-width" type="range" min="1" max="10" step="1" value="${Math.round(inputWidthValue)}" />
-              </label>
-              <div class="critter-editor__actions">
-                <button type="button" data-action="editor-reset">Reset</button>
-              </div>
-            </div>
-          </details>
+          ${passiveMarkup}
         </article>
       `;
-
-      const textScaleInput = this.contentElement.querySelector('[data-role="editor-text-scale"]');
-      const hueInput = this.contentElement.querySelector('[data-role="editor-hue"]');
-      const saturationInput = this.contentElement.querySelector('[data-role="editor-saturation"]');
-      const lightnessInput = this.contentElement.querySelector('[data-role="editor-lightness"]');
-      const inputEnabledInput = this.contentElement.querySelector('[data-role="editor-input-enabled"]');
-      const inputHueInput = this.contentElement.querySelector('[data-role="editor-input-hue"]');
-      const inputSaturationInput = this.contentElement.querySelector(
-        '[data-role="editor-input-saturation"]'
-      );
-      const inputLightnessInput = this.contentElement.querySelector(
-        '[data-role="editor-input-lightness"]'
-      );
-      const inputWidthInput = this.contentElement.querySelector('[data-role="editor-input-width"]');
-      const resetButton = this.contentElement.querySelector('[data-action="editor-reset"]');
-
-      const emitEditorUpdate = () => {
-        const inputHue = inputEnabledInput.checked ? Number(inputHueInput.value) : null;
-        const inputSaturation = inputEnabledInput.checked ? Number(inputSaturationInput.value) : null;
-        const inputLightness = inputEnabledInput.checked ? Number(inputLightnessInput.value) : null;
-        this.bus?.emit?.('critter:editor-changed', {
-          critterId: critter.id,
-          textScale: Number(textScaleInput.value),
-          hue: Number(hueInput.value),
-          saturation: Number(saturationInput.value),
-          lightness: Number(lightnessInput.value),
-          inputHue,
-          inputSaturation,
-          inputLightness,
-          inputWidth: Number(inputWidthInput.value),
-        });
-      };
-
-      textScaleInput?.addEventListener('input', emitEditorUpdate);
-      hueInput?.addEventListener('input', emitEditorUpdate);
-      saturationInput?.addEventListener('input', emitEditorUpdate);
-      lightnessInput?.addEventListener('input', emitEditorUpdate);
-      inputHueInput?.addEventListener('input', emitEditorUpdate);
-      inputSaturationInput?.addEventListener('input', emitEditorUpdate);
-      inputLightnessInput?.addEventListener('input', emitEditorUpdate);
-      inputWidthInput?.addEventListener('input', emitEditorUpdate);
-      inputEnabledInput?.addEventListener('change', () => {
-        inputHueInput.disabled = !inputEnabledInput.checked;
-        inputSaturationInput.disabled = !inputEnabledInput.checked;
-        inputLightnessInput.disabled = !inputEnabledInput.checked;
-        emitEditorUpdate();
-      });
-      resetButton?.addEventListener('click', () => {
-        this.bus?.emit?.('critter:editor-reset', {
-          critterId: critter.id,
-        });
-        textScaleInput.value = String(defaultEditorState.textScale);
-        hueInput.value = String(defaultEditorState.hue);
-        saturationInput.value = String(defaultEditorState.saturation);
-        lightnessInput.value = String(defaultEditorState.lightness);
-        inputEnabledInput.checked = false;
-        inputHueInput.value = String(defaultEditorState.hue);
-        inputHueInput.disabled = true;
-        inputSaturationInput.value = String(defaultEditorState.saturation);
-        inputSaturationInput.disabled = true;
-        inputLightnessInput.value = String(defaultEditorState.lightness);
-        inputLightnessInput.disabled = true;
-        inputWidthInput.value = String(defaultEditorState.inputWidth);
-      });
     }
 
     if (this.footerElement) {
-      this.footerElement.textContent = `Critter ID: ${critter.id}`;
+      this.footerElement.textContent = '';
     }
   }
 
@@ -516,6 +328,7 @@ export class WeaponDetailPanel {
   }
 
   clearCustomState() {
+    this.inspectorElement?.classList.remove('inspector--critter-intel');
     if (this.customClassName) {
       this.panelElement.classList.remove(this.customClassName);
       this.customClassName = null;

@@ -474,6 +474,15 @@ body::after {
   min-height: 0;
 }
 
+.inspector.inspector--critter-intel .stage {
+  flex: 1 1 auto;
+}
+
+.inspector.inspector--critter-intel .panel--critter-intel {
+  flex: 0 0 auto;
+  min-height: auto;
+}
+
 .panel-header {
   display: flex;
   align-items: flex-end;
@@ -1104,18 +1113,32 @@ dl dt {
 
 .critter-detail {
   display: grid;
-  gap: 0.95rem;
+  gap: 0.8rem;
+}
+
+.critter-detail__headline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.critter-detail__rarity {
+  min-width: 0;
 }
 
 .critter-detail__meta,
-.critter-detail__stats {
+.critter-detail__stats,
+.critter-detail__passive {
   margin: 0;
   display: grid;
   gap: 0.55rem;
 }
 
 .critter-detail__meta div,
-.critter-detail__stats div {
+.critter-detail__stats div,
+.critter-detail__passive div {
   display: grid;
   gap: 0.1rem;
   padding: 0.5rem 0.65rem;
@@ -1125,7 +1148,8 @@ dl dt {
 }
 
 .critter-detail__meta dt,
-.critter-detail__stats dt {
+.critter-detail__stats dt,
+.critter-detail__passive dt {
   margin: 0;
   font-size: 0.66rem;
   letter-spacing: 0.14em;
@@ -1134,10 +1158,17 @@ dl dt {
 }
 
 .critter-detail__meta dd,
-.critter-detail__stats dd {
+.critter-detail__stats dd,
+.critter-detail__passive dd {
   margin: 0;
   font-size: 0.9rem;
   color: var(--color-text-primary);
+}
+
+.critter-detail__stats dd .tooltip,
+.critter-detail__passive dd .tooltip {
+  color: inherit;
+  text-decoration-color: rgba(240, 255, 150, 0.55);
 }
 
 .critter-detail__requirements {
@@ -1153,10 +1184,6 @@ dl dt {
 
 .critter-detail__stats {
   grid-template-columns: repeat(3, minmax(0, 1fr));
-}
-
-.critter-detail__bonus {
-  border-top: 1px solid rgba(210, 243, 220, 0.18);
 }
 
 .critter-editor {
@@ -1445,6 +1472,20 @@ dl dt {
 
 .panel--minigame {
   padding: 1.1rem 1.3rem 1.25rem;
+}
+
+.panel--critter-intel {
+  padding: 1.25rem 1.35rem;
+}
+
+.panel--critter-intel > .panel-header,
+.panel--critter-intel > .panel-footer {
+  display: none;
+}
+
+.panel--critter-intel .detail-scroll {
+  gap: 0.8rem;
+  padding-right: 0;
 }
 
 .panel--minigame .detail-content {
@@ -2811,7 +2852,7 @@ dl dt {
   }
 
   .critter-detail__stats {
-    grid-template-columns: repeat(auto-fit, minmax(86px, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .app-shell.is-left-collapsed,
@@ -2873,6 +2914,6 @@ dl dt {
   }
 
   .critter-detail__stats {
-    grid-template-columns: repeat(auto-fit, minmax(108px, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }

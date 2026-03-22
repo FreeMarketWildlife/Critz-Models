@@ -33,6 +33,7 @@ export class WeaponDisplayApp {
     this.modesList = null;
     this.cosmeticsList = null;
     this.minigamesList = null;
+    this.brainstormingList = null;
     this.minigameRunner = null;
     this.minigameQuest = null;
     this.minigameKatana = null;
@@ -220,22 +221,16 @@ export class WeaponDisplayApp {
       emptyMessage: 'Map catalog entries are on deck.',
       onSelect: (item) => {
         if (!item) {
-          this.minigameRunner?.unmount();
-          this.minigameQuest?.unmount();
-          this.minigameKatana?.unmount();
+          this.unmountMinigames();
           this.hudController.clearInfo();
           return;
         }
-        this.minigameRunner?.unmount();
-        this.minigameQuest?.unmount();
-        this.minigameKatana?.unmount();
-        this.modesList?.setActive(null);
-        this.cosmeticsList?.setActive(null);
-        this.minigamesList?.setActive(null);
+        this.unmountMinigames();
+        this.clearLibrarySelections('maps');
         this.hudController.showLibraryInfo({
-          title: item.label,
-          description: 'Info coming soon.',
-          footer: 'Map info coming soon',
+          title: item.title || item.label,
+          description: item.description || 'Info coming soon.',
+          footer: item.footer || 'Map info coming soon',
         });
       },
     });
@@ -247,22 +242,16 @@ export class WeaponDisplayApp {
       emptyMessage: 'Game mode catalog entries are on deck.',
       onSelect: (item) => {
         if (!item) {
-          this.minigameRunner?.unmount();
-          this.minigameQuest?.unmount();
-          this.minigameKatana?.unmount();
+          this.unmountMinigames();
           this.hudController.clearInfo();
           return;
         }
-        this.minigameRunner?.unmount();
-        this.minigameQuest?.unmount();
-        this.minigameKatana?.unmount();
-        this.mapsList?.setActive(null);
-        this.cosmeticsList?.setActive(null);
-        this.minigamesList?.setActive(null);
+        this.unmountMinigames();
+        this.clearLibrarySelections('modes');
         this.hudController.showLibraryInfo({
-          title: item.label,
-          description: 'Info coming soon.',
-          footer: 'Game mode info coming soon',
+          title: item.title || item.label,
+          description: item.description || 'Info coming soon.',
+          footer: item.footer || 'Game mode info coming soon',
         });
       },
     });
@@ -274,22 +263,16 @@ export class WeaponDisplayApp {
       emptyMessage: 'Cosmetics catalog entries are on deck.',
       onSelect: (item) => {
         if (!item) {
-          this.minigameRunner?.unmount();
-          this.minigameQuest?.unmount();
-          this.minigameKatana?.unmount();
+          this.unmountMinigames();
           this.hudController.clearInfo();
           return;
         }
-        this.minigameRunner?.unmount();
-        this.minigameQuest?.unmount();
-        this.minigameKatana?.unmount();
-        this.mapsList?.setActive(null);
-        this.modesList?.setActive(null);
-        this.minigamesList?.setActive(null);
+        this.unmountMinigames();
+        this.clearLibrarySelections('cosmetics');
         this.hudController.showLibraryInfo({
-          title: item.label,
-          description: 'Cosmetic info coming soon.',
-          footer: 'Cosmetic info coming soon',
+          title: item.title || item.label,
+          description: item.description || 'Cosmetic info coming soon.',
+          footer: item.footer || 'Cosmetic info coming soon',
         });
       },
     });
@@ -301,19 +284,13 @@ export class WeaponDisplayApp {
       emptyMessage: 'Minigames are on deck.',
       onSelect: (item) => {
         if (!item) {
-          this.minigameRunner?.unmount();
-          this.minigameQuest?.unmount();
-          this.minigameKatana?.unmount();
+          this.unmountMinigames();
           this.hudController.clearInfo();
           return;
         }
-        this.mapsList?.setActive(null);
-        this.modesList?.setActive(null);
-        this.cosmeticsList?.setActive(null);
+        this.clearLibrarySelections('minigames');
         if (item.id === 'run') {
-          this.minigameRunner?.unmount();
-          this.minigameQuest?.unmount();
-          this.minigameKatana?.unmount();
+          this.unmountMinigames();
           const body = this.hudController.showCustomPanel({
             title: item.label,
             footer: 'Jump: Space/Up · Duck: Down/S · Restart: R · Pause: P',
@@ -323,9 +300,7 @@ export class WeaponDisplayApp {
           return;
         }
         if (item.id === 'critter-quest') {
-          this.minigameRunner?.unmount();
-          this.minigameQuest?.unmount();
-          this.minigameKatana?.unmount();
+          this.unmountMinigames();
           const body = this.hudController.showCustomPanel({
             title: item.label,
             footer: 'Adventure: Dialog · Quests · Dungeons · Combat',
@@ -335,9 +310,7 @@ export class WeaponDisplayApp {
           return;
         }
         if (item.id === 'katana-mouse') {
-          this.minigameRunner?.unmount();
-          this.minigameQuest?.unmount();
-          this.minigameKatana?.unmount();
+          this.unmountMinigames();
           const body = this.hudController.showCustomPanel({
             title: item.label,
             footer: 'Move: WASD/Arrows · Slash/Gun: Space · Dash: Shift · Freeze: F · Swap Gun: Q · Restart: R',
@@ -346,17 +319,36 @@ export class WeaponDisplayApp {
           this.minigameKatana?.mount(body);
           return;
         }
-        this.minigameRunner?.unmount();
-        this.minigameQuest?.unmount();
-        this.minigameKatana?.unmount();
+        this.unmountMinigames();
         this.hudController.showLibraryInfo({
-          title: item.label,
-          description: 'Minigame info coming soon.',
-          footer: 'Minigame info coming soon',
+          title: item.title || item.label,
+          description: item.description || 'Minigame info coming soon.',
+          footer: item.footer || 'Minigame info coming soon',
         });
       },
     });
     this.minigamesList.render();
+
+    this.brainstormingList = new NavButtonList({
+      element: layout.brainstormingListElement,
+      items: this.librarySections.brainstorming,
+      emptyMessage: 'Brainstorming notes are on deck.',
+      onSelect: (item) => {
+        if (!item) {
+          this.unmountMinigames();
+          this.hudController.clearInfo();
+          return;
+        }
+        this.unmountMinigames();
+        this.clearLibrarySelections('brainstorming');
+        this.hudController.showLibraryInfo({
+          title: item.title || item.label,
+          description: item.description || 'Brainstorming note coming soon.',
+          footer: item.footer || 'Brainstorming',
+        });
+      },
+    });
+    this.brainstormingList.render();
 
     this.activeAnimationId = null;
     this.critterSelector.render(this.activeCritterCategory);
@@ -425,6 +417,12 @@ export class WeaponDisplayApp {
             <summary class="nav-section__summary">Minigames</summary>
             <div class="nav-section__content">
               <div data-component="minigames-list"></div>
+            </div>
+          </details>
+          <details class="nav-section nav-section--brainstorming">
+            <summary class="nav-section__summary">Brainstorming</summary>
+            <div class="nav-section__content">
+              <div data-component="brainstorming-list"></div>
             </div>
           </details>
         </nav>
@@ -508,6 +506,7 @@ export class WeaponDisplayApp {
       modesListElement: this.root.querySelector('[data-component="modes-list"]'),
       cosmeticsListElement: this.root.querySelector('[data-component="cosmetics-list"]'),
       minigamesListElement: this.root.querySelector('[data-component="minigames-list"]'),
+      brainstormingListElement: this.root.querySelector('[data-component="brainstorming-list"]'),
       mapCopyButtonElement: this.root.querySelector('[data-action="copy-map-layout"]'),
       mapAddNodesToggleButtonElement: this.root.querySelector('[data-action="toggle-add-nodes"]'),
       mapPanToggleButtonElement: this.root.querySelector('[data-action="toggle-map-panning"]'),
@@ -596,18 +595,13 @@ export class WeaponDisplayApp {
         console.warn(`Weapon with id "${weaponId}" was not found.`);
         return;
       }
-      this.minigameRunner?.unmount();
-      this.minigameQuest?.unmount();
-      this.minigameKatana?.unmount();
+      this.unmountMinigames();
       if (this.activeCritter) {
         this.clearActiveCritter({ showGuide: false });
       }
       this.activeWeapon = weapon;
       this.sceneManager.applyRarityGlow();
-      this.mapsList?.setActive(null);
-      this.modesList?.setActive(null);
-      this.cosmeticsList?.setActive(null);
-      this.minigamesList?.setActive(null);
+      this.clearLibrarySelections();
     });
 
     this.eventBus.on('critter:category-selected', (categoryId) => {
@@ -618,10 +612,7 @@ export class WeaponDisplayApp {
       this.activeCritterCategory = categoryId;
       this.clearActiveCritter({ showGuide: false });
       this.critterUnlockMap?.setCategory(categoryId);
-      this.mapsList?.setActive(null);
-      this.modesList?.setActive(null);
-      this.cosmeticsList?.setActive(null);
-      this.minigamesList?.setActive(null);
+      this.clearLibrarySelections();
       this.hudController.showCritterCategoryGuide({
         categoryLabel: this.getCritterCategoryLabel(categoryId),
         critterCount: this.getCrittersByCategory(categoryId).length,
@@ -654,13 +645,8 @@ export class WeaponDisplayApp {
         return;
       }
 
-      this.minigameRunner?.unmount();
-      this.minigameQuest?.unmount();
-      this.minigameKatana?.unmount();
-      this.mapsList?.setActive(null);
-      this.modesList?.setActive(null);
-      this.cosmeticsList?.setActive(null);
-      this.minigamesList?.setActive(null);
+      this.unmountMinigames();
+      this.clearLibrarySelections();
       this.activeCritter = critter;
       this.critterUnlockMap?.setActiveCritter(critterId);
       const editorState = this.critterUnlockMap?.getCritterEditorState?.(critterId) || null;
@@ -681,6 +667,28 @@ export class WeaponDisplayApp {
       });
     });
 
+  }
+
+  unmountMinigames() {
+    this.minigameRunner?.unmount();
+    this.minigameQuest?.unmount();
+    this.minigameKatana?.unmount();
+  }
+
+  clearLibrarySelections(except = null) {
+    const lists = [
+      ['maps', this.mapsList],
+      ['modes', this.modesList],
+      ['cosmetics', this.cosmeticsList],
+      ['minigames', this.minigamesList],
+      ['brainstorming', this.brainstormingList],
+    ];
+
+    lists.forEach(([key, list]) => {
+      if (key !== except) {
+        list?.setActive(null);
+      }
+    });
   }
 
   indexWeapons() {

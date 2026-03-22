@@ -3,7 +3,7 @@ const DEFAULT_CATEGORY_LABELS = {
   amphibians: 'Amphians',
   mammals: 'Mammals',
   birds: 'Birds',
-  insects: 'Insects',
+  anthropods: 'Anthropods',
 };
 
 export class CritterSelector {

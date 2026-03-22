@@ -48,6 +48,7 @@ export class SceneManager {
     this.currentInteractionMode = INTERACTION_MODE_HINTS.idle;
     this.currentUsesImagePlaceholder = false;
     this.critterImagePreviewStates = new Map();
+    this.resizeObserver = null;
 
     this.handleResize = this.handleResize.bind(this);
     this.animate = this.animate.bind(this);
@@ -81,6 +82,12 @@ export class SceneManager {
     this.emitStageEvent('stage:rig-controls-cleared');
 
     window.addEventListener('resize', this.handleResize);
+    if (typeof ResizeObserver === 'function') {
+      this.resizeObserver = new ResizeObserver(() => {
+        this.handleResize();
+      });
+      this.resizeObserver.observe(this.container);
+    }
     this.handleResize();
     this.start();
   }
@@ -842,6 +849,8 @@ export class SceneManager {
   dispose() {
     cancelAnimationFrame(this.animationFrame);
     window.removeEventListener('resize', this.handleResize);
+    this.resizeObserver?.disconnect?.();
+    this.resizeObserver = null;
     this.scene.traverse((object) => {
       if (object.isMesh) {
         object.geometry?.dispose?.();
