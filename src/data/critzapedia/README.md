@@ -10,6 +10,8 @@ src/data/critzapedia/
 ├── critters/
 │   ├── catalog.js               # Critter entries (current catalog)
 │   └── schema.js                # Template + normalization helpers
+├── passives/
+│   └── catalog.js               # Passive ability index + critter assignments
 ├── weapons/
 │   ├── catalog.js               # Weapon entries (current catalog)
 │   └── schema.js                # Weapon schema re-export
@@ -20,6 +22,7 @@ src/data/critzapedia/
 
 ## Adding new entries
 - **Critters**: append to `critters/catalog.js` and follow the `createEmptyCritter()` template.
+- **Passives**: add new passive definitions or critter assignments in `passives/catalog.js`.
 - **Weapons**: append to `weapons/catalog.js` using the existing data shape.
 - **Tools**: append to `tools/catalog.js`, using `createEmptyTool()` as a guide.
 

@@ -6,6 +6,7 @@ export const createEmptyCritter = () => ({
   role: '',
   habitat: '',
   rarity: 'common',
+  passiveId: '',
   modelPath: '',
   imagePath: '',
   preview: {
@@ -31,6 +32,7 @@ export const createEmptyCritter = () => ({
 export const normalizeCritter = (critter) => ({
   ...createEmptyCritter(),
   ...critter,
+  passiveId: typeof critter?.passiveId === 'string' ? critter.passiveId : '',
   preview: {
     ...createEmptyCritter().preview,
     ...(critter.preview || {}),

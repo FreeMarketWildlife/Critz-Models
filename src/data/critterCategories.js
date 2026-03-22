@@ -3,5 +3,5 @@ export const critterCategories = [
   { id: 'amphibians', label: 'Amphians' },
   { id: 'mammals', label: 'Mammals' },
   { id: 'birds', label: 'Birds' },
-  { id: 'insects', label: 'Insects' },
+  { id: 'anthropods', label: 'Anthropods' },
 ];
