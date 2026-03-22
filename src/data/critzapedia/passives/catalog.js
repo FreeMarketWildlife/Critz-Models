@@ -137,7 +137,7 @@ export const critterPassiveIds = Object.freeze({
   'gastric-brooder': PASSIVE_IDS.HOPPER,
   'devil-frog': PASSIVE_IDS.HOPPER,
   'golden-toad': PASSIVE_IDS.HOPPER,
-  'fortunate-toad': PASSIVE_IDS.HOPPER,
+  'jin-chan': PASSIVE_IDS.HOPPER,
   'frog-prince': PASSIVE_IDS.HOPPER,
   mouse: PASSIVE_IDS.HASTY,
   squirrel: PASSIVE_IDS.SWINGER,
