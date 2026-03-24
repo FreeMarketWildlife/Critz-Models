@@ -7,11 +7,13 @@ import { librarySections } from '../data/librarySections.js';
 import { critterCategories } from '../data/critterCategories.js';
 import { CritterSelector } from '../hud/components/CritterSelector.js';
 import { CritterUnlockMap } from '../hud/components/CritterUnlockMap.js';
+import { WeaponUnlockMap } from '../hud/components/WeaponUnlockMap.js';
 import { ViewportOverlay } from '../hud/components/ViewportOverlay.js';
 import { NavButtonList } from '../hud/components/NavButtonList.js';
 import { MinigameRunner } from '../hud/components/MinigameRunner.js';
 import { MinigameCritterQuest } from '../hud/components/MinigameCritterQuest.js';
 import { MinigameKatanaMouse } from '../hud/components/MinigameKatanaMouse.js';
+import { weaponsMapDefaultLayout } from '../data/weaponsMapDefaultLayout.js';
 
 const RARITY_ORDER = {
   common: 0,
@@ -28,6 +30,7 @@ export class WeaponDisplayApp {
     this.hudController = null;
     this.critterSelector = null;
     this.critterUnlockMap = null;
+    this.weaponUnlockMap = null;
     this.viewportOverlay = null;
     this.mapsList = null;
     this.modesList = null;
@@ -44,25 +47,34 @@ export class WeaponDisplayApp {
     this.mapPanToggleButton = null;
     this.mapPointsToggleButton = null;
     this.mapZoomBadge = null;
+    this.centerMapTitle = null;
+    this.centerMapHost = null;
     this.leftWindowToggleButton = null;
     this.rightWindowToggleButton = null;
     this.leftWindowCollapsed = false;
     this.rightWindowCollapsed = false;
     this.boundNavKeydown = (event) => this.handleNavKeydown(event);
     this.boundMapCopyClick = async () => {
-      if (!this.critterUnlockMap || !this.mapCopyButton) {
+      if (!this.mapCopyButton) {
         return;
       }
 
       const originalLabel = this.mapCopyButton.textContent;
       try {
-        await this.critterUnlockMap.copyLayoutSnapshot({
-          previewStates: this.sceneManager?.getCritterImagePreviewSnapshot?.() || null,
+        const activeMap = this.getActiveMapController();
+        if (!activeMap) {
+          return;
+        }
+        await activeMap.copyLayoutSnapshot({
+          previewStates:
+            this.activeCenterMapType === 'critters'
+              ? this.sceneManager?.getCritterImagePreviewSnapshot?.() || null
+              : null,
         });
         this.mapCopyButton.textContent = 'Copied';
       } catch (error) {
         this.mapCopyButton.textContent = 'Copy Failed';
-        console.error('Failed to copy critter map layout:', error);
+        console.error('Failed to copy map layout:', error);
       }
       setTimeout(() => {
         if (this.mapCopyButton) {
@@ -71,19 +83,27 @@ export class WeaponDisplayApp {
       }, 1200);
     };
     this.boundMapPointsToggleClick = () => {
-      if (!this.critterUnlockMap || !this.mapPointsToggleButton) {
+      if (!this.mapPointsToggleButton) {
         return;
       }
 
-      const visible = this.critterUnlockMap.toggleLinkPointsVisibility();
+      const activeMap = this.getActiveMapController();
+      if (!activeMap) {
+        return;
+      }
+      const visible = activeMap.toggleLinkPointsVisibility();
       this.mapPointsToggleButton.textContent = visible ? 'Hide Nodes' : 'Show Nodes';
     };
     this.boundMapAddNodesToggleClick = () => {
-      if (!this.critterUnlockMap || !this.mapAddNodesToggleButton) {
+      if (!this.mapAddNodesToggleButton) {
         return;
       }
 
-      const addNodesEnabled = this.critterUnlockMap.toggleAddNodesModeEnabled();
+      const activeMap = this.getActiveMapController();
+      if (!activeMap) {
+        return;
+      }
+      const addNodesEnabled = activeMap.toggleAddNodesModeEnabled();
       this.mapAddNodesToggleButton.textContent = addNodesEnabled ? 'Add Nodes: On' : 'Add Nodes: Off';
       if (this.mapPanToggleButton) {
         if (addNodesEnabled) {
@@ -91,21 +111,25 @@ export class WeaponDisplayApp {
           this.mapPanToggleButton.textContent = 'Panning Locked';
         } else {
           this.mapPanToggleButton.disabled = false;
-          const panningEnabled = this.critterUnlockMap.isPanningEnabled();
+          const panningEnabled = activeMap.isPanningEnabled();
           this.mapPanToggleButton.textContent = panningEnabled ? 'Disable Panning' : 'Enable Panning';
         }
       }
       if (this.mapPointsToggleButton) {
-        const visible = this.critterUnlockMap.areLinkPointsVisible();
+        const visible = activeMap.areLinkPointsVisible();
         this.mapPointsToggleButton.textContent = visible ? 'Hide Nodes' : 'Show Nodes';
       }
     };
     this.boundMapPanToggleClick = () => {
-      if (!this.critterUnlockMap || !this.mapPanToggleButton) {
+      if (!this.mapPanToggleButton) {
         return;
       }
 
-      const panningEnabled = this.critterUnlockMap.togglePanningEnabled();
+      const activeMap = this.getActiveMapController();
+      if (!activeMap) {
+        return;
+      }
+      const panningEnabled = activeMap.togglePanningEnabled();
       this.mapPanToggleButton.textContent = panningEnabled ? 'Disable Panning' : 'Enable Panning';
     };
     this.boundLeftWindowToggleClick = () => {
@@ -117,9 +141,9 @@ export class WeaponDisplayApp {
     this.activeAnimationId = null;
     this.stageElement = null;
 
-    this.weapons = sampleWeapons;
-    this.weaponMap = new Map();
     this.categories = ['primary', 'secondary', 'melee', 'utility'];
+    this.weapons = this.buildWeaponsCatalog();
+    this.weaponMap = new Map();
     this.activeCategory = 'primary';
     this.activeWeapon = null;
     this.librarySections = librarySections;
@@ -129,6 +153,8 @@ export class WeaponDisplayApp {
     this.critterCategories = critterCategories;
     this.activeCritterCategory = this.critterCategories[0]?.id ?? null;
     this.activeCritter = null;
+    this.activeCenterMapType = 'critters';
+    this.mountedCenterMapType = null;
   }
 
   init() {
@@ -141,6 +167,8 @@ export class WeaponDisplayApp {
     this.mapPanToggleButton = layout.mapPanToggleButtonElement;
     this.mapPointsToggleButton = layout.mapPointsToggleButtonElement;
     this.mapZoomBadge = layout.mapZoomElement;
+    this.centerMapTitle = layout.centerMapTitleElement;
+    this.centerMapHost = layout.centerUnlockMapElement;
     this.leftWindowToggleButton = layout.leftWindowToggleButtonElement;
     this.rightWindowToggleButton = layout.rightWindowToggleButtonElement;
     this.indexWeapons();
@@ -180,9 +208,16 @@ export class WeaponDisplayApp {
     });
 
     this.critterUnlockMap = new CritterUnlockMap({
-      element: layout.critterUnlockMapElement,
+      element: layout.centerUnlockMapElement,
       critters: this.critters,
       categories: this.critterCategories,
+      bus: this.eventBus,
+      zoomElement: this.mapZoomBadge,
+    });
+    this.weaponUnlockMap = new WeaponUnlockMap({
+      element: layout.centerUnlockMapElement,
+      weapons: this.weapons,
+      categories: this.categories,
       bus: this.eventBus,
       zoomElement: this.mapZoomBadge,
     });
@@ -227,6 +262,7 @@ export class WeaponDisplayApp {
         }
         this.unmountMinigames();
         this.clearLibrarySelections('maps');
+        this.syncLeftWindowSelection('maps');
         this.hudController.showLibraryInfo({
           title: item.title || item.label,
           description: item.description || 'Info coming soon.',
@@ -248,6 +284,7 @@ export class WeaponDisplayApp {
         }
         this.unmountMinigames();
         this.clearLibrarySelections('modes');
+        this.syncLeftWindowSelection('modes');
         this.hudController.showLibraryInfo({
           title: item.title || item.label,
           description: item.description || 'Info coming soon.',
@@ -269,6 +306,7 @@ export class WeaponDisplayApp {
         }
         this.unmountMinigames();
         this.clearLibrarySelections('cosmetics');
+        this.syncLeftWindowSelection('cosmetics');
         this.hudController.showLibraryInfo({
           title: item.title || item.label,
           description: item.description || 'Cosmetic info coming soon.',
@@ -289,6 +327,7 @@ export class WeaponDisplayApp {
           return;
         }
         this.clearLibrarySelections('minigames');
+        this.syncLeftWindowSelection('minigames');
         if (item.id === 'run') {
           this.unmountMinigames();
           const body = this.hudController.showCustomPanel({
@@ -341,6 +380,7 @@ export class WeaponDisplayApp {
         }
         this.unmountMinigames();
         this.clearLibrarySelections('brainstorming');
+        this.syncLeftWindowSelection('brainstorming');
         this.hudController.showLibraryInfo({
           title: item.title || item.label,
           description: item.description || 'Brainstorming note coming soon.',
@@ -352,26 +392,8 @@ export class WeaponDisplayApp {
 
     this.activeAnimationId = null;
     this.critterSelector.render(this.activeCritterCategory);
-    this.critterUnlockMap.render(this.activeCritterCategory);
-    if (this.mapPointsToggleButton) {
-      const visible = this.critterUnlockMap.areLinkPointsVisible();
-      this.mapPointsToggleButton.textContent = visible ? 'Hide Nodes' : 'Show Nodes';
-    }
-    if (this.mapAddNodesToggleButton) {
-      const addNodesEnabled = this.critterUnlockMap.isAddNodesModeEnabled();
-      this.mapAddNodesToggleButton.textContent = addNodesEnabled ? 'Add Nodes: On' : 'Add Nodes: Off';
-    }
-    if (this.mapPanToggleButton) {
-      const addNodesEnabled = this.critterUnlockMap.isAddNodesModeEnabled();
-      if (addNodesEnabled) {
-        this.mapPanToggleButton.disabled = true;
-        this.mapPanToggleButton.textContent = 'Panning Locked';
-      } else {
-        this.mapPanToggleButton.disabled = false;
-        const panningEnabled = this.critterUnlockMap.isPanningEnabled();
-        this.mapPanToggleButton.textContent = panningEnabled ? 'Disable Panning' : 'Enable Panning';
-      }
-    }
+    this.setCenterMapType('critters');
+    this.syncLeftWindowSelection('critters');
     this.hudController.showCritterCategoryGuide({
       categoryLabel: this.getCritterCategoryLabel(this.activeCritterCategory),
       critterCount: this.getCrittersByCategory(this.activeCritterCategory).length,
@@ -428,7 +450,7 @@ export class WeaponDisplayApp {
         </nav>
         <section class="panel hud-panel hud-map" data-component="critter-map-panel">
           <div class="panel-header">
-            <span>Critter Unlock Map</span>
+            <span data-role="center-map-title">Critter Unlock Map</span>
             <div class="panel-header__actions">
               <span class="unlock-map__zoom unlock-map__zoom--header" data-role="map-zoom-header">100%</span>
               <button
@@ -464,7 +486,7 @@ export class WeaponDisplayApp {
             </div>
           </div>
           <div class="detail-content">
-            <div class="detail-scroll detail-scroll--map" data-component="critter-unlock-map"></div>
+            <div class="detail-scroll detail-scroll--map" data-component="center-unlock-map"></div>
           </div>
         </section>
         <section class="inspector" id="right-window" data-component="inspector">
@@ -478,7 +500,7 @@ export class WeaponDisplayApp {
           </section>
           <section class="panel hud-panel hud-detail" data-component="weapon-detail">
             <div class="panel-header">
-              <span>Critter Intel</span>
+              <span>Info</span>
               <span data-role="rarity-badge"></span>
             </div>
             <div class="detail-content">
@@ -498,10 +520,11 @@ export class WeaponDisplayApp {
       stageViewportElement: this.root.querySelector('[data-role="stage-viewport"]'),
       categoryMenuElement: this.root.querySelector('[data-component="weapon-category-menu"]'),
       critterSelectorElement: this.root.querySelector('[data-component="critter-selector"]'),
-      critterUnlockMapElement: this.root.querySelector('[data-component="critter-unlock-map"]'),
+      centerUnlockMapElement: this.root.querySelector('[data-component="center-unlock-map"]'),
       weaponDetailPanel: this.root.querySelector('[data-component="weapon-detail"]'),
       rarityBadge: this.root.querySelector('[data-role="rarity-badge"]'),
       detailFooter: this.root.querySelector('[data-role="detail-footer"]'),
+      centerMapTitleElement: this.root.querySelector('[data-role="center-map-title"]'),
       mapsListElement: this.root.querySelector('[data-component="maps-list"]'),
       modesListElement: this.root.querySelector('[data-component="modes-list"]'),
       cosmeticsListElement: this.root.querySelector('[data-component="cosmetics-list"]'),
@@ -587,6 +610,13 @@ export class WeaponDisplayApp {
         this.clearActiveCritter({ showGuide: false });
       }
       this.activeCategory = category;
+      this.weaponUnlockMap?.setCategory(category);
+      this.setCenterMapType('weapons');
+      this.syncLeftWindowSelection('weapons');
+      this.hudController.showWeaponCategoryGuide({
+        categoryLabel: this.getWeaponCategoryLabel(category),
+        weaponCount: this.getWeaponsByCategory(category).length,
+      });
     });
 
     this.eventBus.on('hud:weapon-selected', (weaponId) => {
@@ -600,18 +630,29 @@ export class WeaponDisplayApp {
         this.clearActiveCritter({ showGuide: false });
       }
       this.activeWeapon = weapon;
+      this.weaponUnlockMap?.setActiveWeapon(weaponId);
+      this.setCenterMapType('weapons');
+      this.syncLeftWindowSelection('weapons');
+      this.setStageActive(true);
+      this.sceneManager.loadWeapon(weapon);
       this.sceneManager.applyRarityGlow();
       this.clearLibrarySelections();
     });
 
     this.eventBus.on('critter:category-selected', (categoryId) => {
-      if (!categoryId || this.activeCritterCategory === categoryId) {
+      if (!categoryId) {
         return;
       }
 
+      this.unmountMinigames();
       this.activeCritterCategory = categoryId;
+      this.activeWeapon = null;
+      this.weaponUnlockMap?.setActiveWeapon(null);
       this.clearActiveCritter({ showGuide: false });
+      this.critterSelector?.setActiveCategory?.(categoryId, { emit: false });
       this.critterUnlockMap?.setCategory(categoryId);
+      this.setCenterMapType('critters');
+      this.syncLeftWindowSelection('critters');
       this.clearLibrarySelections();
       this.hudController.showCritterCategoryGuide({
         categoryLabel: this.getCritterCategoryLabel(categoryId),
@@ -647,6 +688,10 @@ export class WeaponDisplayApp {
 
       this.unmountMinigames();
       this.clearLibrarySelections();
+      this.activeWeapon = null;
+      this.weaponUnlockMap?.setActiveWeapon(null);
+      this.setCenterMapType('critters');
+      this.syncLeftWindowSelection('critters');
       this.activeCritter = critter;
       this.critterUnlockMap?.setActiveCritter(critterId);
       const editorState = this.critterUnlockMap?.getCritterEditorState?.(critterId) || null;
@@ -665,6 +710,33 @@ export class WeaponDisplayApp {
           this.sceneManager.stopAnimation();
         }
       });
+    });
+
+    this.eventBus.on('weapon-map:selected', (weaponId) => {
+      if (!weaponId) {
+        this.activeWeapon = null;
+        this.weaponUnlockMap?.setActiveWeapon(null);
+        this.sceneManager?.disposeCurrentModel?.();
+        this.setStageActive(false);
+        this.hudController.showWeaponCategoryGuide({
+          categoryLabel: this.getWeaponCategoryLabel(this.activeCategory),
+          weaponCount: this.getWeaponsByCategory(this.activeCategory).length,
+        });
+        return;
+      }
+
+      const weapon = this.weaponMap.get(weaponId);
+      if (!weapon) {
+        return;
+      }
+
+      if (weapon.category !== this.activeCategory) {
+        this.activeCategory = weapon.category;
+        this.hudController.weaponCategoryMenu?.setActiveCategory?.(weapon.category);
+        this.weaponUnlockMap?.setCategory(weapon.category);
+      }
+
+      this.hudController.selectWeapon(weaponId, { emit: true });
     });
 
   }
@@ -698,6 +770,55 @@ export class WeaponDisplayApp {
     });
   }
 
+  buildWeaponsCatalog() {
+    const merged = new Map(
+      (sampleWeapons || []).map((weapon) => [
+        weapon.id,
+        {
+          ...weapon,
+          imagePath: weapon.imagePath || null,
+        },
+      ])
+    );
+
+    Object.entries(weaponsMapDefaultLayout?.categories || {}).forEach(([categoryId, categoryLayout]) => {
+      const layoutWeapons = Array.isArray(categoryLayout?.weapons) ? categoryLayout.weapons : [];
+      layoutWeapons.forEach((entry) => {
+        const existing = merged.get(entry.id);
+        if (existing) {
+          merged.set(entry.id, {
+            ...existing,
+            category: existing.category || categoryId,
+            imagePath: existing.imagePath || entry.imagePath || null,
+            requirements: Array.isArray(entry.requirements) ? entry.requirements : existing.requirements || [],
+          });
+          return;
+        }
+
+        merged.set(entry.id, {
+          id: entry.id,
+          name: entry.name,
+          category: categoryId,
+          rarity: 'common',
+          description: 'Weapon data entry is pending. Using the weapon image as the current preview placeholder.',
+          modelPath: null,
+          imagePath: entry.imagePath || null,
+          preview: {
+            rotation: { x: 0, y: 0, z: 0 },
+            scale: 1.2,
+          },
+          stats: {
+            info: '3D model pending. Using weapon image placeholder.',
+          },
+          special: {},
+          requirements: Array.isArray(entry.requirements) ? entry.requirements : [],
+        });
+      });
+    });
+
+    return Array.from(merged.values());
+  }
+
   indexCritters() {
     this.critterMap.clear();
     this.critters.forEach((critter) => {
@@ -719,6 +840,20 @@ export class WeaponDisplayApp {
     }
 
     return String(categoryId || 'Critters')
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      .replace(/[-_]/g, ' ')
+      .replace(/^\w/, (char) => char.toUpperCase());
+  }
+
+  getWeaponsByCategory(categoryId) {
+    if (!categoryId) {
+      return [];
+    }
+    return this.weapons.filter((weapon) => weapon.category === categoryId);
+  }
+
+  getWeaponCategoryLabel(categoryId) {
+    return String(categoryId || 'Weapons')
       .replace(/([a-z])([A-Z])/g, '$1 $2')
       .replace(/[-_]/g, ' ')
       .replace(/^\w/, (char) => char.toUpperCase());
@@ -775,6 +910,79 @@ export class WeaponDisplayApp {
         categoryLabel: this.getCritterCategoryLabel(this.activeCritterCategory),
         critterCount: this.getCrittersByCategory(this.activeCritterCategory).length,
       });
+    }
+  }
+
+  syncLeftWindowSelection(activeSection) {
+    const showCritterSelection = activeSection === 'critters';
+    const showWeaponSelection = activeSection === 'weapons';
+
+    this.critterSelector?.setActiveCategory?.(
+      showCritterSelection ? this.activeCritterCategory : null,
+      { emit: false }
+    );
+    this.hudController?.weaponCategoryMenu?.setActiveCategory(
+      showWeaponSelection ? this.activeCategory : null
+    );
+  }
+
+  getActiveMapController() {
+    return this.activeCenterMapType === 'weapons' ? this.weaponUnlockMap : this.critterUnlockMap;
+  }
+
+  mountCenterMap(mapType) {
+    if (!this.centerMapHost) {
+      return;
+    }
+
+    if (mapType === 'weapons') {
+      this.weaponUnlockMap.element = this.centerMapHost;
+      this.weaponUnlockMap.render(this.activeCategory);
+      this.weaponUnlockMap.setActiveWeapon(this.activeWeapon?.id || null);
+      this.mountedCenterMapType = 'weapons';
+      return;
+    }
+
+    this.critterUnlockMap.element = this.centerMapHost;
+    this.critterUnlockMap.render(this.activeCritterCategory);
+    this.critterUnlockMap.setActiveCritter(this.activeCritter?.id || null);
+    this.mountedCenterMapType = 'critters';
+  }
+
+  setCenterMapType(mapType) {
+    this.activeCenterMapType = mapType === 'weapons' ? 'weapons' : 'critters';
+    if (this.mountedCenterMapType !== this.activeCenterMapType) {
+      this.mountCenterMap(this.activeCenterMapType);
+    }
+    if (this.centerMapTitle) {
+      this.centerMapTitle.textContent =
+        this.activeCenterMapType === 'weapons' ? 'Weapon Unlock Map' : 'Critter Unlock Map';
+    }
+
+    const activeMap = this.getActiveMapController();
+    if (this.mapPointsToggleButton) {
+      const supportsPoints = this.activeCenterMapType === 'critters';
+      this.mapPointsToggleButton.disabled = !supportsPoints;
+      this.mapPointsToggleButton.textContent =
+        supportsPoints && activeMap?.areLinkPointsVisible() ? 'Hide Nodes' : 'Show Nodes';
+    }
+    if (this.mapAddNodesToggleButton) {
+      const supportsAddNodes = this.activeCenterMapType === 'critters';
+      this.mapAddNodesToggleButton.disabled = !supportsAddNodes;
+      this.mapAddNodesToggleButton.textContent =
+        supportsAddNodes && activeMap?.isAddNodesModeEnabled() ? 'Add Nodes: On' : 'Add Nodes: Off';
+    }
+    if (this.mapPanToggleButton) {
+      const addNodesEnabled = Boolean(activeMap?.isAddNodesModeEnabled?.());
+      if (addNodesEnabled) {
+        this.mapPanToggleButton.disabled = true;
+        this.mapPanToggleButton.textContent = 'Panning Locked';
+      } else {
+        this.mapPanToggleButton.disabled = false;
+        this.mapPanToggleButton.textContent = activeMap?.isPanningEnabled?.()
+          ? 'Disable Panning'
+          : 'Enable Panning';
+      }
     }
   }
 

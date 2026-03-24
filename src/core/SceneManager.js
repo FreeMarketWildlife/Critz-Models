@@ -35,6 +35,7 @@ export class SceneManager {
     this.stageGroup = new THREE.Group();
     this.currentModel = null;
     this.currentCritterId = null;
+    this.currentWeaponId = null;
     this.pendingWeaponId = null;
     this.pendingCritterId = null;
     this.pendingAnimationId = null;
@@ -546,6 +547,10 @@ export class SceneManager {
       model = await this.resourceLoader.loadModel(weapon.modelPath);
     }
 
+    if (!model || model.userData?.isPlaceholder) {
+      model = await this.createWeaponImagePlaceholder(weapon);
+    }
+
     if (this.pendingWeaponId !== requestId) {
       return;
     }
@@ -563,21 +568,37 @@ export class SceneManager {
       return;
     }
 
-    model.position.set(0, 0, 0);
-    model.rotation.set(0, Math.PI / 4, 0);
+    const usesImagePlaceholder = Boolean(model.userData?.isImagePlaceholder);
+    if (!usesImagePlaceholder) {
+      model.position.set(0, 0, 0);
+      model.rotation.set(0, Math.PI / 4, 0);
 
-    const scale = weapon.preview?.scale ?? 1.2;
-    model.scale.setScalar(scale);
+      const scale = weapon.preview?.scale ?? 1.2;
+      model.scale.setScalar(scale);
+    }
 
     this.currentModel = model;
+    this.currentWeaponId = weapon.id;
     this.stageGroup.add(model);
 
+    this.applyInteractionMode(usesImagePlaceholder ? INTERACTION_MODE_HINTS.image : INTERACTION_MODE_HINTS.model);
+    this.setupRigController(usesImagePlaceholder ? null : model);
+    if (usesImagePlaceholder) {
+      this.stopAnimation();
+      this.setAutoRotate(false);
+      if (!this.focusOnCurrentModel({ immediate: true })) {
+        this.resetView(true);
+      }
+    } else {
+      this.resetView(true);
+    }
+
     this.applyRarityGlow();
-    this.focusOnCurrentModel({ immediate: false });
     this.emitStageEvent('stage:model-ready', {
       type: 'weapon',
       id: weapon.id,
       name: weapon.name,
+      usesImagePlaceholder,
     });
     this.pendingWeaponId = null;
   }
@@ -755,6 +776,44 @@ export class SceneManager {
     return null;
   }
 
+  async createWeaponImagePlaceholder(weapon) {
+    const imageCandidates = this.getWeaponImageCandidates(weapon);
+    const imageHeight = Number.isFinite(weapon?.imageHeight) ? weapon.imageHeight : IMAGE_PLACEHOLDER_HEIGHT;
+
+    for (const imagePath of imageCandidates) {
+      const texture = await this.resourceLoader.loadTexture(imagePath, { silent: true });
+      if (!texture) {
+        continue;
+      }
+
+      texture.colorSpace = THREE.SRGBColorSpace;
+
+      const width = Number(texture.image?.naturalWidth ?? texture.image?.width ?? 1);
+      const height = Number(texture.image?.naturalHeight ?? texture.image?.height ?? 1);
+      const safeHeight = height > 0 ? height : 1;
+      const aspect = Math.max(width / safeHeight, 0.5);
+
+      const group = new THREE.Group();
+      group.name = 'weapon-image-placeholder';
+      group.userData.isImagePlaceholder = true;
+      group.userData.imagePath = imagePath;
+
+      const spriteMaterial = new THREE.SpriteMaterial({
+        map: texture,
+        transparent: true,
+        depthWrite: false,
+        alphaTest: 0.03,
+      });
+
+      const sprite = new THREE.Sprite(spriteMaterial);
+      sprite.scale.set(imageHeight * aspect, imageHeight, 1);
+      group.add(sprite);
+      return group;
+    }
+
+    return null;
+  }
+
   getCritterImageCandidates(critter) {
     const candidates = [];
     if (typeof critter?.imagePath === 'string' && critter.imagePath.trim()) {
@@ -788,6 +847,39 @@ export class SceneManager {
     return Array.from(new Set(candidates));
   }
 
+  getWeaponImageCandidates(weapon) {
+    const candidates = [];
+    if (typeof weapon?.imagePath === 'string' && weapon.imagePath.trim()) {
+      candidates.push(weapon.imagePath.trim());
+    }
+
+    const weaponName = String(weapon?.name || '').trim().replace(/\s+/g, ' ');
+    const categoryFolder = this.toTitleCase(String(weapon?.category || ''));
+    if (!weaponName || !categoryFolder) {
+      return Array.from(new Set(candidates));
+    }
+
+    const normalizedName = weaponName
+      .split(' ')
+      .filter(Boolean)
+      .map((word) =>
+        word
+          .split('-')
+          .map((part) => this.toTitleCase(part))
+          .join('-')
+      )
+      .join(' ');
+
+    const nameCandidates = Array.from(new Set([weaponName, normalizedName].filter(Boolean)));
+    nameCandidates.forEach((nameVariant) => {
+      IMAGE_PLACEHOLDER_EXTENSIONS.forEach((ext) => {
+        candidates.push(`assets/images/Weapons/${categoryFolder}/Image_${nameVariant}.${ext}`);
+      });
+    });
+
+    return Array.from(new Set(candidates));
+  }
+
   toTitleCase(value) {
     return String(value || '')
       .trim()
@@ -815,6 +907,7 @@ export class SceneManager {
     });
     this.currentModel = null;
     this.currentCritterId = null;
+    this.currentWeaponId = null;
     this.currentUsesImagePlaceholder = false;
     this.applyInteractionMode(INTERACTION_MODE_HINTS.idle);
     this.mixer?.stopAllAction?.();
