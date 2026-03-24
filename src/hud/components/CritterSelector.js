@@ -74,7 +74,16 @@ export class CritterSelector {
   }
 
   setActiveCategory(categoryId, { emit = true } = {}) {
-    if (!categoryId || !this.buttons.has(categoryId)) {
+    if (!categoryId) {
+      this.activeCategoryId = null;
+      this.buttons.forEach((button) => {
+        button.classList.remove('active');
+        button.setAttribute('aria-selected', 'false');
+      });
+      return;
+    }
+
+    if (!this.buttons.has(categoryId)) {
       return;
     }
 

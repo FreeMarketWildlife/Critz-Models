@@ -45,6 +45,118 @@ const prettify = (value = '') =>
     .replace(/[-_]/g, ' ')
     .replace(/\b\w/g, (char) => char.toUpperCase());
 
+const clampColorChannel = (value) => Math.max(0, Math.min(255, Math.round(Number(value) || 0)));
+
+const rgbToHex = ({ r = 0, g = 0, b = 0 } = {}) =>
+  `#${[r, g, b]
+    .map((channel) => clampColorChannel(channel).toString(16).padStart(2, '0'))
+    .join('')}`;
+
+const parseHexColor = (value = '') => {
+  const normalized = String(value || '')
+    .trim()
+    .replace(/^#/, '')
+    .toLowerCase();
+
+  if (/^[0-9a-f]{3}$/.test(normalized)) {
+    const [r, g, b] = normalized.split('').map((char) => `${char}${char}`);
+    return {
+      r: Number.parseInt(r, 16),
+      g: Number.parseInt(g, 16),
+      b: Number.parseInt(b, 16),
+    };
+  }
+
+  if (/^[0-9a-f]{6}$/.test(normalized)) {
+    return {
+      r: Number.parseInt(normalized.slice(0, 2), 16),
+      g: Number.parseInt(normalized.slice(2, 4), 16),
+      b: Number.parseInt(normalized.slice(4, 6), 16),
+    };
+  }
+
+  return null;
+};
+
+const hslToRgb = ({ hue = 0, saturation = 100, lightness = 50 } = {}) => {
+  const h = ((Number(hue) % 360) + 360) % 360;
+  const s = Math.max(0, Math.min(100, Number(saturation) || 0)) / 100;
+  const l = Math.max(0, Math.min(100, Number(lightness) || 0)) / 100;
+
+  if (s === 0) {
+    const channel = Math.round(l * 255);
+    return { r: channel, g: channel, b: channel };
+  }
+
+  const c = (1 - Math.abs(2 * l - 1)) * s;
+  const hueSection = h / 60;
+  const x = c * (1 - Math.abs((hueSection % 2) - 1));
+  let rPrime = 0;
+  let gPrime = 0;
+  let bPrime = 0;
+
+  if (hueSection >= 0 && hueSection < 1) {
+    rPrime = c;
+    gPrime = x;
+  } else if (hueSection < 2) {
+    rPrime = x;
+    gPrime = c;
+  } else if (hueSection < 3) {
+    gPrime = c;
+    bPrime = x;
+  } else if (hueSection < 4) {
+    gPrime = x;
+    bPrime = c;
+  } else if (hueSection < 5) {
+    rPrime = x;
+    bPrime = c;
+  } else {
+    rPrime = c;
+    bPrime = x;
+  }
+
+  const m = l - c / 2;
+  return {
+    r: Math.round((rPrime + m) * 255),
+    g: Math.round((gPrime + m) * 255),
+    b: Math.round((bPrime + m) * 255),
+  };
+};
+
+const rgbToHsl = ({ r = 0, g = 0, b = 0 } = {}) => {
+  const red = clampColorChannel(r) / 255;
+  const green = clampColorChannel(g) / 255;
+  const blue = clampColorChannel(b) / 255;
+  const max = Math.max(red, green, blue);
+  const min = Math.min(red, green, blue);
+  const delta = max - min;
+  const lightness = (max + min) / 2;
+
+  let hue = 0;
+  if (delta !== 0) {
+    if (max === red) {
+      hue = ((green - blue) / delta) % 6;
+    } else if (max === green) {
+      hue = (blue - red) / delta + 2;
+    } else {
+      hue = (red - green) / delta + 4;
+    }
+    hue *= 60;
+    if (hue < 0) {
+      hue += 360;
+    }
+  }
+
+  const saturation =
+    delta === 0 ? 0 : delta / (1 - Math.abs(2 * lightness - 1));
+
+  return {
+    hue: Math.round(hue),
+    saturation: Math.round(saturation * 100),
+    lightness: Math.round(lightness * 100),
+  };
+};
+
 const getUnlockRequirements = (critter) => {
   const unlock = critter?.unlock;
   if (!unlock) {
@@ -427,12 +539,14 @@ export class CritterUnlockMap {
       : Number.isFinite(previous.outputWidth)
         ? Number(previous.outputWidth)
         : DEFAULT_INPUT_WIDTH;
+    const previousGlow = previous.glow === true;
 
     return {
       textScale: this.clampNumber(nextScale, 65, 220, DEFAULT_NODE_TEXT_SCALE),
       hue: this.clampNumber(style.hue, 0, 360, fallbackHue),
       saturation: this.clampNumber(style.saturation, 10, 100, fallbackSaturation),
       lightness: this.clampNumber(style.lightness, 14, 84, fallbackLightness),
+      glow: typeof style.glow === 'boolean' ? style.glow : previousGlow,
       inputHue: Number.isFinite(resolvedIncomingHue)
         ? this.clampNumber(resolvedIncomingHue, 0, 360, null)
         : null,
@@ -721,6 +835,7 @@ export class CritterUnlockMap {
     node.style.setProperty('--node-hue', String(style.hue));
     node.style.setProperty('--node-saturation', String(style.saturation));
     node.style.setProperty('--node-lightness', String(style.lightness));
+    node.classList.toggle('is-glowing', style.glow === true);
   }
 
   getAutoNodeFontSize(label) {
@@ -974,29 +1089,13 @@ export class CritterUnlockMap {
     this.hideStyleMenu();
     this.bindStyleMenuDismiss();
     const current = this.getResolvedNodeStyle(this.activeCategoryId, critter.id);
-    const raw = this.getNodeStyle(this.activeCategoryId, critter.id) || null;
-    const inputEnabled = Number.isFinite(raw?.inputHue) || Number.isFinite(raw?.outputHue);
-    const inputHue = inputEnabled
-      ? Number.isFinite(raw?.inputHue)
-        ? Number(raw.inputHue)
-        : Number(raw.outputHue)
-      : current.hue;
-    const inputSaturation = inputEnabled
-      ? this.clampNumber(
-          Number.isFinite(raw?.inputSaturation) ? raw?.inputSaturation : raw?.outputSaturation,
-          10,
-          100,
-          current.saturation
-        )
-      : current.saturation;
-    const inputLightness = inputEnabled
-      ? this.clampNumber(
-          Number.isFinite(raw?.inputLightness) ? raw?.inputLightness : raw?.outputLightness,
-          14,
-          84,
-          current.lightness
-        )
-      : current.lightness;
+    const currentHex = rgbToHex(
+      hslToRgb({
+        hue: current.hue,
+        saturation: current.saturation,
+        lightness: current.lightness,
+      })
+    );
     this.styleMenu.hidden = false;
     this.styleMenu.innerHTML = `
       <p class="unlock-style-menu__title">Edit ${critter.name}</p>
@@ -1005,36 +1104,27 @@ export class CritterUnlockMap {
         <input data-role="node-text-scale" type="range" min="65" max="220" step="1" value="${Math.round(current.textScale)}" />
       </label>
       <label class="unlock-style-menu__field">
-        <span>Box Hue</span>
-        <input data-role="node-hue" type="range" min="0" max="360" step="1" value="${Math.round(current.hue)}" />
+        <span>Box Color</span>
+        <div class="unlock-style-menu__color-row">
+          <input data-role="node-color-picker" class="unlock-style-menu__color-picker" type="color" value="${currentHex}" />
+          <input
+            data-role="node-color-hex"
+            class="unlock-style-menu__hex-input"
+            type="text"
+            value="${currentHex.toUpperCase()}"
+            inputmode="text"
+            spellcheck="false"
+            autocomplete="off"
+          />
+        </div>
       </label>
       <label class="unlock-style-menu__field">
-        <span>Box Saturation</span>
-        <input data-role="node-saturation" type="range" min="10" max="100" step="1" value="${Math.round(current.saturation)}" />
-      </label>
-      <label class="unlock-style-menu__field">
-        <span>Box Lightness</span>
+        <span>Brightness</span>
         <input data-role="node-lightness" type="range" min="14" max="84" step="1" value="${Math.round(current.lightness)}" />
       </label>
       <label class="unlock-style-menu__toggle">
-        <input data-role="input-enabled" type="checkbox" ${inputEnabled ? 'checked' : ''} />
-        <span>Custom Incoming Link Color</span>
-      </label>
-      <label class="unlock-style-menu__field">
-        <span>Incoming Hue</span>
-        <input data-role="input-hue" type="range" min="0" max="360" step="1" value="${Math.round(inputHue)}" ${inputEnabled ? '' : 'disabled'} />
-      </label>
-      <label class="unlock-style-menu__field">
-        <span>Incoming Saturation</span>
-        <input data-role="input-saturation" type="range" min="10" max="100" step="1" value="${Math.round(inputSaturation)}" ${inputEnabled ? '' : 'disabled'} />
-      </label>
-      <label class="unlock-style-menu__field">
-        <span>Incoming Lightness</span>
-        <input data-role="input-lightness" type="range" min="14" max="84" step="1" value="${Math.round(inputLightness)}" ${inputEnabled ? '' : 'disabled'} />
-      </label>
-      <label class="unlock-style-menu__field">
-        <span>Incoming Width</span>
-        <input data-role="input-width" type="range" min="1" max="10" step="1" value="${Math.round(current.inputWidth)}" />
+        <input data-role="node-glow" type="checkbox" ${current.glow ? 'checked' : ''} />
+        <span>Glow With Box Color</span>
       </label>
       <div class="unlock-style-menu__actions">
         <button type="button" data-action="reset-node-style">Reset Node Style</button>
@@ -1044,46 +1134,81 @@ export class CritterUnlockMap {
     this.positionStyleMenu(clientX, clientY);
 
     const textScaleInput = this.styleMenu.querySelector('[data-role="node-text-scale"]');
-    const hueInput = this.styleMenu.querySelector('[data-role="node-hue"]');
-    const saturationInput = this.styleMenu.querySelector('[data-role="node-saturation"]');
+    const colorPickerInput = this.styleMenu.querySelector('[data-role="node-color-picker"]');
+    const colorHexInput = this.styleMenu.querySelector('[data-role="node-color-hex"]');
     const lightnessInput = this.styleMenu.querySelector('[data-role="node-lightness"]');
-    const inputEnabledInput = this.styleMenu.querySelector('[data-role="input-enabled"]');
-    const inputHueInput = this.styleMenu.querySelector('[data-role="input-hue"]');
-    const inputSaturationInput = this.styleMenu.querySelector('[data-role="input-saturation"]');
-    const inputLightnessInput = this.styleMenu.querySelector('[data-role="input-lightness"]');
-    const inputWidthInput = this.styleMenu.querySelector('[data-role="input-width"]');
+    const glowInput = this.styleMenu.querySelector('[data-role="node-glow"]');
     const resetButton = this.styleMenu.querySelector('[data-action="reset-node-style"]');
 
-    const commitNodeStyle = () => {
-      const inputHueValue = inputEnabledInput.checked ? Number(inputHueInput.value) : null;
-      const inputSaturationValue = inputEnabledInput.checked ? Number(inputSaturationInput.value) : null;
-      const inputLightnessValue = inputEnabledInput.checked ? Number(inputLightnessInput.value) : null;
+    const syncHexInput = (hexValue) => {
+      colorPickerInput.value = hexValue;
+      colorHexInput.value = hexValue.toUpperCase();
+      colorHexInput.dataset.valid = 'true';
+    };
+
+    const commitNodeStyle = ({ preserveLightness = false } = {}) => {
+      const parsedColor = parseHexColor(colorPickerInput.value) || parseHexColor(colorHexInput.value);
+      const colorHsl = parsedColor ? rgbToHsl(parsedColor) : null;
       this.applyCritterEditorState(critter.id, {
         textScale: Number(textScaleInput.value),
-        hue: Number(hueInput.value),
-        saturation: Number(saturationInput.value),
-        lightness: Number(lightnessInput.value),
-        inputHue: inputHueValue,
-        inputSaturation: inputSaturationValue,
-        inputLightness: inputLightnessValue,
-        inputWidth: Number(inputWidthInput.value),
+        hue: colorHsl ? colorHsl.hue : current.hue,
+        saturation: colorHsl ? colorHsl.saturation : current.saturation,
+        lightness: preserveLightness && colorHsl ? Number(lightnessInput.value) : colorHsl ? colorHsl.lightness : current.lightness,
+        glow: glowInput.checked,
       });
     };
 
     textScaleInput.addEventListener('input', commitNodeStyle);
-    hueInput.addEventListener('input', commitNodeStyle);
-    saturationInput.addEventListener('input', commitNodeStyle);
-    lightnessInput.addEventListener('input', commitNodeStyle);
-    inputEnabledInput.addEventListener('change', () => {
-      inputHueInput.disabled = !inputEnabledInput.checked;
-      inputSaturationInput.disabled = !inputEnabledInput.checked;
-      inputLightnessInput.disabled = !inputEnabledInput.checked;
+    colorPickerInput.addEventListener('input', () => {
+      syncHexInput(colorPickerInput.value);
+      const parsedColor = parseHexColor(colorPickerInput.value);
+      if (parsedColor) {
+        const nextHsl = rgbToHsl(parsedColor);
+        lightnessInput.value = String(
+          this.clampNumber(nextHsl.lightness, 14, 84, DEFAULT_NODE_LIGHTNESS)
+        );
+      }
       commitNodeStyle();
     });
-    inputHueInput.addEventListener('input', commitNodeStyle);
-    inputSaturationInput.addEventListener('input', commitNodeStyle);
-    inputLightnessInput.addEventListener('input', commitNodeStyle);
-    inputWidthInput.addEventListener('input', commitNodeStyle);
+    colorHexInput.addEventListener('input', () => {
+      const parsedColor = parseHexColor(colorHexInput.value);
+      if (!parsedColor) {
+        colorHexInput.dataset.valid = 'false';
+        return;
+      }
+
+      const normalizedHex = rgbToHex(parsedColor);
+      syncHexInput(normalizedHex);
+      const nextHsl = rgbToHsl(parsedColor);
+      lightnessInput.value = String(
+        this.clampNumber(nextHsl.lightness, 14, 84, DEFAULT_NODE_LIGHTNESS)
+      );
+      commitNodeStyle();
+    });
+    colorHexInput.addEventListener('blur', () => {
+      const parsedColor = parseHexColor(colorHexInput.value);
+      if (parsedColor) {
+        syncHexInput(rgbToHex(parsedColor));
+        return;
+      }
+
+      const resolved = this.getResolvedNodeStyle(this.activeCategoryId, critter.id);
+      syncHexInput(rgbToHex(hslToRgb(resolved)));
+    });
+    lightnessInput.addEventListener('input', () => {
+      const parsedColor = parseHexColor(colorPickerInput.value) || parseHexColor(colorHexInput.value);
+      if (parsedColor) {
+        const nextColor = rgbToHex(
+          hslToRgb({
+            ...rgbToHsl(parsedColor),
+            lightness: Number(lightnessInput.value),
+          })
+        );
+        syncHexInput(nextColor);
+      }
+      commitNodeStyle({ preserveLightness: true });
+    });
+    glowInput.addEventListener('change', commitNodeStyle);
     resetButton.addEventListener('click', () => {
       this.resetCritterEditorState(critter.id);
       this.hideStyleMenu();
@@ -1163,6 +1288,7 @@ export class CritterUnlockMap {
         hue: DEFAULT_NODE_HUE,
         saturation: DEFAULT_NODE_SATURATION,
         lightness: DEFAULT_NODE_LIGHTNESS,
+        glow: false,
         inputHue: null,
         inputSaturation: null,
         inputLightness: null,
@@ -1192,6 +1318,7 @@ export class CritterUnlockMap {
       hue: style.hue,
       saturation: style.saturation,
       lightness: style.lightness,
+      glow: style.glow === true,
       inputHue,
       inputSaturation,
       inputLightness,
@@ -1214,6 +1341,7 @@ export class CritterUnlockMap {
       hue: Number.isFinite(patch.hue) ? Number(patch.hue) : previous.hue,
       saturation: Number.isFinite(patch.saturation) ? Number(patch.saturation) : previous.saturation,
       lightness: Number.isFinite(patch.lightness) ? Number(patch.lightness) : previous.lightness,
+      glow: typeof patch.glow === 'boolean' ? patch.glow : previous.glow,
       inputHue: Number.isFinite(patch.inputHue)
         ? Number(patch.inputHue)
         : Number.isFinite(patch.outputHue)
@@ -2360,6 +2488,7 @@ export class CritterUnlockMap {
                   hue: style.hue,
                   saturation: style.saturation,
                   lightness: style.lightness,
+                  glow: style.glow === true,
                   inputHue: Number.isFinite(style.inputHue) ? style.inputHue : null,
                   inputSaturation: Number.isFinite(style.inputSaturation)
                     ? style.inputSaturation

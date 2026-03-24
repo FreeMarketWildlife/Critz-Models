@@ -67,11 +67,14 @@ export class HUDController {
   }
 
   handleCategoryChange(category) {
-    if (category === this.activeCategory) return;
+    const changed = category !== this.activeCategory;
     this.activeCategory = category;
-    this.activeWeaponId = null;
-    this.weaponCategoryMenu?.setActiveWeapon(null);
-    this.weaponDetailPanel.renderEmpty();
+    this.weaponCategoryMenu?.setActiveCategory(category);
+    if (changed) {
+      this.activeWeaponId = null;
+      this.weaponCategoryMenu?.setActiveWeapon(null);
+      this.weaponDetailPanel.renderEmpty();
+    }
     this.bus.emit('hud:category-changed', category);
   }
 
@@ -140,6 +143,23 @@ export class HUDController {
           ? `Select a critter box in the center unlock map to view its 3D preview and stats. ${normalizedCount} critter${plural} currently listed in this category.`
           : 'No critters are listed in this category yet. Awaiting Data Entry.',
       footer: 'Unlock rules are shown under the map',
+    });
+  }
+
+  showWeaponCategoryGuide({ categoryLabel, weaponCount }) {
+    this.activeWeaponId = null;
+    this.weaponCategoryMenu?.setActiveWeapon(null);
+
+    const normalizedCount = Number.isFinite(weaponCount) ? weaponCount : 0;
+    const plural = normalizedCount === 1 ? '' : 's';
+
+    this.weaponDetailPanel.renderPlaceholder({
+      title: categoryLabel ? `${categoryLabel} Weapons & Tools` : 'Weapons & Tools',
+      description:
+        normalizedCount > 0
+          ? `Select a weapon node in the center map to view its preview and stats. ${normalizedCount} weapon${plural} currently listed in this category.`
+          : 'No weapons or tools are listed in this category yet. Awaiting Data Entry.',
+      footer: 'Weapon tree data is active in the center window',
     });
   }
 }

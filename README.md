@@ -1,152 +1,148 @@
-# Critz Armory Display Application Plan
+# Critz Models Workspace Guide
 
-## Vision
-Create an immersive, fantasy-inspired armory interface that catalogs every weapon in Critz. The application should blend an arcane HUD with interactive 3D weapon previews powered by Three.js. It must support rapid iteration on weapon metadata, modular UI sections for Primary, Secondary, Melee, and Utility gear, and an extensible pipeline for importing new 3D assets.
+Use this file as the source of truth for UI behavior, file ownership, and update workflow.
 
-## Technology Stack
-- **Core**: Vanilla JavaScript with ES modules
-- **3D Rendering**: [Three.js](https://threejs.org/) (module build via CDN during early development)
-- **Styling**: CSS with custom properties for theming
-- **Bundling**: Start without a bundler; later migrations to Vite/Rollup are straightforward because the codebase is module-based.
+## Purpose
 
-## Directory & File Structure
-```
-Critz-Models/
-├── index.html                # Entry HTML document
-├── README.md                 # Project plan & onboarding guide
-├── styles/
-│   └── main.css              # Global styles and theming
-├── assets/
-│   ├── fonts/                # Decorative HUD fonts
-│   ├── textures/             # Shared texture maps
-│   └── models/               # GLB/GLTF models (organized by weapon type)
-└── src/
-    ├── main.js               # Application bootstrap
-    ├── app/
-    │   └── WeaponDisplayApp.js
-    ├── core/
-    │   ├── SceneManager.js   # Three.js scene lifecycle
-    │   ├── RendererFactory.js
-    │   └── ResourceLoader.js # Helper for loading models/textures
-    ├── data/
-    │   ├── weaponSchema.js   # Schema definition + validation helpers
-    │   ├── sampleWeapons.js  # Seed data used for UI scaffolding
-    │   ├── critters.js       # Critter catalog entrypoint
-    │   └── critzapedia/      # Organized encyclopedia data
-    │       ├── index.js
-    │       ├── critters/
-    │       ├── weapons/
-    │       └── tools/
-    ├── hud/
-    │   ├── HUDController.js  # Coordinates HUD state with app
-    │   └── components/
-    │       ├── NavigationTabs.js
-    │       ├── WeaponDetailPanel.js
-    │       └── WeaponList.js
-    └── utils/
-        └── eventBus.js
-```
+This repo is the Critz encyclopedia and unlock-map workspace.
 
-> **Note**: Until real assets are available, `.glb` placeholders sit under `assets/models/<category>/placeholder.glb`. The `ResourceLoader` is designed to swap to production CDN/local pipeline later.
+Main responsibilities:
+- design unlock trees
+- preview critters, weapons, and tools in 3D
+- store structured game content
 
-## Core Modules
-### `WeaponDisplayApp`
-- Owns global application state: active weapon category, selected weapon, loaded assets.
-- Bootstraps `SceneManager` and `HUDController`.
-- Provides hooks for future systems (filters, search, loadouts).
+## Window Model
 
-### `SceneManager`
-- Sets up camera, lighting, and renderer.
-- Manages the weapon preview scene graph and transitions between weapon models.
-- Responsible for orbit controls, animation loops, and responsiveness.
+Use these names exactly:
 
-### `ResourceLoader`
-- Wraps Three.js loaders (GLTFLoader, TextureLoader).
-- Maintains caches to avoid reloading identical resources.
-- Centralizes fallback handling for missing assets.
+- Left Window: navigation column with `Critters`, `Weapons & Tools`, `Maps`, `Game Modes`, `Cosmetics`, `Minigames`, and `Brainstorming`
+- Center Window: one active map or content surface
+- Right Window: the 3D viewport and the info panel below it
 
-### HUD Components
-- `NavigationTabs`: Renders Primary/Secondary/Melee/Utility categories with active-state highlighting.
-- `WeaponList`: Displays cards/table of weapons in the active category with key stats at a glance.
-- `WeaponDetailPanel`: Shows detailed stat blocks, lore snippets, attachments, and context-specific fields (e.g., Quiver capacity instead of magazine size).
-- All components receive data via the `HUDController` and emit events through the shared `eventBus`.
+## UI State Rules
 
-## Data Modeling
-Weapons are modeled with a base schema plus category-specific extensions.
+1. The Left Window is the only top-level navigation state.
+2. Only one Left Window option may be visually active at a time.
+3. The active Left Window option must match the content currently shown in the Center Window.
+4. The Center Window must show exactly one active surface at a time.
+5. The Right Window must reflect the current Center Window selection.
+6. If the Center Window has no selected node/item, the Right Window should show guide or placeholder content for the active Left Window option.
+7. A Center Window selection is secondary state. It should update the Right Window, not create a second active Left Window selection.
 
-```js
-{
-  id: 'string',
-  name: 'string',
-  category: 'primary' | 'secondary' | 'melee' | 'utility',
-  rarity: 'common' | 'rare' | 'epic' | 'legendary',
-  description: 'string',
-  modelPath: 'assets/models/primary/arcane-rifle.glb',
-  previewRotation: { x: Number, y: Number, z: Number },
-  stats: {
-    damage: Number,
-    fireRate: Number,
-    reloadSpeed: Number,
-    magazineSize: Number,
-    capacity: Number,
-    projectileType: 'arrow' | 'bolt' | 'bullet' | 'magic',
-    drawSpeed: Number,
-    chargeTime: Number,
-    // ... extendable
-  },
-  special: {
-    elementalAffinity: 'frost',
-    passive: 'Fires chained lightning bolts on crits',
-    // ... extendable
-  }
-}
-```
+Default startup state:
 
-The schema is intentionally flexible. The HUD reads the schema metadata to decide which stats to show. Optional fields (like `quiverCapacity`) are displayed only when present.
+- Left Window active option: `Critters > Reptiles`
+- Center Window content: reptile unlock map
+- Right Window content: reptile guide/placeholder until a critter is selected
 
-## Critzapedia Data Library
-The `src/data/critzapedia/` folder is the new encyclopedia-ready catalog for critters, weapons,
-and tools. Use the catalog files to add new entries, and extend the schema files when you need
-additional fields. This keeps the UI stable while the encyclopedia grows.
+## Hard Constraints
 
-## UI Layout & Flow
-- **Top-left HUD**: Permanent "Crtiz" brand glyph and environment controls (fullscreen, sound toggle).
-- **Left rail**: Navigation tabs stacked vertically for category selection.
-- **Center stage**: Three.js canvas with weapon preview, orbit controls, and atmospheric VFX.
-- **Right panel**: Weapon list (top) and detail panel (bottom) with animated transitions.
-- **Bottom bar**: Contextual actions (inspect, equip, compare) – scaffolded for future development.
+Do:
 
-All sections are responsive; on small screens the nav becomes a top bar and the weapon list collapses into accordions.
+- keep Left Window selection singular
+- keep Center Window limited to one visible surface
+- keep Right Window synchronized with the active Center Window surface
+- clear stale highlights when switching sections
 
-## Styling & Theming
-- Use CSS custom properties to store arcane color palette (deep purples, gold highlights, smoky neutrals).
-- Include parchment-style textures and runic SVG borders.
-- Typography: combine a calligraphic display font for headings and a readable serif/sans for body text.
-- Animations: subtle glows, shimmering hover states, low-FPS parallax backgrounds.
+Do not:
 
-## 3D Asset Pipeline
-1. **Modeling**: Artists export GLB/GLTF with embedded materials.
-2. **Optimization**: Run through tools like gltfpack/Draco for size reduction.
-3. **Placement**: Save under `assets/models/<category>/` with consistent naming.
-4. **Manifest update**: Add metadata entry in `src/data/sampleWeapons.js` (later replaced by API).
-5. **Preview tuning**: Adjust `previewRotation`, `cameraOffset`, and environment settings per weapon.
+- show multiple Center Window maps at the same time
+- leave both critter and weapon categories highlighted at the same time
+- let the Right Window show stale info from a previous Center Window surface
+- mix content data and layout data
 
-## Development Workflow
-- Start with static data from `sampleWeapons.js`.
-- Build HUD components with sample data.
-- Integrate Three.js scene that swaps models when selection changes.
-- Add search/filter controls.
-- Connect to persistent backend or CMS when ready.
+## Layout Source Of Truth
 
-## Future Enhancements
-- Lore codex integration.
-- Animated attacks in preview (Three.js animation clips).
-- Loadout comparisons & DPS calculators.
-- Multiplayer showroom with shared sessions.
+Default layout files:
 
-## Next Steps Checklist
-1. Implement scaffold described below (HUD containers, event wiring, placeholder scene).
-2. Populate `sampleWeapons.js` with representative data for each category.
-3. Establish theme styles in `styles/main.css`.
-4. Create placeholder GLB assets or cubes per category for dev previews.
-5. Expand UI interactions (search, filters, comparisons).
+- `src/data/critterMapDefaultLayout.js`
+- `src/data/weaponsMapDefaultLayout.js`
+- `src/data/mapsMapDefaultLayout.js`
+- `src/data/gamemodesMapDefaultLayout.js`
+- `src/data/cosmeticsMapDefaultLayout.js`
+
+These files define default node placement, grouping, and style for Center Window maps.
+
+## Layout Update Workflow
+
+For critters:
+
+1. Edit the map in the app.
+2. Use the in-app export/copy action from `src/hud/components/CritterUnlockMap.js`.
+3. Paste the exported result into `src/data/critterMapDefaultLayout.js`.
+
+Rules:
+
+- treat the in-app export from `src/hud/components/CritterUnlockMap.js` as authoritative for `src/data/critterMapDefaultLayout.js`
+- avoid hand-editing exported critter layout data unless there is a clear reason
+- other layout files may be edited directly until they have matching in-app editors
+
+## Weapon Map Structure
+
+Weapon categories:
+
+- `primary`
+- `secondary`
+- `melee`
+- `utility`
+
+Weapon progression groups inside each category:
+
+- `Plant`
+- `Primitive`
+- `Military`
+- `Mystical`
+- `Pets`
+
+Weapon maps should follow the same overall interaction model as critter maps:
+
+- selecting a weapon category in the Left Window should replace the Center Window surface
+- the active weapon map should occupy the full Center Window
+- selecting a weapon node in the Center Window should update the Right Window
+
+## Asset Rules
+
+Image root:
+
+- `assets/images/`
+
+Important folders:
+
+- `assets/images/Weapons/Primary`
+- `assets/images/Weapons/Secondary`
+- `assets/images/Weapons/Melee`
+- `assets/images/Weapons/Utility`
+- `assets/images/Maps`
+
+When the user says they added new images:
+
+1. check `assets/images/` first
+2. find the relevant new files
+3. connect them to the matching Center Window content or layout data
+
+Do not require the user to repeat exact filenames if they already said the images were added under `assets/`.
+
+## Key Files
+
+- `src/app/WeaponDisplayApp.js`: top-level app composition and window coordination
+- `src/hud/HUDController.js`: Left/Center/Right UI coordination and info panel behavior
+- `src/hud/components/CritterUnlockMap.js`: critter map rendering, editing, and export
+- `src/hud/components/WeaponUnlockMap.js`: weapon map rendering
+- `src/core/SceneManager.js`: Right Window 3D viewport behavior
+- `src/data/critterMapDefaultLayout.js`: default critter map layout
+- `src/data/weaponsMapDefaultLayout.js`: default weapon map layout
+- `src/data/critzapedia/`: structured content data
+
+## Data Boundaries
+
+- `src/data/critzapedia/` = content data
+- `src/data/*MapDefaultLayout.js` = layout data
+
+Do not use layout files as encyclopedia content sources.
+Do not store layout concerns inside Critzapedia content files unless there is an explicit schema change.
+
+## Current Priorities
+
+1. Keep the critter unlock map stable and easy to edit.
+2. Make weapon maps match the critter-map interaction model and presentation style.
+3. Keep Left Window, Center Window, and Right Window behavior consistent.
