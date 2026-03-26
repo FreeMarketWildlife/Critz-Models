@@ -132,6 +132,49 @@ const buildStatValueMarkup = ({ key, value, decorate }) => {
   return createTooltipMarkup(decoratedValue, tooltipDescription);
 };
 
+const buildWeaponRequirementLabel = (requirement = {}) => {
+  const levelSuffix = Number.isFinite(Number(requirement.level)) ? ` Lv. ${Number(requirement.level)}` : '';
+
+  if (requirement.weaponId) {
+    return `${prettifyLabel(requirement.weaponId)}${levelSuffix}${
+      requirement.type === 'alien-node' ? ' · Alien Node' : ''
+    }`;
+  }
+
+  if (requirement.critterId) {
+    return `${getCritterDisplayName(requirement.critterId)}${levelSuffix}${
+      requirement.type === 'alien-node' ? ' · Alien Node' : ''
+    }`;
+  }
+
+  if (typeof requirement.text === 'string' && requirement.text.trim()) {
+    return requirement.text.trim();
+  }
+
+  return 'Awaiting Data Entry';
+};
+
+const buildWeaponRequirementsMarkup = (weapon) => {
+  const requirements = Array.isArray(weapon?.requirements) ? weapon.requirements.filter(Boolean) : [];
+  if (!requirements.length) {
+    return '';
+  }
+
+  const chips = requirements
+    .map(
+      (requirement) =>
+        `<span class="critter-detail__requirement-chip">${escapeHtml(buildWeaponRequirementLabel(requirement))}</span>`
+    )
+    .join('');
+
+  return `
+    <div class="special-section">
+      <h4>Requirements</h4>
+      <div class="critter-detail__requirements-value">${chips}</div>
+    </div>
+  `;
+};
+
 const formatCritterStat = (value) => (value === null || value === undefined || value === '' ? '--' : value);
 
 const prettifyLabel = (value = '') =>
@@ -273,11 +316,13 @@ export class WeaponDetailPanel {
     const decorate = (value) => applyKeywordTooltips(value);
     const statsMarkup = buildStatsMarkup(weapon, decorate);
     const specialMarkup = buildSpecialMarkup(weapon, (value) => this.prettify(value), decorate);
+    const requirementsMarkup = buildWeaponRequirementsMarkup(weapon);
 
     this.contentElement.innerHTML = `
       <h3>${weapon.name}</h3>
       <p class="description">${decorate(weapon.description)}</p>
       ${statsMarkup}
+      ${requirementsMarkup}
       ${specialMarkup}
     `;
 

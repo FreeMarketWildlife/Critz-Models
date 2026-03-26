@@ -129,6 +129,17 @@ export class HUDController {
     this.weaponDetailPanel.renderCritter(critter, { categoryLabel, editorState });
   }
 
+  showWeaponInfo(weapon) {
+    if (!weapon) {
+      this.weaponDetailPanel.renderEmpty();
+      return;
+    }
+
+    this.activeWeaponId = null;
+    this.weaponCategoryMenu?.setActiveWeapon(null);
+    this.weaponDetailPanel.render(weapon);
+  }
+
   showCritterCategoryGuide({ categoryLabel, critterCount }) {
     this.activeWeaponId = null;
     this.weaponCategoryMenu?.setActiveWeapon(null);

@@ -100,6 +100,22 @@ Weapon maps should follow the same overall interaction model as critter maps:
 - the active weapon map should occupy the full Center Window
 - selecting a weapon node in the Center Window should update the Right Window
 
+### Alien Nodes
+
+Use the term `alien node` for a ghost/shadow node that appears inside a weapon map but points to content owned by a different map.
+
+Rules:
+
+- alien nodes are still Center Window selections, so they update the Right Window
+- alien nodes do not change the active Left Window section
+- alien nodes do not switch the Center Window over to the source map
+- alien nodes should look visually distinct from normal weapon nodes
+- if an alien node points to a critter, clicking it should show that critter's info in the Right Window while the weapon map stays active
+
+Current use case:
+
+- `Wand` in `Secondary Weapons & Tools` uses an alien node for `Salamander Lv. 40`
+
 ## Asset Rules
 
 Image root:
