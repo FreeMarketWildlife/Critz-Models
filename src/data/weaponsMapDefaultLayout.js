@@ -99,7 +99,12 @@ export const weaponsMapDefaultLayout = {
           y: 490,
           imagePath: "assets/images/Weapons/Primary/Image_Grenade Launcher.png",
           style: null,
-          requirements: []
+          requirements: [
+            {
+              weaponId: "rocket-launcher",
+              level: 30
+            }
+          ]
         },
         {
           id: "rocket-launcher",
@@ -124,7 +129,18 @@ export const weaponsMapDefaultLayout = {
           y: 160,
           imagePath: "assets/images/Weapons/Primary/Image_Wizard Staff.png",
           style: null,
-          requirements: []
+          requirements: [
+            {
+              type: "alien-node",
+              weaponId: "wand",
+              level: 30
+            },
+            {
+              type: "alien-node",
+              critterId: "salamander",
+              level: 50
+            }
+          ]
         },
         {
           id: "mantis-shrimp",
@@ -157,7 +173,13 @@ export const weaponsMapDefaultLayout = {
           y: 920,
           imagePath: "assets/images/Weapons/Secondary/Image_Shotweed.png",
           style: null,
-          requirements: []
+          requirements: [
+            {
+              type: "alien-node",
+              weaponId: "shotgun",
+              level: 10
+            }
+          ]
         },
         {
           id: "yellow-woodsorrel",
@@ -177,7 +199,13 @@ export const weaponsMapDefaultLayout = {
           y: 1140,
           imagePath: "assets/images/Weapons/Secondary/Image_Witch Hazel Seed.png",
           style: null,
-          requirements: []
+          requirements: [
+            {
+              type: "alien-node",
+              weaponId: "sniper-rifle",
+              level: 20
+            }
+          ]
         },
         {
           id: "slingshot",
@@ -187,7 +215,13 @@ export const weaponsMapDefaultLayout = {
           y: 920,
           imagePath: "assets/images/Weapons/Secondary/Image_Slingshot.png",
           style: null,
-          requirements: []
+          requirements: [
+            {
+              type: "alien-node",
+              weaponId: "sniper-rifle",
+              level: 5
+            }
+          ]
         },
         {
           id: "blaster-pistol",
@@ -207,7 +241,13 @@ export const weaponsMapDefaultLayout = {
           y: 920,
           imagePath: "assets/images/Weapons/Secondary/Image_Flamethrower.png",
           style: null,
-          requirements: []
+          requirements: [
+            {
+              type: "alien-node",
+              weaponId: "bottle-o-fire",
+              level: 10
+            }
+          ]
         },
         {
           id: "splash-blaster",
@@ -232,7 +272,12 @@ export const weaponsMapDefaultLayout = {
           y: 1140,
           imagePath: "assets/images/Weapons/Secondary/Image_Revolver.png",
           style: null,
-          requirements: []
+          requirements: [
+            {
+              weaponId: "blaster-pistol",
+              level: 15
+            }
+          ]
         },
         {
           id: "wand",
@@ -242,7 +287,15 @@ export const weaponsMapDefaultLayout = {
           y: 920,
           imagePath: "assets/images/Weapons/Secondary/Image_Wand.png",
           style: null,
-          requirements: []
+          requirements: [
+            {
+              type: "alien-node",
+              critterId: "salamander",
+              level: 40,
+              x: 1098,
+              y: 600
+            }
+          ]
         }
       ],
       lines: []
@@ -325,7 +378,12 @@ export const weaponsMapDefaultLayout = {
           y: 1790,
           imagePath: "assets/images/Weapons/Melee/Image_Tomahawk.png",
           style: null,
-          requirements: []
+          requirements: [
+            {
+              weaponId: "knife",
+              level: 5
+            }
+          ]
         },
         {
           id: "shield",
@@ -345,7 +403,13 @@ export const weaponsMapDefaultLayout = {
           y: 2010,
           imagePath: "assets/images/Weapons/Melee/Image_Bo Staff.png",
           style: null,
-          requirements: []
+          requirements: [
+            {
+              type: "alien-node",
+              weaponId: "bottle-o-air",
+              level: 5
+            }
+          ]
         },
         {
           id: "knife",
@@ -365,7 +429,12 @@ export const weaponsMapDefaultLayout = {
           y: 1790,
           imagePath: "assets/images/Weapons/Melee/Image_Katana.png",
           style: null,
-          requirements: []
+          requirements: [
+            {
+              weaponId: "knife",
+              level: 30
+            }
+          ]
         },
         {
           id: "fists",
@@ -408,7 +477,12 @@ export const weaponsMapDefaultLayout = {
           y: 2440,
           imagePath: "assets/images/Weapons/Utility/Image_Dandelion.png",
           style: null,
-          requirements: []
+          requirements: [
+            {
+              weaponId: "glider",
+              level: 10
+            }
+          ]
         },
         {
           id: "maple-seed",
@@ -468,7 +542,13 @@ export const weaponsMapDefaultLayout = {
           y: 2550,
           imagePath: "assets/images/Weapons/Utility/Image_Glider.png",
           style: null,
-          requirements: []
+          requirements: [
+            {
+              type: "alien-node",
+              weaponId: "bo-staff",
+              level: 10
+            }
+          ]
         },
         {
           id: "grenade",
@@ -488,7 +568,17 @@ export const weaponsMapDefaultLayout = {
           y: 2550,
           imagePath: "assets/images/Weapons/Utility/Image_Mines.png",
           style: null,
-          requirements: []
+          requirements: [
+            {
+              type: "alien-node",
+              weaponId: "rocket-launcher",
+              level: 15
+            },
+            {
+              weaponId: "grenade",
+              level: 10
+            }
+          ]
         },
         {
           id: "smoke-grenade",
@@ -498,7 +588,12 @@ export const weaponsMapDefaultLayout = {
           y: 2660,
           imagePath: "assets/images/Weapons/Utility/Image_Smoke Grenade.png",
           style: null,
-          requirements: []
+          requirements: [
+            {
+              weaponId: "grenade",
+              level: 5
+            }
+          ]
         },
         {
           id: "bottle-o-gas",
@@ -508,7 +603,17 @@ export const weaponsMapDefaultLayout = {
           y: 2440,
           imagePath: "assets/images/Weapons/Utility/Image_Bottle o' Gas.png",
           style: null,
-          requirements: []
+          requirements: [
+            {
+              type: "alien-node",
+              critterId: "newt",
+              level: 10
+            },
+            {
+              weaponId: "smoke-grenade",
+              level: 10
+            }
+          ]
         },
         {
           id: "bottle-o-ice",
@@ -528,7 +633,17 @@ export const weaponsMapDefaultLayout = {
           y: 2660,
           imagePath: "assets/images/Weapons/Utility/Image_Bottle o' Fire.png",
           style: null,
-          requirements: []
+          requirements: [
+            {
+              weaponId: "grenade",
+              level: 15
+            },
+            {
+              type: "alien-node",
+              critterId: "fire-bellied-toad",
+              level: 5
+            }
+          ]
         },
         {
           "id": "bottle-o-lightning",
