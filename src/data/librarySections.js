@@ -69,6 +69,13 @@ export const librarySections = {
       description: `Every single critter should eventually have its own easy-to-pronounce character name and a clear personality, similar to how champions feel distinct in League of Legends.<br><br>Examples: Stick Insect could just be Stick, Gecko could be Geek, Finch could be Atticus, Salamander could be Sally, Turtle should definitely be Plumpy, Mouse should be George, and Koala could be Ken.<br><br>Personality direction: some critters should feel grumpy, sad, happy, dumb, smart, nerdy, lazy, and so on, with that personality coming through in voicelines and overall presentation.<br><br>Species direction stays grounded: Critters should still always be based on very specific real animal species, and the Critz Library should present the species facts like scientific name, common name, real-world habitat, and a fun fact.`,
     },
     {
+      id: 'named-ai-units',
+      label: 'Named AI Units',
+      title: 'Named AI Units, Variants & Rivalries',
+      footer: 'Brainstorming · AI Personality',
+      description: `AI battlefield units should have recognizable identity, even when many units share the same base species.<br><br>Battlefront 2 (2005) inspiration: even when many units on a team look identical, it is still fun to notice specific names popping up in kill feeds and at the end of a match as a nemesis or recurring target.<br><br>Direction for Critz: build a library of named AI variants where there may be many frogs on the battlefield, but only one frog wears a snapback hat and chain and has a unique name; there may be many chipmunks on the battlefield, but only one wears a medieval helmet, cape, and boots and has a specific name like Marty.<br><br>Goal: this should be true across the full AI roster so players start recognizing recurring units and building stories around them.<br><br>Achievement angle: support joke achievements and memorable callouts around killing specific AI personalities, including ideas in the spirit of "YOU KILLED KENNY!" or "YOU BASTARD!"`,
+    },
+    {
       id: 'campaign-lore',
       label: 'Campaign & Lore',
       title: 'Campaign Direction & World Story',
@@ -95,6 +102,13 @@ export const librarySections = {
       title: 'Community Feedback, Rewards & Onboarding',
       footer: 'Brainstorming · Community',
       description: `Keep the community involved in development through constant voting, feedback prompts, and incentives for participation.<br><br>Reward social growth loops like gifting skins to other players and using referral links that lead to a new player creating an account and finishing the tutorial.<br><br>Tutorial goal: keep it under 3 minutes, make it fun, and teach everything a player needs to start playing online with friends immediately after.`,
+    },
+    {
+      id: 'monetization-economy',
+      label: 'Monetization',
+      title: 'Monetization & Critz Economy',
+      footer: 'Brainstorming · Economy',
+      description: `Players should be able to spend Critz to level up critters and weapons, and players should also be able to buy Critz directly.<br><br>Presentation rule: purchasing Critz should not feel shoved in the player's face. The game should avoid desperate monetization pressure and instead surface the option in a low-friction, respectful way.<br><br>Progression target: roughly balance paid Critz around a $10 USD to 1 hour conversion, meaning a player who pays $10 should make about the same critter and weapon progression that an efficient player could earn by grinding for about one hour.<br><br>This should be treated as a tuning target, not a final law. It will need extensive testing and iteration before implementation so the economy feels fair, readable, and not pay-to-win.`,
     },
     {
       id: 'mode-expansion',
