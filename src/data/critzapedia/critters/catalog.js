@@ -109,6 +109,24 @@ const createArthropodCritter = ({
   ...(passiveId ? { passiveId } : {}),
   stats,
 });
+const createReptileImagePath = (name) => `assets/images/Critters/Reptiles/Image_${name}.png`;
+const createReptileCritter = ({
+  id,
+  name,
+  rarity = 'common',
+  unlock = createPendingUnlock(),
+  imagePath = createReptileImagePath(name),
+  stats,
+}) => ({
+  id,
+  name,
+  category: 'reptiles',
+  rarity,
+  unlock,
+  modelPath: '',
+  imagePath,
+  ...(stats ? { stats } : {}),
+});
 const birdCritters = [
   createPendingImageCritter({
     id: 'african-finfoot',
@@ -904,247 +922,191 @@ const critterCatalog = [
       },
     ],
   },
-  {
+  createReptileCritter({
     id: 'turtle',
     name: 'Turtle',
-    category: 'reptiles',
     rarity: 'common',
-    unlock: {
-      type: 'level',
-      critterId: 'lizard',
-      level: 5,
-      text: 'Reach Level 5 with Lizard.',
-    },
-    modelPath: '',
-    imagePath: 'assets/images/Critters/Reptiles/Image_Turtle.png',
+    unlock: createLevelUnlock('lizard', 'Lizard', 5),
     stats: {
       health: 125,
       speed: 75,
       stamina: 125,
       bonus: 'Shell (Shell Blocks All Physical Damage)',
     },
-  },
-  {
+  }),
+  createReptileCritter({
+    id: 'red-eared-slider',
+    name: 'Red-Eared Slider',
+    rarity: 'common',
+    unlock: createLevelUnlock('turtle', 'Turtle', 5),
+  }),
+  createReptileCritter({
     id: 'anole',
     name: 'Anole',
-    category: 'reptiles',
     rarity: 'common',
-    unlock: {
-      type: 'level',
-      critterId: 'lizard',
-      level: 10,
-      text: 'Reach Level 10 with Lizard.',
-    },
-    modelPath: '',
-    imagePath: 'assets/images/Critters/Reptiles/Image_Anole.png',
-  },
-  {
+    unlock: createLevelUnlock('lizard', 'Lizard', 10),
+  }),
+  createReptileCritter({
     id: 'tortoise',
     name: 'Tortoise',
-    category: 'reptiles',
     rarity: 'common',
-    unlock: {
-      type: 'level',
-      critterId: 'turtle',
-      level: 10,
-      text: 'Reach Level 10 with Turtle.',
-    },
-    modelPath: '',
-    imagePath: 'assets/images/Critters/Reptiles/Image_Tortoise.png',
-  },
-  {
-    id: 'snapper',
-    name: 'Snapper',
-    category: 'reptiles',
+    unlock: createLevelUnlock('turtle', 'Turtle', 10),
+  }),
+  createReptileCritter({
+    id: 'painted-turtle',
+    name: 'Painted Turtle',
+    rarity: 'common',
+    unlock: createLevelUnlock('red-eared-slider', 'Red-Eared Slider', 10),
+  }),
+  createReptileCritter({
+    id: 'snapping-turtle',
+    name: 'Snapping Turtle',
     rarity: 'uncommon',
-    unlock: {
-      type: 'level',
-      critterId: 'turtle',
-      level: 15,
-      text: 'Reach Level 15 with Turtle.',
-    },
-    modelPath: '',
-    imagePath: 'assets/images/Critters/Reptiles/Image_Snapper.png',
-  },
-  {
+    unlock: createLevelUnlock('turtle', 'Turtle', 15),
+  }),
+  createReptileCritter({
+    id: 'african-sideneck-turtle',
+    name: 'African Sideneck Turtle',
+    rarity: 'uncommon',
+    unlock: createLevelUnlock('red-eared-slider', 'Red-Eared Slider', 5),
+  }),
+  createReptileCritter({
     id: 'pancake-tortoise',
     name: 'Pancake Tortoise',
-    category: 'reptiles',
     rarity: 'uncommon',
-    unlock: {
-      type: 'level',
-      critterId: 'tortoise',
-      level: 15,
-      text: 'Reach Level 15 with Tortoise.',
-    },
-    modelPath: '',
-  },
-  {
+    unlock: createLevelUnlock('tortoise', 'Tortoise', 15),
+  }),
+  createReptileCritter({
     id: 'gecko',
     name: 'Gecko',
-    category: 'reptiles',
     rarity: 'uncommon',
-    unlock: {
-      type: 'level',
-      critterId: 'anole',
-      level: 15,
-      text: 'Reach Level 15 with Anole.',
-    },
-    modelPath: '',
-  },
-  {
+    unlock: createLevelUnlock('anole', 'Anole', 15),
+  }),
+  createReptileCritter({
     id: 'basilisk',
     name: 'Basilisk',
-    category: 'reptiles',
     rarity: 'uncommon',
-    unlock: {
-      type: 'level',
-      critterId: 'lizard',
-      level: 25,
-      text: 'Reach Level 25 with Lizard.',
-    },
-    modelPath: '',
-    imagePath: 'assets/images/Critters/Reptiles/Image_Basilisk.png',
-  },
-  {
+    unlock: createLevelUnlock('lizard', 'Lizard', 25),
+  }),
+  createReptileCritter({
+    id: 'stinkpot',
+    name: 'Stinkpot',
+    rarity: 'uncommon',
+    unlock: createRequirementsUnlock([
+      { critterId: 'african-sideneck-turtle', level: 10 },
+      { critterId: 'painted-turtle', level: 10 },
+    ]),
+  }),
+  createReptileCritter({
+    id: 'eastern-mud-turtle',
+    name: 'Eastern Mud Turtle',
+    rarity: 'uncommon',
+    unlock: createLevelUnlock('painted-turtle', 'Painted Turtle', 15),
+  }),
+  createReptileCritter({
     id: 'pigsnouted-turtle',
     name: 'Pigsnouted Turtle',
-    category: 'reptiles',
     rarity: 'rare',
-    unlock: {
-      type: 'requirements',
-      requirements: [
-        { critterId: 'turtle', level: 25 },
-        { critterId: 'softshell-turtle', level: 15 },
-      ],
-      text: 'Reach Level 25 with Turtle and Level 15 with Softshell Turtle.',
-    },
-    modelPath: '',
-  },
-  {
+    unlock: createLevelUnlock('softshell-turtle', 'Softshell Turtle', 15),
+  }),
+  createReptileCritter({
     id: 'snakeneck-turtle',
     name: 'Snakeneck Turtle',
-    category: 'reptiles',
     rarity: 'rare',
-    unlock: {
-      type: 'level',
-      critterId: 'snapper',
-      level: 15,
-      text: 'Reach Level 15 with Snapper.',
-    },
-    modelPath: '',
-  },
-  {
+    unlock: createRequirementsUnlock([
+      { critterId: 'snapping-turtle', level: 15 },
+      { critterId: 'african-sideneck-turtle', level: 10 },
+    ]),
+  }),
+  createReptileCritter({
     id: 'softshell-turtle',
     name: 'Softshell Turtle',
-    category: 'reptiles',
     rarity: 'rare',
-    unlock: {
-      type: 'level',
-      critterId: 'turtle',
-      level: 20,
-      text: 'Reach Level 20 with Turtle.',
-    },
-    modelPath: '',
-  },
-  {
+    unlock: createRequirementsUnlock([
+      { critterId: 'eastern-mud-turtle', level: 15 },
+      { critterId: 'stinkpot', level: 5 },
+    ]),
+  }),
+  createReptileCritter({
+    id: 'diamondback-terrapin',
+    name: 'Diamondback Terrapin',
+    rarity: 'rare',
+    unlock: createLevelUnlock('turtle', 'Turtle', 100),
+  }),
+  createReptileCritter({
+    id: 'african-dwarf-mud-turtle',
+    name: 'African Dwarf Mud Turtle',
+    rarity: 'rare',
+    unlock: createLevelUnlock('stinkpot', 'Stinkpot', 15),
+  }),
+  createReptileCritter({
     id: 'bearded-dragon',
     name: 'Bearded Dragon',
-    category: 'reptiles',
     rarity: 'rare',
-    unlock: {
-      type: 'level',
-      critterId: 'basilisk',
-      level: 15,
-      text: 'Reach Level 15 with Basilisk.',
-    },
-    modelPath: '',
-  },
-  {
+    unlock: createLevelUnlock('basilisk', 'Basilisk', 15),
+  }),
+  createReptileCritter({
     id: 'draco',
     name: 'Draco',
-    category: 'reptiles',
     rarity: 'rare',
-    unlock: {
-      type: 'requirements',
-      requirements: [
-        { critterId: 'gecko', level: 15 },
-        { critterId: 'bearded-dragon', level: 5 },
-      ],
-      text: 'Reach Level 15 with Gecko and Level 5 with Bearded Dragon.',
-    },
-    modelPath: '',
-  },
-  {
+    unlock: createRequirementsUnlock([
+      { critterId: 'gecko', level: 15 },
+      { critterId: 'bearded-dragon', level: 5 },
+    ]),
+  }),
+  createReptileCritter({
     id: 'pterosaur',
     name: 'Pterosaur',
-    category: 'reptiles',
     rarity: 'extinct',
-    unlock: {
-      type: 'requirements',
-      requirements: [
-        { critterId: 'draco', level: 30 },
-        { critterId: 'bearded-dragon', level: 15 },
-      ],
-      text: 'Reach Level 30 with Draco and Level 15 with Bearded Dragon.',
-    },
-    modelPath: '',
-  },
-  {
+    unlock: createRequirementsUnlock([
+      { critterId: 'draco', level: 30 },
+      { critterId: 'bearded-dragon', level: 15 },
+    ]),
+  }),
+  createReptileCritter({
     id: 'velociraptor',
     name: 'Velociraptor',
-    category: 'reptiles',
     rarity: 'extinct',
-    unlock: {
-      type: 'level',
-      critterId: 'basilisk',
-      level: 30,
-      text: 'Reach Level 30 with Basilisk.',
-    },
-    modelPath: '',
-  },
-  {
+    unlock: createLevelUnlock('basilisk', 'Basilisk', 30),
+  }),
+  createReptileCritter({
+    id: 'eunotosaurus',
+    name: 'Eunotosaurus',
+    rarity: 'extinct',
+    unlock: createLevelUnlock('pigsnouted-turtle', 'Pigsnouted Turtle', 50),
+  }),
+  createReptileCritter({
+    id: 'pappochelys',
+    name: 'Pappochelys',
+    rarity: 'extinct',
+    unlock: createLevelUnlock('eunotosaurus', 'Eunotosaurus', 25),
+  }),
+  createReptileCritter({
     id: 'dragon',
     name: 'Dragon',
-    category: 'reptiles',
     rarity: 'mythical',
-    unlock: {
-      type: 'requirements',
-      requirements: [
-        { critterId: 'draco', level: 50 },
-        { critterId: 'bearded-dragon', level: 50 },
-        { critterId: 'pterosaur', level: 25 },
-      ],
-      text: 'Reach Level 50 with Draco, Level 50 with Bearded Dragon, and Level 25 with Pterosaur.',
-    },
-    modelPath: '',
-  },
-  {
+    unlock: createRequirementsUnlock([
+      { critterId: 'draco', level: 50 },
+      { critterId: 'bearded-dragon', level: 50 },
+      { critterId: 'pterosaur', level: 25 },
+    ]),
+  }),
+  createReptileCritter({
     id: 'kappa',
     name: 'Kappa',
-    category: 'reptiles',
     rarity: 'mythical',
-    unlock: {
-      type: 'requirements',
-      requirements: [
-        { critterId: 'tortoise', level: 30 },
-        { critterId: 'snapper', level: 25 },
-        { critterId: 'turtle', level: 100 },
-      ],
-      text: 'Reach Level 30 with Tortoise, Level 25 with Snapper, and Level 100 with Turtle.',
-    },
-    modelPath: '',
-  },
-  {
+    unlock: createRequirementsUnlock([
+      { critterId: 'eunotosaurus', level: 30 },
+      { critterId: 'pigsnouted-turtle', level: 50 },
+    ]),
+  }),
+  createReptileCritter({
     id: 'veratus',
     name: 'Veratus',
-    category: 'reptiles',
     rarity: 'mythical',
     unlock: createLevelUnlock('basilisk', 'Basilisk', 100),
-    modelPath: '',
-    imagePath: 'assets/images/Critters/Reptiles/Image_Veratus.png',
     stats: createPlaceholderCritterStats(),
-  },
+  }),
   {
     id: 'salamander',
     name: 'Salamander',
@@ -1609,13 +1571,6 @@ const critterCatalog = [
     imagePath: '',
   }),
   createMammalCritter({
-    id: 'shrew',
-    name: 'Shrew',
-    rarity: 'common',
-    unlock: createLevelUnlock('mouse', 'Mouse', 20),
-    imagePath: '',
-  }),
-  createMammalCritter({
     id: 'gopher',
     name: 'Gopher',
     rarity: 'common',
@@ -1624,7 +1579,7 @@ const critterCatalog = [
   createMammalCritter({
     id: 'hedgehog',
     name: 'Hedgehog',
-    rarity: 'common',
+    rarity: 'uncommon',
     unlock: createRequirementsUnlock([
       { critterId: 'mouse', level: 15 },
       { critterId: 'vole', level: 10 },
@@ -1639,7 +1594,7 @@ const critterCatalog = [
   createMammalCritter({
     id: 'porcupine',
     name: 'Porcupine',
-    rarity: 'common',
+    rarity: 'uncommon',
     unlock: createLevelUnlock('hedgehog', 'Hedgehog', 15),
     stats: {
       health: 110,
@@ -1652,13 +1607,13 @@ const critterCatalog = [
   createMammalCritter({
     id: 'lemur',
     name: 'Lemur',
-    rarity: 'uncommon',
+    rarity: 'rare',
     unlock: createLevelUnlock('squirrel', 'Squirrel', 20),
   }),
   createMammalCritter({
     id: 'mouse-lemur',
     name: 'Mouse Lemur',
-    rarity: 'uncommon',
+    rarity: 'rare',
     unlock: createLevelUnlock('lemur', 'Lemur', 20),
   }),
   createMammalCritter({
@@ -1682,7 +1637,7 @@ const critterCatalog = [
   createMammalCritter({
     id: 'sugar-glider',
     name: 'Sugar Glider',
-    rarity: 'uncommon',
+    rarity: 'rare',
     unlock: createRequirementsUnlock([
       { critterId: 'flying-squirrel', level: 10 },
       { critterId: 'chipmunk', level: 15 },
@@ -1691,7 +1646,7 @@ const critterCatalog = [
   createMammalCritter({
     id: 'bat',
     name: 'Bat',
-    rarity: 'common',
+    rarity: 'uncommon',
     unlock: createRequirementsUnlock([
       { critterId: 'flying-squirrel', level: 10 },
       { critterId: 'sugar-glider', level: 5 },
@@ -1711,13 +1666,6 @@ const critterCatalog = [
     name: 'Armadillo',
     rarity: 'uncommon',
     unlock: createLevelUnlock('mole', 'Mole', 20),
-  }),
-  createMammalCritter({
-    id: 'beaver',
-    name: 'Beaver',
-    rarity: 'uncommon',
-    unlock: createLevelUnlock('gopher', 'Gopher', 20),
-    imagePath: '',
   }),
   createMammalCritter({
     id: 'prairie-dog',
@@ -1771,17 +1719,22 @@ const critterCatalog = [
     unlock: createLevelUnlock('sugar-glider', 'Sugar Glider', 15),
   }),
   createMammalCritter({
-    id: 'monkey',
-    name: 'Monkey',
-    rarity: 'rare',
-    unlock: createLevelUnlock('finger-monkey', 'Finger Monkey', 20),
-    imagePath: '',
-  }),
-  createMammalCritter({
     id: 'colugo',
     name: 'Colugo',
     rarity: 'rare',
     unlock: createLevelUnlock('flying-squirrel', 'Flying Squirrel', 20),
+  }),
+  createMammalCritter({
+    id: 'elephant-shrew',
+    name: 'Elephant Shrew',
+    rarity: 'rare',
+    unlock: createLevelUnlock('mole', 'Mole', 20),
+  }),
+  createMammalCritter({
+    id: 'star-nosed-mole',
+    name: 'Star-Nosed Mole',
+    rarity: 'rare',
+    unlock: createLevelUnlock('mole', 'Mole', 25),
   }),
   createMammalCritter({
     id: 'pangolin',
@@ -1793,19 +1746,13 @@ const critterCatalog = [
     id: 'zalambdalestes',
     name: 'Zalambdalestes',
     rarity: 'extinct',
-    unlock: createLevelUnlock('rabbit', 'Rabbit', 30),
+    unlock: createLevelUnlock('bandicoot', 'Bandicoot', 50),
   }),
   createMammalCritter({
     id: 'stylinodon',
     name: 'Stylinodon',
     rarity: 'extinct',
     unlock: createLevelUnlock('badger', 'Badger', 30),
-  }),
-  createMammalCritter({
-    id: 'hadrocodium',
-    name: 'Hadrocodium',
-    rarity: 'extinct',
-    unlock: createLevelUnlock('mouse', 'Mouse', 30),
   }),
   createMammalCritter({
     id: 'juramaia',
@@ -1817,7 +1764,7 @@ const critterCatalog = [
     id: 'megazostrodon',
     name: 'Megazostrodon',
     rarity: 'extinct',
-    unlock: createLevelUnlock('shrew', 'Shrew', 30),
+    unlock: createLevelUnlock('elephant-shrew', 'Elephant Shrew', 50),
   }),
   createMammalCritter({
     id: 'eomaia',
@@ -1841,25 +1788,13 @@ const critterCatalog = [
     id: 'necrolestes',
     name: 'Necrolestes',
     rarity: 'extinct',
-    unlock: createLevelUnlock('mole', 'Mole', 30),
-  }),
-  createMammalCritter({
-    id: 'paramys',
-    name: 'Paramys',
-    rarity: 'extinct',
-    unlock: createLevelUnlock('beaver', 'Beaver', 30),
-  }),
-  createMammalCritter({
-    id: 'leithia',
-    name: 'Leithia',
-    rarity: 'extinct',
-    unlock: createLevelUnlock('rat', 'Rat', 30),
+    unlock: createLevelUnlock('star-nosed-mole', 'Star-Nosed Mole', 50),
   }),
   createMammalCritter({
     id: 'plesiadapis',
     name: 'Plesiadapis',
     rarity: 'extinct',
-    unlock: createLevelUnlock('monkey', 'Monkey', 30),
+    unlock: createLevelUnlock('finger-monkey', 'Finger Monkey', 50),
   }),
   ...birdCritters,
   ...insectCritters,
