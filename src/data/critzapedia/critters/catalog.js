@@ -979,14 +979,35 @@ const critterCatalog = [
   createReptileCritter({
     id: 'gecko',
     name: 'Gecko',
-    rarity: 'uncommon',
+    rarity: 'common',
     unlock: createLevelUnlock('anole', 'Anole', 15),
+  }),
+  createReptileCritter({
+    id: 'tokay-gecko',
+    name: 'Tokay Gecko',
+    rarity: 'common',
+    unlock: createLevelUnlock('gecko', 'Gecko', 15),
+  }),
+  createReptileCritter({
+    id: 'crested-gecko',
+    name: 'Crested Gecko',
+    rarity: 'uncommon',
+    unlock: createRequirementsUnlock([
+      { critterId: 'gecko', level: 20 },
+      { critterId: 'tokay-gecko', level: 10 },
+    ]),
   }),
   createReptileCritter({
     id: 'basilisk',
     name: 'Basilisk',
     rarity: 'uncommon',
-    unlock: createLevelUnlock('lizard', 'Lizard', 25),
+    unlock: createLevelUnlock('anole', 'Anole', 20),
+  }),
+  createReptileCritter({
+    id: 'chameleon',
+    name: 'Chameleon',
+    rarity: 'uncommon',
+    unlock: createLevelUnlock('gecko', 'Gecko', 10),
   }),
   createReptileCritter({
     id: 'stinkpot',
@@ -1046,12 +1067,43 @@ const critterCatalog = [
     unlock: createLevelUnlock('basilisk', 'Basilisk', 15),
   }),
   createReptileCritter({
+    id: 'legless-lizard',
+    name: 'Legless Lizard',
+    rarity: 'rare',
+    unlock: createLevelUnlock('lizard', 'Lizard', 50),
+  }),
+  createReptileCritter({
+    id: 'frog-eyed-gecko',
+    name: 'Frog-Eyed Gecko',
+    rarity: 'rare',
+    unlock: createLevelUnlock('crested-gecko', 'Crested Gecko', 15),
+    imagePath: 'assets/images/Critters/Reptiles/Image_Frog-eyed gecko.png',
+  }),
+  createReptileCritter({
+    id: 'leachs-giant-gecko',
+    name: "Leach's Giant Gecko",
+    rarity: 'rare',
+    unlock: createLevelUnlock('frog-eyed-gecko', 'Frog-Eyed Gecko', 15),
+  }),
+  createReptileCritter({
+    id: 'lance-nosed-chameleon',
+    name: 'Lance-Nosed Chameleon',
+    rarity: 'rare',
+    unlock: createLevelUnlock('chameleon', 'Chameleon', 15),
+  }),
+  createReptileCritter({
+    id: 'trioceros',
+    name: 'Trioceros',
+    rarity: 'rare',
+    unlock: createLevelUnlock('lance-nosed-chameleon', 'Lance-Nosed Chameleon', 15),
+  }),
+  createReptileCritter({
     id: 'draco',
     name: 'Draco',
     rarity: 'rare',
     unlock: createRequirementsUnlock([
-      { critterId: 'gecko', level: 15 },
-      { critterId: 'bearded-dragon', level: 5 },
+      { critterId: 'lance-nosed-chameleon', level: 15 },
+      { critterId: 'leachs-giant-gecko', level: 10 },
     ]),
   }),
   createReptileCritter({
@@ -1073,13 +1125,19 @@ const critterCatalog = [
     id: 'eunotosaurus',
     name: 'Eunotosaurus',
     rarity: 'extinct',
-    unlock: createLevelUnlock('pigsnouted-turtle', 'Pigsnouted Turtle', 50),
+    unlock: createRequirementsUnlock([
+      { critterId: 'pigsnouted-turtle', level: 50 },
+      { critterId: 'african-dwarf-mud-turtle', level: 25 },
+    ]),
   }),
   createReptileCritter({
     id: 'pappochelys',
     name: 'Pappochelys',
     rarity: 'extinct',
-    unlock: createLevelUnlock('eunotosaurus', 'Eunotosaurus', 25),
+    unlock: createRequirementsUnlock([
+      { critterId: 'eunotosaurus', level: 25 },
+      { critterId: 'snakeneck-turtle', level: 25 },
+    ]),
   }),
   createReptileCritter({
     id: 'dragon',

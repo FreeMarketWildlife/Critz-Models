@@ -385,12 +385,7 @@ export const weaponsMapDefaultLayout = {
           "y": 1272,
           "imagePath": "assets/images/Weapons/Melee/Image_Poison Sumac.png",
           "style": null,
-          "requirements": [
-            {
-              "weaponId": "poison-oak",
-              "level": 10
-            }
-          ]
+          "requirements": []
         },
         {
           "id": "poison-oak",
@@ -400,12 +395,7 @@ export const weaponsMapDefaultLayout = {
           "y": 1178,
           "imagePath": "assets/images/Weapons/Melee/Image_Poison Oak.png",
           "style": null,
-          "requirements": [
-            {
-              "weaponId": "poison-ivy",
-              "level": 10
-            }
-          ]
+          "requirements": []
         },
         {
           "id": "poison-ivy",
@@ -415,12 +405,7 @@ export const weaponsMapDefaultLayout = {
           "y": 992,
           "imagePath": "assets/images/Weapons/Melee/Image_Poison Ivy.png",
           "style": null,
-          "requirements": [
-            {
-              "weaponId": "stinging-nettle",
-              "level": 10
-            }
-          ]
+          "requirements": []
         },
         {
           "id": "stinging-nettle",
@@ -513,8 +498,8 @@ export const weaponsMapDefaultLayout = {
         {
           "id": "fists",
           "name": "Fists",
-          "group": "primitive",
-          "x": 1154,
+          "group": "pets",
+          "x": 3958,
           "y": 805,
           "imagePath": "assets/images/Weapons/Melee/Image_Fists.png",
           "style": null,
