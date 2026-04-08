@@ -482,7 +482,7 @@ export class WeaponUnlockMap {
       });
     });
 
-    const text = JSON.stringify(payload, null, 2);
+    const text = `export const weaponsMapDefaultLayout = ${JSON.stringify(payload, null, 2)};\n`;
     return this.copyTextToClipboard(text).then(() => text);
   }
 
