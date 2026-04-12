@@ -14,6 +14,7 @@ import { MinigameRunner } from '../hud/components/MinigameRunner.js';
 import { MinigameCritterQuest } from '../hud/components/MinigameCritterQuest.js';
 import { MinigameKatanaMouse } from '../hud/components/MinigameKatanaMouse.js';
 import { weaponsMapDefaultLayout } from '../data/weaponsMapDefaultLayout.js';
+import { DEFAULT_PHASE_FILTER, normalizePhaseFilter, PHASE_OPTIONS } from '../utils/phaseUtils.js';
 
 const RARITY_ORDER = {
   common: 0,
@@ -48,6 +49,8 @@ export class WeaponDisplayApp {
     this.centerMapHost = null;
     this.leftWindowToggleButton = null;
     this.rightWindowToggleButton = null;
+    this.phaseFilterButtons = [];
+    this.activePhaseFilter = DEFAULT_PHASE_FILTER;
     this.leftWindowCollapsed = false;
     this.rightWindowCollapsed = false;
     this.boundNavKeydown = (event) => this.handleNavKeydown(event);
@@ -115,6 +118,7 @@ export class WeaponDisplayApp {
     this.centerMapHost = layout.centerUnlockMapElement;
     this.leftWindowToggleButton = layout.leftWindowToggleButtonElement;
     this.rightWindowToggleButton = layout.rightWindowToggleButtonElement;
+    this.phaseFilterButtons = layout.phaseFilterButtons;
     this.indexWeapons();
     this.indexCritters();
     this.registerEventHandlers();
@@ -166,6 +170,7 @@ export class WeaponDisplayApp {
       bus: this.eventBus,
       zoomElement: this.mapZoomBadge,
     });
+    this.setActivePhaseFilter(this.activePhaseFilter, { syncButtons: true });
     this.sceneManager.setCritterImagePreviewLayout(
       this.critterUnlockMap.getCritterImagePreviewStateMap()
     );
@@ -185,6 +190,11 @@ export class WeaponDisplayApp {
     if (this.rightWindowToggleButton) {
       this.rightWindowToggleButton.addEventListener('click', this.boundRightWindowToggleClick);
     }
+    this.phaseFilterButtons.forEach((button) => {
+      button.addEventListener('click', () => {
+        this.setActivePhaseFilter(button.dataset.phaseFilter);
+      });
+    });
 
     this.mapsList = new NavButtonList({
       element: layout.mapsListElement,
@@ -389,6 +399,23 @@ export class WeaponDisplayApp {
             <span data-role="center-map-title">Critter Unlock Map</span>
             <div class="panel-header__actions">
               <span class="unlock-map__zoom unlock-map__zoom--header" data-role="map-zoom-header">100%</span>
+              <div class="phase-filter-pill" data-role="phase-filter-pill" aria-label="Visible map phase">
+                ${PHASE_OPTIONS.filter((option) => option.value !== 'unassigned')
+                  .map(
+                    (option) => `
+                      <button
+                        type="button"
+                        class="phase-filter-pill__button"
+                        data-action="set-phase-filter"
+                        data-phase-filter="${option.value}"
+                        aria-pressed="${Number(option.value) === DEFAULT_PHASE_FILTER ? 'true' : 'false'}"
+                      >
+                        ${option.label}
+                      </button>
+                    `
+                  )
+                  .join('')}
+              </div>
               <button
                 type="button"
                 class="panel-copy-button"
@@ -461,6 +488,9 @@ export class WeaponDisplayApp {
       leftWindowToggleButtonElement: this.root.querySelector('[data-action="toggle-left-window"]'),
       rightWindowToggleButtonElement: this.root.querySelector('[data-action="toggle-right-window"]'),
       mapZoomElement: this.root.querySelector('[data-role="map-zoom-header"]'),
+      phaseFilterButtons: Array.from(
+        this.root.querySelectorAll('[data-action="set-phase-filter"]')
+      ),
       navElement: this.root.querySelector('.hud-nav'),
     };
   }
@@ -790,6 +820,7 @@ export class WeaponDisplayApp {
             category: existing.category || categoryId,
             imagePath: existing.imagePath || entry.imagePath || null,
             requirements: Array.isArray(entry.requirements) ? entry.requirements : existing.requirements || [],
+            phase: entry.phase ?? existing.phase,
           });
           return;
         }
@@ -811,6 +842,7 @@ export class WeaponDisplayApp {
           },
           special: {},
           requirements: Array.isArray(entry.requirements) ? entry.requirements : [],
+          phase: entry.phase,
         });
       });
     });
@@ -961,5 +993,22 @@ export class WeaponDisplayApp {
 
   setStageActive(isActive) {
     this.stageElement?.classList.toggle('has-critter', Boolean(isActive));
+  }
+
+  setActivePhaseFilter(phase, { syncButtons = true } = {}) {
+    this.activePhaseFilter = normalizePhaseFilter(phase);
+    this.critterUnlockMap?.setPhaseFilter?.(this.activePhaseFilter);
+    this.weaponUnlockMap?.setPhaseFilter?.(this.activePhaseFilter);
+
+    if (syncButtons) {
+      this.phaseFilterButtons.forEach((button) => {
+        const buttonPhase = normalizePhaseFilter(button.dataset.phaseFilter);
+        const isIncluded = buttonPhase <= this.activePhaseFilter;
+        const isCurrent = buttonPhase === this.activePhaseFilter;
+        button.classList.toggle('is-active', isIncluded);
+        button.classList.toggle('is-current', isCurrent);
+        button.setAttribute('aria-pressed', isIncluded ? 'true' : 'false');
+      });
+    }
   }
 }

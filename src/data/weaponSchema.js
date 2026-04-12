@@ -1,3 +1,5 @@
+import { PHASE_UNASSIGNED, normalizePhaseValue } from '../utils/phaseUtils.js';
+
 export const WEAPON_CATEGORIES = ['primary', 'secondary', 'melee', 'utility'];
 
 export const RARITIES = ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythic'];
@@ -57,6 +59,7 @@ export const createEmptyWeapon = () => ({
   },
   stats: {},
   special: {},
+  phase: PHASE_UNASSIGNED,
 });
 
 export const normalizeWeapon = (weapon) => ({
@@ -72,6 +75,7 @@ export const normalizeWeapon = (weapon) => ({
   special: {
     ...(weapon.special || {}),
   },
+  phase: normalizePhaseValue(weapon?.phase),
 });
 
 export const deriveStatsList = (weapon) => {

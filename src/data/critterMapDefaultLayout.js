@@ -1,5 +1,5 @@
 export const critterMapDefaultLayout = {
-  "generatedAt": "2026-04-10T03:36:49.010Z",
+  "generatedAt": "2026-04-12T06:24:38.643Z",
   "board": {
     "width": 2390,
     "height": 4073.4285714285716,
@@ -38,6 +38,7 @@ export const critterMapDefaultLayout = {
           "id": "lizard",
           "name": "Lizard",
           "rarity": "common",
+          "phase": 1,
           "level": 0,
           "x": 1107,
           "y": 151,
@@ -59,6 +60,7 @@ export const critterMapDefaultLayout = {
           "id": "african-dwarf-mud-turtle",
           "name": "African Dwarf Mud Turtle",
           "rarity": "rare",
+          "phase": 3,
           "level": 15,
           "x": 200,
           "y": 1858,
@@ -85,6 +87,7 @@ export const critterMapDefaultLayout = {
           "id": "african-sideneck-turtle",
           "name": "African Sideneck Turtle",
           "rarity": "uncommon",
+          "phase": 2,
           "level": 5,
           "x": 200,
           "y": 1378,
@@ -122,6 +125,7 @@ export const critterMapDefaultLayout = {
           "id": "anole",
           "name": "Anole",
           "rarity": "common",
+          "phase": 1,
           "level": 10,
           "x": 1288,
           "y": 338,
@@ -159,10 +163,22 @@ export const critterMapDefaultLayout = {
           "id": "basilisk",
           "name": "Basilisk",
           "rarity": "uncommon",
+          "phase": 2,
           "level": 20,
           "x": 1470,
           "y": 1471,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": {
             "textScale": 100,
             "hue": 100,
@@ -185,6 +201,7 @@ export const critterMapDefaultLayout = {
           "id": "bearded-dragon",
           "name": "Bearded Dragon",
           "rarity": "rare",
+          "phase": 2,
           "level": 10,
           "x": 1651,
           "y": 2138,
@@ -226,6 +243,7 @@ export const critterMapDefaultLayout = {
           "id": "chameleon",
           "name": "Chameleon",
           "rarity": "uncommon",
+          "phase": 2,
           "level": 10,
           "x": 1651,
           "y": 1565,
@@ -252,6 +270,7 @@ export const critterMapDefaultLayout = {
           "id": "crested-gecko",
           "name": "Crested Gecko",
           "rarity": "uncommon",
+          "phase": 2,
           "level": 20,
           "x": 1832,
           "y": 1098,
@@ -282,6 +301,7 @@ export const critterMapDefaultLayout = {
           "id": "diamondback-terrapin",
           "name": "Diamondback Terrapin",
           "rarity": "rare",
+          "phase": 2,
           "level": 100,
           "x": 926,
           "y": 1858,
@@ -319,6 +339,7 @@ export const critterMapDefaultLayout = {
           "id": "draco",
           "name": "Draco",
           "rarity": "rare",
+          "phase": 2,
           "level": 15,
           "x": 1832,
           "y": 2231,
@@ -360,6 +381,7 @@ export const critterMapDefaultLayout = {
           "id": "dragon",
           "name": "Dragon",
           "rarity": "mythical",
+          "phase": 2,
           "level": 50,
           "x": 1651,
           "y": 3003,
@@ -405,6 +427,7 @@ export const critterMapDefaultLayout = {
           "id": "eastern-mud-turtle",
           "name": "Eastern Mud Turtle",
           "rarity": "uncommon",
+          "phase": 2,
           "level": 15,
           "x": 1107,
           "y": 1284,
@@ -442,6 +465,7 @@ export const critterMapDefaultLayout = {
           "id": "eunotosaurus",
           "name": "Eunotosaurus",
           "rarity": "extinct",
+          "phase": 3,
           "level": 50,
           "x": 382,
           "y": 2430,
@@ -472,6 +496,7 @@ export const critterMapDefaultLayout = {
           "id": "frog-eyed-gecko",
           "name": "Frog-Eyed Gecko",
           "rarity": "rare",
+          "phase": 2,
           "level": 15,
           "x": 1832,
           "y": 1762,
@@ -498,10 +523,22 @@ export const critterMapDefaultLayout = {
           "id": "gecko",
           "name": "Gecko",
           "rarity": "common",
+          "phase": 1,
           "level": 15,
-          "x": 1470,
-          "y": 524,
-          "imageView": null,
+          "x": 1651,
+          "y": 618,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": {
             "textScale": 100,
             "hue": 310,
@@ -524,6 +561,7 @@ export const critterMapDefaultLayout = {
           "id": "kappa",
           "name": "Kappa",
           "rarity": "mythical",
+          "phase": 3,
           "level": 50,
           "x": 563,
           "y": 3003,
@@ -565,6 +603,7 @@ export const critterMapDefaultLayout = {
           "id": "lance-nosed-chameleon",
           "name": "Lance-Nosed Chameleon",
           "rarity": "rare",
+          "phase": 2,
           "level": 15,
           "x": 1470,
           "y": 1764,
@@ -591,10 +630,22 @@ export const critterMapDefaultLayout = {
           "id": "leachs-giant-gecko",
           "name": "Leach's Giant Gecko",
           "rarity": "rare",
+          "phase": 2,
           "level": 15,
           "x": 2014,
           "y": 1951,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": {
             "textScale": 100,
             "hue": 198,
@@ -617,10 +668,22 @@ export const critterMapDefaultLayout = {
           "id": "legless-lizard",
           "name": "Legless Lizard",
           "rarity": "rare",
+          "phase": 4,
           "level": 50,
           "x": 1288,
           "y": 1858,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": {
             "textScale": 100,
             "hue": 217,
@@ -643,6 +706,7 @@ export const critterMapDefaultLayout = {
           "id": "painted-turtle",
           "name": "Painted Turtle",
           "rarity": "common",
+          "phase": 2,
           "level": 10,
           "x": 926,
           "y": 898,
@@ -669,10 +733,22 @@ export const critterMapDefaultLayout = {
           "id": "pancake-tortoise",
           "name": "Pancake Tortoise",
           "rarity": "uncommon",
+          "phase": 3,
           "level": 15,
           "x": 200,
           "y": 1096,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": {
             "textScale": 100,
             "hue": 287,
@@ -695,10 +771,22 @@ export const critterMapDefaultLayout = {
           "id": "pappochelys",
           "name": "Pappochelys",
           "rarity": "extinct",
+          "phase": 3,
           "level": 25,
           "x": 563,
           "y": 2617,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": {
             "textScale": 100,
             "hue": 253,
@@ -725,6 +813,7 @@ export const critterMapDefaultLayout = {
           "id": "pigsnouted-turtle",
           "name": "Pigsnouted Turtle",
           "rarity": "rare",
+          "phase": 2,
           "level": 15,
           "x": 926,
           "y": 2138,
@@ -762,6 +851,7 @@ export const critterMapDefaultLayout = {
           "id": "pterosaur",
           "name": "Pterosaur",
           "rarity": "extinct",
+          "phase": 2,
           "level": 30,
           "x": 1832,
           "y": 2711,
@@ -803,6 +893,7 @@ export const critterMapDefaultLayout = {
           "id": "red-eared-slider",
           "name": "Red-Eared Slider",
           "rarity": "common",
+          "phase": 2,
           "level": 5,
           "x": 926,
           "y": 524,
@@ -829,6 +920,7 @@ export const critterMapDefaultLayout = {
           "id": "snakeneck-turtle",
           "name": "Snakeneck Turtle",
           "rarity": "rare",
+          "phase": 2,
           "level": 15,
           "x": 382,
           "y": 2044,
@@ -870,6 +962,7 @@ export const critterMapDefaultLayout = {
           "id": "snapping-turtle",
           "name": "Snapping Turtle",
           "rarity": "uncommon",
+          "phase": 2,
           "level": 15,
           "x": 563,
           "y": 1378,
@@ -907,6 +1000,7 @@ export const critterMapDefaultLayout = {
           "id": "softshell-turtle",
           "name": "Softshell Turtle",
           "rarity": "rare",
+          "phase": 2,
           "level": 15,
           "x": 744,
           "y": 1762,
@@ -948,6 +1042,7 @@ export const critterMapDefaultLayout = {
           "id": "stinkpot",
           "name": "Stinkpot",
           "rarity": "uncommon",
+          "phase": 2,
           "level": 10,
           "x": 382,
           "y": 1565,
@@ -978,6 +1073,7 @@ export const critterMapDefaultLayout = {
           "id": "tokay-gecko",
           "name": "Tokay Gecko",
           "rarity": "common",
+          "phase": 2,
           "level": 15,
           "x": 1832,
           "y": 711,
@@ -1015,8 +1111,9 @@ export const critterMapDefaultLayout = {
           "id": "tortoise",
           "name": "Tortoise",
           "rarity": "common",
+          "phase": 1,
           "level": 10,
-          "x": 382,
+          "x": 563,
           "y": 618,
           "imageView": {
             "position": {
@@ -1052,6 +1149,7 @@ export const critterMapDefaultLayout = {
           "id": "trioceros",
           "name": "Trioceros",
           "rarity": "rare",
+          "phase": 2,
           "level": 15,
           "x": 1288,
           "y": 2138,
@@ -1089,8 +1187,9 @@ export const critterMapDefaultLayout = {
           "id": "turtle",
           "name": "Turtle",
           "rarity": "common",
+          "phase": 1,
           "level": 5,
-          "x": 744,
+          "x": 926,
           "y": 338,
           "imageView": {
             "position": {
@@ -1126,10 +1225,22 @@ export const critterMapDefaultLayout = {
           "id": "velociraptor",
           "name": "Velociraptor",
           "rarity": "extinct",
+          "phase": 2,
           "level": 30,
           "x": 1107,
           "y": 2430,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": {
             "textScale": 100,
             "hue": 327,
@@ -1152,6 +1263,7 @@ export const critterMapDefaultLayout = {
           "id": "veratus",
           "name": "Veratus",
           "rarity": "mythical",
+          "phase": 3,
           "level": 100,
           "x": 1107,
           "y": 3377,
@@ -1217,6 +1329,7 @@ export const critterMapDefaultLayout = {
           "id": "frog",
           "name": "Frog",
           "rarity": "common",
+          "phase": 1,
           "level": 0,
           "x": 1107,
           "y": 151,
@@ -1238,6 +1351,7 @@ export const critterMapDefaultLayout = {
           "id": "african-bullfrog",
           "name": "African Bullfrog",
           "rarity": "uncommon",
+          "phase": 2,
           "level": 20,
           "x": 1470,
           "y": 911,
@@ -1275,10 +1389,22 @@ export const critterMapDefaultLayout = {
           "id": "axolotl",
           "name": "Axolotl",
           "rarity": "rare",
+          "phase": 2,
           "level": 30,
           "x": 744,
           "y": 1484,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": {
             "textScale": 100,
             "hue": 299,
@@ -1305,6 +1431,7 @@ export const critterMapDefaultLayout = {
           "id": "black-rain-frog",
           "name": "Black Rain Frog",
           "rarity": "rare",
+          "phase": 2,
           "level": 30,
           "x": 1107,
           "y": 1577,
@@ -1342,10 +1469,22 @@ export const critterMapDefaultLayout = {
           "id": "bullfrog",
           "name": "Bullfrog",
           "rarity": "common",
+          "phase": 1,
           "level": 15,
-          "x": 1288,
-          "y": 431,
-          "imageView": null,
+          "x": 1470,
+          "y": 338,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": {
             "textScale": 173,
             "hue": 339,
@@ -1368,10 +1507,22 @@ export const critterMapDefaultLayout = {
           "id": "devil-frog",
           "name": "Devil Frog",
           "rarity": "extinct",
+          "phase": 3,
           "level": 100,
           "x": 1651,
           "y": 2152,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": {
             "textScale": 100,
             "hue": 0,
@@ -1398,10 +1549,22 @@ export const critterMapDefaultLayout = {
           "id": "diplocaulus",
           "name": "Diplocaulus",
           "rarity": "extinct",
+          "phase": 2,
           "level": 25,
           "x": 744,
           "y": 2245,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": {
             "textScale": 100,
             "hue": 248,
@@ -1428,10 +1591,22 @@ export const critterMapDefaultLayout = {
           "id": "fire-bellied-toad",
           "name": "Fire-bellied Toad",
           "rarity": "uncommon",
+          "phase": 2,
           "level": 10,
           "x": 1832,
           "y": 1098,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": {
             "textScale": 100,
             "hue": 360,
@@ -1454,10 +1629,22 @@ export const critterMapDefaultLayout = {
           "id": "frog-prince",
           "name": "Frog Prince",
           "rarity": "mythical",
+          "phase": 2,
           "level": 25,
           "x": 1832,
           "y": 2820,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": {
             "textScale": 100,
             "hue": 285,
@@ -1480,10 +1667,22 @@ export const critterMapDefaultLayout = {
           "id": "gastric-brooder",
           "name": "Gastric Brooder",
           "rarity": "extinct",
+          "phase": 2,
           "level": 25,
           "x": 1107,
           "y": 2152,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": {
             "textScale": 100,
             "hue": 84,
@@ -1510,10 +1709,22 @@ export const critterMapDefaultLayout = {
           "id": "glass-frog",
           "name": "Glass Frog",
           "rarity": "uncommon",
+          "phase": 2,
           "level": 15,
           "x": 1107,
           "y": 911,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": {
             "textScale": 100,
             "hue": 145,
@@ -1536,6 +1747,7 @@ export const critterMapDefaultLayout = {
           "id": "golden-toad",
           "name": "Golden Toad",
           "rarity": "extinct",
+          "phase": 2,
           "level": 100,
           "x": 1832,
           "y": 2338,
@@ -1562,10 +1774,22 @@ export const critterMapDefaultLayout = {
           "id": "great-crested-newt",
           "name": "Great Crested Newt",
           "rarity": "rare",
+          "phase": 3,
           "level": 30,
           "x": 382,
           "y": 1764,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": {
             "textScale": 100,
             "hue": 20,
@@ -1592,10 +1816,22 @@ export const critterMapDefaultLayout = {
           "id": "jin-chan",
           "name": "Jin Chan",
           "rarity": "mythical",
+          "phase": 2,
           "level": 100,
           "x": 1651,
           "y": 2633,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": {
             "textScale": 103,
             "hue": 41,
@@ -1618,6 +1854,7 @@ export const critterMapDefaultLayout = {
           "id": "koric",
           "name": "Koric",
           "rarity": "mythical",
+          "phase": 3,
           "level": 50,
           "x": 563,
           "y": 2632,
@@ -1648,10 +1885,22 @@ export const critterMapDefaultLayout = {
           "id": "loveland-frogman",
           "name": "Loveland Frogman",
           "rarity": "mythical",
+          "phase": 3,
           "level": 20,
           "x": 1288,
           "y": 2725,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": {
             "textScale": 100,
             "hue": 312,
@@ -1678,6 +1927,7 @@ export const critterMapDefaultLayout = {
           "id": "newt",
           "name": "Newt",
           "rarity": "common",
+          "phase": "unassigned",
           "level": 15,
           "x": 563,
           "y": 618,
@@ -1704,10 +1954,22 @@ export const critterMapDefaultLayout = {
           "id": "poison-dart-frog",
           "name": "Poison Dart Frog",
           "rarity": "rare",
+          "phase": 2,
           "level": 15,
           "x": 926,
           "y": 1858,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": {
             "textScale": 100,
             "hue": 284,
@@ -1734,6 +1996,7 @@ export const critterMapDefaultLayout = {
           "id": "rough-skinned-newt",
           "name": "Rough Skinned Newt",
           "rarity": "uncommon",
+          "phase": 3,
           "level": 20,
           "x": 200,
           "y": 1191,
@@ -1771,9 +2034,10 @@ export const critterMapDefaultLayout = {
           "id": "salamander",
           "name": "Salamander",
           "rarity": "common",
+          "phase": 1,
           "level": 5,
-          "x": 926,
-          "y": 431,
+          "x": 744,
+          "y": 338,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -1808,10 +2072,22 @@ export const critterMapDefaultLayout = {
           "id": "slender-salamander",
           "name": "Slender Salamander",
           "rarity": "uncommon",
+          "phase": 2,
           "level": 20,
           "x": 563,
           "y": 1284,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": {
             "textScale": 100,
             "hue": 231,
@@ -1834,6 +2110,7 @@ export const critterMapDefaultLayout = {
           "id": "surinam-toad",
           "name": "Surinam Toad",
           "rarity": "rare",
+          "phase": 2,
           "level": 25,
           "x": 1288,
           "y": 1764,
@@ -1871,10 +2148,22 @@ export const critterMapDefaultLayout = {
           "id": "toad",
           "name": "Toad",
           "rarity": "common",
+          "phase": 1,
           "level": 5,
           "x": 1651,
-          "y": 711,
-          "imageView": null,
+          "y": 618,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": {
             "textScale": 100,
             "hue": 59,
@@ -1925,10 +2214,22 @@ export const critterMapDefaultLayout = {
           "id": "mouse",
           "name": "Mouse",
           "rarity": "common",
+          "phase": 1,
           "level": 0,
           "x": 1107,
           "y": 151,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": {
             "textScale": 100,
             "hue": 168,
@@ -1946,10 +2247,22 @@ export const critterMapDefaultLayout = {
           "id": "armadillo",
           "name": "Armadillo",
           "rarity": "uncommon",
+          "phase": 2,
           "level": 20,
           "x": 1288,
           "y": 1564,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": {
             "textScale": 100,
             "hue": 228,
@@ -1972,10 +2285,22 @@ export const critterMapDefaultLayout = {
           "id": "badger",
           "name": "Badger",
           "rarity": "rare",
+          "phase": 4,
           "level": 15,
           "x": 744,
           "y": 2325,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": {
             "textScale": 100,
             "hue": 243,
@@ -1998,10 +2323,22 @@ export const critterMapDefaultLayout = {
           "id": "bandicoot",
           "name": "Bandicoot",
           "rarity": "rare",
+          "phase": 3,
           "level": 10,
           "x": 926,
           "y": 2044,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": {
             "textScale": 100,
             "hue": 12,
@@ -2024,6 +2361,7 @@ export const critterMapDefaultLayout = {
           "id": "bat",
           "name": "Bat",
           "rarity": "uncommon",
+          "phase": 2,
           "level": 10,
           "x": 382,
           "y": 1284,
@@ -2065,10 +2403,22 @@ export const critterMapDefaultLayout = {
           "id": "chipmunk",
           "name": "Chipmunk",
           "rarity": "common",
+          "phase": 1,
           "level": 5,
           "x": 382,
           "y": 338,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": {
             "textScale": 100,
             "hue": 36,
@@ -2091,6 +2441,7 @@ export const critterMapDefaultLayout = {
           "id": "colugo",
           "name": "Colugo",
           "rarity": "rare",
+          "phase": 2,
           "level": 20,
           "x": 382,
           "y": 1764,
@@ -2128,10 +2479,22 @@ export const critterMapDefaultLayout = {
           "id": "elephant-shrew",
           "name": "Elephant Shrew",
           "rarity": "rare",
+          "phase": 3,
           "level": 20,
           "x": 1470,
           "y": 2325,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": {
             "textScale": 100,
             "hue": 86,
@@ -2154,6 +2517,7 @@ export const critterMapDefaultLayout = {
           "id": "eomaia",
           "name": "Eomaia",
           "rarity": "extinct",
+          "phase": 4,
           "level": 30,
           "x": 926,
           "y": 2991,
@@ -2191,10 +2555,22 @@ export const critterMapDefaultLayout = {
           "id": "ferret",
           "name": "Ferret",
           "rarity": "rare",
+          "phase": 3,
           "level": 15,
           "x": 563,
           "y": 2044,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": {
             "textScale": 100,
             "hue": 34,
@@ -2217,6 +2593,7 @@ export const critterMapDefaultLayout = {
           "id": "finger-monkey",
           "name": "Finger Monkey",
           "rarity": "rare",
+          "phase": 3,
           "level": 15,
           "x": 382,
           "y": 2231,
@@ -2254,10 +2631,22 @@ export const critterMapDefaultLayout = {
           "id": "flying-squirrel",
           "name": "Flying Squirrel",
           "rarity": "uncommon",
+          "phase": 2,
           "level": 25,
           "x": 563,
           "y": 1004,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": {
             "textScale": 100,
             "hue": 44,
@@ -2280,10 +2669,22 @@ export const critterMapDefaultLayout = {
           "id": "fruitafossor",
           "name": "Fruitafossor",
           "rarity": "extinct",
+          "phase": 4,
           "level": 30,
           "x": 1470,
           "y": 3085,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": {
             "textScale": 100,
             "hue": 113,
@@ -2306,6 +2707,7 @@ export const critterMapDefaultLayout = {
           "id": "gopher",
           "name": "Gopher",
           "rarity": "common",
+          "phase": 2,
           "level": 5,
           "x": 2014,
           "y": 805,
@@ -2332,9 +2734,10 @@ export const critterMapDefaultLayout = {
           "id": "hedgehog",
           "name": "Hedgehog",
           "rarity": "uncommon",
+          "phase": 2,
           "level": 15,
           "x": 1288,
-          "y": 1284,
+          "y": 1004,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -2373,6 +2776,7 @@ export const critterMapDefaultLayout = {
           "id": "juramaia",
           "name": "Juramaia",
           "rarity": "extinct",
+          "phase": 4,
           "level": 30,
           "x": 1288,
           "y": 2524,
@@ -2410,6 +2814,7 @@ export const critterMapDefaultLayout = {
           "id": "koala",
           "name": "Koala",
           "rarity": "rare",
+          "phase": 3,
           "level": 10,
           "x": 1288,
           "y": 1858,
@@ -2447,6 +2852,7 @@ export const critterMapDefaultLayout = {
           "id": "lemur",
           "name": "Lemur",
           "rarity": "rare",
+          "phase": 2,
           "level": 20,
           "x": 1832,
           "y": 1764,
@@ -2484,6 +2890,7 @@ export const critterMapDefaultLayout = {
           "id": "megazostrodon",
           "name": "Megazostrodon",
           "rarity": "extinct",
+          "phase": 3,
           "level": 50,
           "x": 1288,
           "y": 2991,
@@ -2521,6 +2928,7 @@ export const critterMapDefaultLayout = {
           "id": "mole",
           "name": "Mole",
           "rarity": "uncommon",
+          "phase": 2,
           "level": 25,
           "x": 1832,
           "y": 1098,
@@ -2562,6 +2970,7 @@ export const critterMapDefaultLayout = {
           "id": "mouse-lemur",
           "name": "Mouse Lemur",
           "rarity": "rare",
+          "phase": 2,
           "level": 20,
           "x": 1651,
           "y": 1951,
@@ -2599,10 +3008,22 @@ export const critterMapDefaultLayout = {
           "id": "necrolestes",
           "name": "Necrolestes",
           "rarity": "extinct",
+          "phase": 4,
           "level": 50,
           "x": 1832,
           "y": 2991,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": {
             "textScale": 100,
             "hue": 64,
@@ -2625,6 +3046,7 @@ export const critterMapDefaultLayout = {
           "id": "opossum",
           "name": "Opossum",
           "rarity": "uncommon",
+          "phase": 2,
           "level": 10,
           "x": 1107,
           "y": 1378,
@@ -2651,10 +3073,22 @@ export const critterMapDefaultLayout = {
           "id": "pangolin",
           "name": "Pangolin",
           "rarity": "rare",
+          "phase": 2,
           "level": 20,
           "x": 1470,
           "y": 1764,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": {
             "textScale": 100,
             "hue": 256,
@@ -2677,10 +3111,22 @@ export const critterMapDefaultLayout = {
           "id": "plesiadapis",
           "name": "Plesiadapis",
           "rarity": "extinct",
+          "phase": 4,
           "level": 50,
           "x": 563,
           "y": 2524,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": {
             "textScale": 100,
             "hue": 211,
@@ -2703,6 +3149,7 @@ export const critterMapDefaultLayout = {
           "id": "porcupine",
           "name": "Porcupine",
           "rarity": "uncommon",
+          "phase": 2,
           "level": 15,
           "x": 1470,
           "y": 1471,
@@ -2740,6 +3187,7 @@ export const critterMapDefaultLayout = {
           "id": "prairie-dog",
           "name": "Prairie Dog",
           "rarity": "rare",
+          "phase": 2,
           "level": 15,
           "x": 2014,
           "y": 1858,
@@ -2777,10 +3225,22 @@ export const critterMapDefaultLayout = {
           "id": "rabbit",
           "name": "Rabbit",
           "rarity": "common",
+          "phase": 1,
           "level": 10,
-          "x": 563,
+          "x": 744,
           "y": 524,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": {
             "textScale": 100,
             "hue": 292,
@@ -2803,6 +3263,7 @@ export const critterMapDefaultLayout = {
           "id": "rat",
           "name": "Rat",
           "rarity": "common",
+          "phase": "unassigned",
           "level": 20,
           "x": 1832,
           "y": 338,
@@ -2829,6 +3290,7 @@ export const critterMapDefaultLayout = {
           "id": "spinolestes",
           "name": "Spinolestes",
           "rarity": "extinct",
+          "phase": 4,
           "level": 30,
           "x": 1651,
           "y": 2898,
@@ -2866,10 +3328,22 @@ export const critterMapDefaultLayout = {
           "id": "squirrel",
           "name": "Squirrel",
           "rarity": "common",
+          "phase": 1,
           "level": 5,
-          "x": 926,
-          "y": 711,
-          "imageView": null,
+          "x": 1470,
+          "y": 524,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": {
             "textScale": 100,
             "hue": 11,
@@ -2892,6 +3366,7 @@ export const critterMapDefaultLayout = {
           "id": "star-nosed-mole",
           "name": "Star-Nosed Mole",
           "rarity": "rare",
+          "phase": 2,
           "level": 25,
           "x": 2014,
           "y": 2325,
@@ -2929,6 +3404,7 @@ export const critterMapDefaultLayout = {
           "id": "stylinodon",
           "name": "Stylinodon",
           "rarity": "extinct",
+          "phase": 3,
           "level": 30,
           "x": 563,
           "y": 2991,
@@ -2966,6 +3442,7 @@ export const critterMapDefaultLayout = {
           "id": "sugar-glider",
           "name": "Sugar Glider",
           "rarity": "rare",
+          "phase": 2,
           "level": 15,
           "x": 200,
           "y": 1951,
@@ -3007,6 +3484,7 @@ export const critterMapDefaultLayout = {
           "id": "vole",
           "name": "Vole",
           "rarity": "common",
+          "phase": 2,
           "level": 15,
           "x": 1651,
           "y": 524,
@@ -3044,10 +3522,22 @@ export const critterMapDefaultLayout = {
           "id": "wallaby",
           "name": "Wallaby",
           "rarity": "rare",
+          "phase": 3,
           "level": 15,
           "x": 1107,
           "y": 2231,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": {
             "textScale": 100,
             "hue": 170,
@@ -3074,6 +3564,7 @@ export const critterMapDefaultLayout = {
           "id": "weasel",
           "name": "Weasel",
           "rarity": "uncommon",
+          "phase": 2,
           "level": 5,
           "x": 744,
           "y": 1378,
@@ -3100,6 +3591,7 @@ export const critterMapDefaultLayout = {
           "id": "zalambdalestes",
           "name": "Zalambdalestes",
           "rarity": "extinct",
+          "phase": 4,
           "level": 50,
           "x": 1107,
           "y": 2804,
@@ -3165,10 +3657,22 @@ export const critterMapDefaultLayout = {
           "id": "finch",
           "name": "Finch",
           "rarity": "common",
+          "phase": 3,
           "level": 0,
           "x": 1107,
           "y": 151,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": null,
           "requirements": []
         },
@@ -3176,10 +3680,22 @@ export const critterMapDefaultLayout = {
           "id": "aplomado-falcon",
           "name": "Aplomado Falcon",
           "rarity": "uncommon",
+          "phase": 4,
           "level": 10,
           "x": 1288,
           "y": 1378,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": {
             "textScale": 100,
             "hue": 354,
@@ -3206,6 +3722,7 @@ export const critterMapDefaultLayout = {
           "id": "bat-falcon",
           "name": "Bat Falcon",
           "rarity": "uncommon",
+          "phase": 4,
           "level": 10,
           "x": 1832,
           "y": 1284,
@@ -3243,6 +3760,7 @@ export const critterMapDefaultLayout = {
           "id": "cardinal",
           "name": "Cardinal",
           "rarity": "common",
+          "phase": 3,
           "level": 5,
           "x": 1470,
           "y": 524,
@@ -3280,6 +3798,7 @@ export const critterMapDefaultLayout = {
           "id": "chicken",
           "name": "Chicken",
           "rarity": "common",
+          "phase": 4,
           "level": 10,
           "x": 1107,
           "y": 524,
@@ -3306,6 +3825,7 @@ export const critterMapDefaultLayout = {
           "id": "cuckoo",
           "name": "Cuckoo",
           "rarity": "uncommon",
+          "phase": 4,
           "level": 15,
           "x": 563,
           "y": 724,
@@ -3332,6 +3852,7 @@ export const critterMapDefaultLayout = {
           "id": "dove",
           "name": "Dove",
           "rarity": "common",
+          "phase": 3,
           "level": 5,
           "x": 926,
           "y": 431,
@@ -3358,6 +3879,7 @@ export const critterMapDefaultLayout = {
           "id": "golden-dove",
           "name": "Golden Dove",
           "rarity": "uncommon",
+          "phase": 5,
           "level": 50,
           "x": 563,
           "y": 1004,
@@ -3395,6 +3917,7 @@ export const critterMapDefaultLayout = {
           "id": "hummingbird",
           "name": "Hummingbird",
           "rarity": "common",
+          "phase": 3,
           "level": 30,
           "x": 744,
           "y": 338,
@@ -3432,6 +3955,7 @@ export const critterMapDefaultLayout = {
           "id": "iiwi",
           "name": "I'iwi",
           "rarity": "uncommon",
+          "phase": 4,
           "level": 10,
           "x": 382,
           "y": 724,
@@ -3469,6 +3993,7 @@ export const critterMapDefaultLayout = {
           "id": "jungle-fowl",
           "name": "Jungle Fowl",
           "rarity": "uncommon",
+          "phase": 4,
           "level": 10,
           "x": 926,
           "y": 1098,
@@ -3495,6 +4020,7 @@ export const critterMapDefaultLayout = {
           "id": "king-quail",
           "name": "King Quail",
           "rarity": "uncommon",
+          "phase": 4,
           "level": 10,
           "x": 382,
           "y": 1098,
@@ -3532,6 +4058,7 @@ export const critterMapDefaultLayout = {
           "id": "little-owl",
           "name": "Little Owl",
           "rarity": "uncommon",
+          "phase": 4,
           "level": 20,
           "x": 1107,
           "y": 1004,
@@ -3569,6 +4096,7 @@ export const critterMapDefaultLayout = {
           "id": "parakeet",
           "name": "Parakeet",
           "rarity": "uncommon",
+          "phase": 4,
           "level": 10,
           "x": 1288,
           "y": 911,
@@ -3606,6 +4134,7 @@ export const critterMapDefaultLayout = {
           "id": "parrot",
           "name": "Parrot",
           "rarity": "uncommon",
+          "phase": 4,
           "level": 20,
           "x": 1470,
           "y": 1284,
@@ -3643,6 +4172,7 @@ export const critterMapDefaultLayout = {
           "id": "puffin",
           "name": "Puffin",
           "rarity": "uncommon",
+          "phase": 4,
           "level": 15,
           "x": 744,
           "y": 911,
@@ -3680,6 +4210,7 @@ export const critterMapDefaultLayout = {
           "id": "pygmy-falcon",
           "name": "Pygmy Falcon",
           "rarity": "uncommon",
+          "phase": 4,
           "level": 30,
           "x": 1470,
           "y": 1004,
@@ -3721,6 +4252,7 @@ export const critterMapDefaultLayout = {
           "id": "roadrunner",
           "name": "Roadrunner",
           "rarity": "uncommon",
+          "phase": 4,
           "level": 15,
           "x": 1107,
           "y": 817,
@@ -3758,6 +4290,7 @@ export const critterMapDefaultLayout = {
           "id": "rock-kestrel",
           "name": "Rock Kestrel",
           "rarity": "uncommon",
+          "phase": 4,
           "level": 5,
           "x": 1651,
           "y": 724,
@@ -3795,6 +4328,7 @@ export const critterMapDefaultLayout = {
           "id": "snowy-plover",
           "name": "Snowy Plover",
           "rarity": "uncommon",
+          "phase": 4,
           "level": 10,
           "x": 1832,
           "y": 817,
@@ -3821,6 +4355,7 @@ export const critterMapDefaultLayout = {
           "id": "sparrow",
           "name": "Sparrow",
           "rarity": "common",
+          "phase": 3,
           "level": 5,
           "x": 1288,
           "y": 338,
@@ -3858,10 +4393,22 @@ export const critterMapDefaultLayout = {
           "id": "african-finfoot",
           "name": "African Finfoot",
           "rarity": "uncommon",
+          "phase": 5,
           "level": 0,
           "x": 382,
           "y": 1284,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": null,
           "requirements": []
         },
@@ -3869,10 +4416,22 @@ export const critterMapDefaultLayout = {
           "id": "black-and-yellow-broadbill",
           "name": "Black-and-Yellow Broadbill",
           "rarity": "rare",
+          "phase": 4,
           "level": 0,
           "x": 382,
           "y": 1858,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": null,
           "requirements": []
         },
@@ -3880,10 +4439,22 @@ export const critterMapDefaultLayout = {
           "id": "black-naped-monarch",
           "name": "Black-naped Monarch",
           "rarity": "rare",
+          "phase": 4,
           "level": 0,
           "x": 382,
           "y": 1765,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": null,
           "requirements": []
         },
@@ -3891,10 +4462,22 @@ export const critterMapDefaultLayout = {
           "id": "capuchinbird",
           "name": "Capuchinbird",
           "rarity": "rare",
+          "phase": 5,
           "level": 0,
           "x": 563,
           "y": 1858,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": null,
           "requirements": []
         },
@@ -3902,10 +4485,22 @@ export const critterMapDefaultLayout = {
           "id": "dodo",
           "name": "Dodo",
           "rarity": "extinct",
+          "phase": 4,
           "level": 0,
           "x": 382,
           "y": 2618,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": null,
           "requirements": []
         },
@@ -3913,10 +4508,22 @@ export const critterMapDefaultLayout = {
           "id": "fairy-penguin",
           "name": "Fairy Penguin",
           "rarity": "rare",
+          "phase": 5,
           "level": 0,
           "x": 563,
           "y": 1765,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": null,
           "requirements": []
         },
@@ -3924,10 +4531,22 @@ export const critterMapDefaultLayout = {
           "id": "fiordland-penguin",
           "name": "Fiordland Penguin",
           "rarity": "uncommon",
+          "phase": 5,
           "level": 0,
           "x": 563,
           "y": 1284,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": null,
           "requirements": []
         },
@@ -3935,10 +4554,22 @@ export const critterMapDefaultLayout = {
           "id": "great-potoo",
           "name": "Great Potoo",
           "rarity": "rare",
+          "phase": 5,
           "level": 0,
           "x": 744,
           "y": 1858,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": null,
           "requirements": []
         },
@@ -3946,10 +4577,22 @@ export const critterMapDefaultLayout = {
           "id": "japanese-sparrowhawk",
           "name": "Japanese Sparrowhawk",
           "rarity": "rare",
+          "phase": 5,
           "level": 0,
           "x": 926,
           "y": 1858,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": null,
           "requirements": []
         },
@@ -3957,10 +4600,22 @@ export const critterMapDefaultLayout = {
           "id": "kiwi",
           "name": "Kiwi",
           "rarity": "rare",
+          "phase": 4,
           "level": 0,
           "x": 926,
           "y": 1765,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": null,
           "requirements": []
         },
@@ -3968,10 +4623,22 @@ export const critterMapDefaultLayout = {
           "id": "laughing-owl",
           "name": "Laughing Owl",
           "rarity": "extinct",
+          "phase": 4,
           "level": 0,
           "x": 1832,
           "y": 2618,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": null,
           "requirements": []
         },
@@ -3979,10 +4646,22 @@ export const critterMapDefaultLayout = {
           "id": "long-tailed-tit",
           "name": "Long-tailed Tit",
           "rarity": "rare",
+          "phase": 4,
           "level": 0,
           "x": 1107,
           "y": 1858,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": null,
           "requirements": []
         },
@@ -3990,10 +4669,22 @@ export const critterMapDefaultLayout = {
           "id": "oriental-scops-owl",
           "name": "Oriental Scops Owl",
           "rarity": "rare",
+          "phase": 4,
           "level": 0,
           "x": 1288,
           "y": 1858,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": null,
           "requirements": []
         },
@@ -4001,10 +4692,22 @@ export const critterMapDefaultLayout = {
           "id": "pennant-winged-nightjar",
           "name": "Pennant-winged Nightjar",
           "rarity": "rare",
+          "phase": 4,
           "level": 0,
           "x": 1288,
           "y": 1765,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": null,
           "requirements": []
         },
@@ -4012,10 +4715,22 @@ export const critterMapDefaultLayout = {
           "id": "phoenix",
           "name": "Phoenix",
           "rarity": "mythical",
+          "phase": 5,
           "level": 0,
           "x": 382,
           "y": 3378,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": null,
           "requirements": []
         },
@@ -4023,10 +4738,22 @@ export const critterMapDefaultLayout = {
           "id": "pygmy-cupwing",
           "name": "Pygmy Cupwing",
           "rarity": "rare",
+          "phase": 4,
           "level": 0,
           "x": 1470,
           "y": 1858,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": null,
           "requirements": []
         },
@@ -4034,10 +4761,22 @@ export const critterMapDefaultLayout = {
           "id": "resplendent-quetzal",
           "name": "Resplendent Quetzal",
           "rarity": "rare",
+          "phase": 4,
           "level": 0,
           "x": 1651,
           "y": 1858,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": null,
           "requirements": []
         },
@@ -4045,10 +4784,22 @@ export const critterMapDefaultLayout = {
           "id": "simurgh",
           "name": "Simurgh",
           "rarity": "mythical",
+          "phase": 5,
           "level": 0,
           "x": 1832,
           "y": 3378,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": null,
           "requirements": []
         },
@@ -4056,10 +4807,22 @@ export const critterMapDefaultLayout = {
           "id": "spoonbilled-sandpiper",
           "name": "Spoonbilled Sandpiper",
           "rarity": "uncommon",
+          "phase": 5,
           "level": 0,
           "x": 563,
           "y": 1191,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": null,
           "requirements": []
         },
@@ -4067,10 +4830,22 @@ export const critterMapDefaultLayout = {
           "id": "tawny-frogmouth",
           "name": "Tawny Frogmouth",
           "rarity": "rare",
+          "phase": 5,
           "level": 0,
           "x": 1651,
           "y": 1765,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": null,
           "requirements": []
         },
@@ -4078,10 +4853,22 @@ export const critterMapDefaultLayout = {
           "id": "wilsons-bird-of-paradise",
           "name": "Wilson's Bird-of-Paradise",
           "rarity": "rare",
+          "phase": 4,
           "level": 0,
           "x": 1832,
           "y": 1858,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": null,
           "requirements": []
         }
@@ -4117,6 +4904,7 @@ export const critterMapDefaultLayout = {
           "id": "anansi",
           "name": "Anansi",
           "rarity": "mythical",
+          "phase": 5,
           "level": 0,
           "x": 382,
           "y": 3471,
@@ -4128,6 +4916,7 @@ export const critterMapDefaultLayout = {
           "id": "asian-giant-hornet",
           "name": "Asian Giant Hornet",
           "rarity": "rare",
+          "phase": 5,
           "level": 0,
           "x": 382,
           "y": 1951,
@@ -4139,6 +4928,7 @@ export const critterMapDefaultLayout = {
           "id": "atlas-moth",
           "name": "Atlas Moth",
           "rarity": "rare",
+          "phase": 5,
           "level": 0,
           "x": 382,
           "y": 1858,
@@ -4150,6 +4940,7 @@ export const critterMapDefaultLayout = {
           "id": "attercopus",
           "name": "Attercopus",
           "rarity": "extinct",
+          "phase": 5,
           "level": 0,
           "x": 382,
           "y": 2711,
@@ -4161,6 +4952,7 @@ export const critterMapDefaultLayout = {
           "id": "black-widow",
           "name": "Black Widow",
           "rarity": "rare",
+          "phase": 5,
           "level": 0,
           "x": 563,
           "y": 1951,
@@ -4172,6 +4964,7 @@ export const critterMapDefaultLayout = {
           "id": "ceratomyrmex",
           "name": "Ceratomyrmex",
           "rarity": "extinct",
+          "phase": 5,
           "level": 0,
           "x": 563,
           "y": 2711,
@@ -4183,10 +4976,22 @@ export const critterMapDefaultLayout = {
           "id": "chimerarachne",
           "name": "Chimerarachne",
           "rarity": "extinct",
+          "phase": 5,
           "level": 0,
           "x": 926,
           "y": 2711,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": null,
           "requirements": []
         },
@@ -4194,10 +4999,22 @@ export const critterMapDefaultLayout = {
           "id": "cockroach",
           "name": "Cockroach",
           "rarity": "common",
+          "phase": 4,
           "level": 0,
           "x": 382,
           "y": 431,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": null,
           "requirements": []
         },
@@ -4205,10 +5022,22 @@ export const critterMapDefaultLayout = {
           "id": "damselfly",
           "name": "Damselfly",
           "rarity": "common",
+          "phase": 4,
           "level": 0,
           "x": 744,
           "y": 431,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": null,
           "requirements": []
         },
@@ -4216,10 +5045,22 @@ export const critterMapDefaultLayout = {
           "id": "dragonfly",
           "name": "Dragonfly",
           "rarity": "common",
+          "phase": 4,
           "level": 0,
           "x": 926,
           "y": 431,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": null,
           "requirements": []
         },
@@ -4227,10 +5068,22 @@ export const critterMapDefaultLayout = {
           "id": "emperor-dragonfly",
           "name": "Emperor Dragonfly",
           "rarity": "uncommon",
+          "phase": 4,
           "level": 0,
           "x": 382,
           "y": 1191,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": null,
           "requirements": []
         },
@@ -4238,6 +5091,7 @@ export const critterMapDefaultLayout = {
           "id": "emperor-scorpion",
           "name": "Emperor Scorpion",
           "rarity": "rare",
+          "phase": 5,
           "level": 0,
           "x": 744,
           "y": 1951,
@@ -4249,10 +5103,22 @@ export const critterMapDefaultLayout = {
           "id": "giant-centipede",
           "name": "Giant Centipede",
           "rarity": "uncommon",
+          "phase": 4,
           "level": 0,
           "x": 563,
           "y": 1191,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": null,
           "requirements": []
         },
@@ -4260,10 +5126,22 @@ export const critterMapDefaultLayout = {
           "id": "giant-water-bug",
           "name": "Giant Water Bug",
           "rarity": "uncommon",
+          "phase": 4,
           "level": 0,
           "x": 744,
           "y": 1191,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": null,
           "requirements": []
         },
@@ -4271,6 +5149,7 @@ export const critterMapDefaultLayout = {
           "id": "giant-weta",
           "name": "Giant Weta",
           "rarity": "rare",
+          "phase": 5,
           "level": 0,
           "x": 926,
           "y": 1951,
@@ -4282,6 +5161,7 @@ export const critterMapDefaultLayout = {
           "id": "goliath-beetle",
           "name": "Goliath Beetle",
           "rarity": "rare",
+          "phase": 5,
           "level": 0,
           "x": 1107,
           "y": 1951,
@@ -4293,10 +5173,22 @@ export const critterMapDefaultLayout = {
           "id": "happy-face-spider",
           "name": "Happy Face Spider",
           "rarity": "rare",
+          "phase": 5,
           "level": 0,
           "x": 1107,
           "y": 1858,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": null,
           "requirements": []
         },
@@ -4304,6 +5196,7 @@ export const critterMapDefaultLayout = {
           "id": "hercules-beetle",
           "name": "Hercules Beetle",
           "rarity": "rare",
+          "phase": 5,
           "level": 0,
           "x": 1288,
           "y": 1951,
@@ -4315,10 +5208,22 @@ export const critterMapDefaultLayout = {
           "id": "hibbertopterus",
           "name": "Hibbertopterus",
           "rarity": "extinct",
+          "phase": 5,
           "level": 0,
           "x": 1107,
           "y": 2711,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": null,
           "requirements": []
         },
@@ -4326,6 +5231,7 @@ export const critterMapDefaultLayout = {
           "id": "khepri",
           "name": "Khepri",
           "rarity": "mythical",
+          "phase": 5,
           "level": 0,
           "x": 1832,
           "y": 3471,
@@ -4337,10 +5243,22 @@ export const critterMapDefaultLayout = {
           "id": "mazothairos",
           "name": "Mazothairos",
           "rarity": "extinct",
+          "phase": 5,
           "level": 0,
           "x": 1288,
           "y": 2711,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": null,
           "requirements": []
         },
@@ -4348,6 +5266,7 @@ export const critterMapDefaultLayout = {
           "id": "meganeuropsis",
           "name": "Meganeuropsis",
           "rarity": "extinct",
+          "phase": 5,
           "level": 0,
           "x": 1651,
           "y": 2711,
@@ -4359,10 +5278,22 @@ export const critterMapDefaultLayout = {
           "id": "mydas-fly",
           "name": "Mydas Fly",
           "rarity": "uncommon",
+          "phase": 4,
           "level": 0,
           "x": 926,
           "y": 1191,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": null,
           "requirements": []
         },
@@ -4370,6 +5301,7 @@ export const critterMapDefaultLayout = {
           "id": "portia",
           "name": "Portia",
           "rarity": "rare",
+          "phase": 5,
           "level": 0,
           "x": 1470,
           "y": 1951,
@@ -4381,10 +5313,22 @@ export const critterMapDefaultLayout = {
           "id": "praying-mantis",
           "name": "Praying Mantis",
           "rarity": "uncommon",
+          "phase": 4,
           "level": 0,
           "x": 1288,
           "y": 1191,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": null,
           "requirements": []
         },
@@ -4392,6 +5336,7 @@ export const critterMapDefaultLayout = {
           "id": "pulmonoscorpius",
           "name": "Pulmonoscorpius",
           "rarity": "extinct",
+          "phase": 5,
           "level": 0,
           "x": 1832,
           "y": 2711,
@@ -4403,10 +5348,22 @@ export const critterMapDefaultLayout = {
           "id": "queen-alexandras-birdwing",
           "name": "Queen Alexandra's Birdwing",
           "rarity": "legendary",
+          "phase": 4,
           "level": 0,
           "x": 1288,
           "y": 431,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": null,
           "requirements": []
         },
@@ -4414,10 +5371,22 @@ export const critterMapDefaultLayout = {
           "id": "scorpion",
           "name": "Scorpion",
           "rarity": "common",
+          "phase": 4,
           "level": 0,
           "x": 1470,
           "y": 431,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": null,
           "requirements": []
         },
@@ -4425,10 +5394,22 @@ export const critterMapDefaultLayout = {
           "id": "silkworm-moth",
           "name": "Silkworm Moth",
           "rarity": "common",
+          "phase": 4,
           "level": 0,
           "x": 1832,
           "y": 431,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": null,
           "requirements": []
         },
@@ -4436,10 +5417,22 @@ export const critterMapDefaultLayout = {
           "id": "stick-insect",
           "name": "Stick Insect",
           "rarity": "uncommon",
+          "phase": 4,
           "level": 0,
           "x": 1470,
           "y": 1191,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": null,
           "requirements": []
         },
@@ -4447,6 +5440,7 @@ export const critterMapDefaultLayout = {
           "id": "tarantula-hawk",
           "name": "Tarantula Hawk",
           "rarity": "rare",
+          "phase": 5,
           "level": 0,
           "x": 1651,
           "y": 1951,
@@ -4458,6 +5452,7 @@ export const critterMapDefaultLayout = {
           "id": "titan-beetle",
           "name": "Titan Beetle",
           "rarity": "rare",
+          "phase": 5,
           "level": 0,
           "x": 1832,
           "y": 1951,
@@ -4469,10 +5464,22 @@ export const critterMapDefaultLayout = {
           "id": "tropidacris-grasshopper",
           "name": "Tropidacris Grasshopper",
           "rarity": "uncommon",
+          "phase": 4,
           "level": 0,
           "x": 1651,
           "y": 1191,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": null,
           "requirements": []
         },
@@ -4480,6 +5487,7 @@ export const critterMapDefaultLayout = {
           "id": "wolf-spider",
           "name": "Wolf Spider",
           "rarity": "uncommon",
+          "phase": 4,
           "level": 0,
           "x": 1832,
           "y": 1191,

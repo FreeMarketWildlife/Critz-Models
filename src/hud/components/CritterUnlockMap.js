@@ -1,4 +1,13 @@
 import { critterMapDefaultLayout } from '../../data/critterMapDefaultLayout.js';
+import {
+  DEFAULT_PHASE_FILTER,
+  getPhaseOptionValue,
+  isPhaseVisibleForFilter,
+  normalizePhaseFilter,
+  normalizePhaseValue,
+  PHASE_OPTIONS,
+  PHASE_UNASSIGNED,
+} from '../../utils/phaseUtils.js';
 
 const LOGICAL_MAP_WIDTH = 1700;
 const MAP_WIDTH = 12000;
@@ -275,6 +284,7 @@ export class CritterUnlockMap {
     this.activeBoardWidth = LOGICAL_MAP_WIDTH;
     this.layoutBoardHeight = MAP_HEIGHT;
     this.activeBoardHeight = MAP_HEIGHT;
+    this.activePhaseFilter = DEFAULT_PHASE_FILTER;
 
     this.loadDefaultLayout(critterMapDefaultLayout);
   }
@@ -358,6 +368,10 @@ export class CritterUnlockMap {
             );
             if (imageView) {
               this.critterImagePreviewStates.set(critterId, imageView);
+            }
+
+            if ('phase' in (critter || {})) {
+              this.setCritterPhase(critterId, critter.phase, { refresh: false });
             }
           });
         }
@@ -1170,6 +1184,7 @@ export class CritterUnlockMap {
     this.hideStyleMenu();
     this.bindStyleMenuDismiss();
     const current = this.getResolvedNodeStyle(this.activeCategoryId, critter.id);
+    const currentPhase = this.getCritterPhase(critter.id);
     const currentHex = rgbToHex(
       hslToRgb({
         hue: current.hue,
@@ -1211,6 +1226,20 @@ export class CritterUnlockMap {
         <input data-role="node-glow" type="checkbox" ${current.glow ? 'checked' : ''} />
         <span>Glow With Box Color</span>
       </label>
+      <label class="unlock-style-menu__field">
+        <span>Phase</span>
+        <select data-role="node-phase" class="unlock-style-menu__select">
+          ${PHASE_OPTIONS.map(
+            (option) => `
+              <option value="${getPhaseOptionValue(option.value)}" ${
+                normalizePhaseValue(option.value) === currentPhase ? 'selected' : ''
+              }>
+                ${option.label}
+              </option>
+            `
+          ).join('')}
+        </select>
+      </label>
       <div class="unlock-style-menu__actions">
         <button type="button" data-action="reset-node-style">Reset Node Style</button>
       </div>
@@ -1224,6 +1253,7 @@ export class CritterUnlockMap {
     const lightnessInput = this.styleMenu.querySelector('[data-role="node-lightness"]');
     const lineWidthInput = this.styleMenu.querySelector('[data-role="node-line-width"]');
     const glowInput = this.styleMenu.querySelector('[data-role="node-glow"]');
+    const phaseInput = this.styleMenu.querySelector('[data-role="node-phase"]');
     const resetButton = this.styleMenu.querySelector('[data-action="reset-node-style"]');
 
     const syncHexInput = (hexValue) => {
@@ -1297,6 +1327,15 @@ export class CritterUnlockMap {
     });
     lineWidthInput.addEventListener('input', commitNodeStyle);
     glowInput.addEventListener('change', commitNodeStyle);
+    phaseInput.addEventListener('change', () => {
+      this.setCritterPhase(critter.id, phaseInput.value, {
+        refresh: true,
+        emitIfSelectionHidden: true,
+      });
+      if (!this.isCritterVisibleForCurrentPhase(critter.id)) {
+        this.hideStyleMenu();
+      }
+    });
     resetButton.addEventListener('click', () => {
       this.resetCritterEditorState(critter.id);
       this.hideStyleMenu();
@@ -1381,6 +1420,7 @@ export class CritterUnlockMap {
         inputSaturation: null,
         inputLightness: null,
         inputWidth: DEFAULT_INPUT_WIDTH,
+        phase: PHASE_UNASSIGNED,
       };
     }
 
@@ -1411,7 +1451,84 @@ export class CritterUnlockMap {
       inputSaturation,
       inputLightness,
       inputWidth: style.inputWidth,
+      phase: this.getCritterPhase(critterId),
     };
+  }
+
+  getCritterPhase(critterId) {
+    return normalizePhaseValue(this.critterById.get(critterId)?.phase);
+  }
+
+  setCritterPhase(
+    critterId,
+    phase,
+    { refresh = true, emitIfSelectionHidden = false } = {}
+  ) {
+    const critter = this.critterById.get(critterId);
+    if (!critter) {
+      return PHASE_UNASSIGNED;
+    }
+
+    critter.phase = normalizePhaseValue(phase);
+    if (refresh) {
+      this.refreshPhaseVisibility({ emitIfSelectionHidden });
+    }
+
+    return critter.phase;
+  }
+
+  isCritterVisibleForCurrentPhase(critterId) {
+    return isPhaseVisibleForFilter(this.getCritterPhase(critterId), this.activePhaseFilter);
+  }
+
+  setPhaseFilter(filterPhase, { emitIfSelectionHidden = true } = {}) {
+    this.hideActionMenu();
+    this.hideStyleMenu();
+    this.activePhaseFilter = normalizePhaseFilter(filterPhase);
+    this.refreshPhaseVisibility({ emitIfSelectionHidden });
+    return this.activePhaseFilter;
+  }
+
+  refreshPhaseVisibility({ emitIfSelectionHidden = false } = {}) {
+    let activeCritterVisible = !this.activeCritterId;
+
+    this.nodeButtons.forEach((button, critterId) => {
+      const isVisible = this.isCritterVisibleForCurrentPhase(critterId);
+      button.hidden = !isVisible;
+      button.classList.toggle('is-phase-hidden', !isVisible);
+      button.style.display = isVisible ? '' : 'none';
+      if (critterId === this.activeCritterId && isVisible) {
+        activeCritterVisible = true;
+      }
+    });
+
+    this.linkRecords.forEach((record) => {
+      const isVisible =
+        this.isCritterVisibleForCurrentPhase(record.sourceId) &&
+        this.isCritterVisibleForCurrentPhase(record.targetId);
+      if (record.path) {
+        record.path.hidden = !isVisible;
+        record.path.style.display = isVisible ? '' : 'none';
+      }
+      if (record.hitPath) {
+        record.hitPath.hidden = !isVisible;
+        record.hitPath.style.display = isVisible ? '' : 'none';
+      }
+      if (Array.isArray(record.pointElements)) {
+        record.pointElements.forEach((element) => {
+          element.hidden = !isVisible;
+          element.classList.toggle('is-phase-hidden', !isVisible);
+          element.style.display = isVisible ? '' : 'none';
+        });
+      }
+    });
+
+    if (!activeCritterVisible && this.activeCritterId) {
+      this.setActiveCritter(null);
+      if (emitIfSelectionHidden) {
+        this.bus?.emit?.('critter:selected', null);
+      }
+    }
   }
 
   applyCritterEditorState(critterId, patch = {}) {
@@ -1824,6 +1941,16 @@ export class CritterUnlockMap {
     };
   }
 
+  getLaneCenterPoint(laneId = RARITY_LANES[0]?.id || 'common') {
+    const boardMetrics = this.getCategoryBoardMetrics(this.activeCategoryId);
+    const laneMetrics = this.getLaneGridMetrics(laneId, this.activeCategoryId, boardMetrics);
+
+    return {
+      x: laneMetrics.gridLeft + laneMetrics.gridWidth * 0.5,
+      y: laneMetrics.gridTop + laneMetrics.gridHeight * 0.5,
+    };
+  }
+
   centerGridOnViewport({ scale = this.scale } = {}) {
     this.scale = this.clampZoom(scale);
 
@@ -1846,11 +1973,35 @@ export class CritterUnlockMap {
     this.applyTransform();
   }
 
+  centerLaneOnViewport(laneId = RARITY_LANES[0]?.id || 'common', { scale = this.scale } = {}) {
+    this.scale = this.clampZoom(scale);
+
+    if (!this.viewport) {
+      this.applyTransform();
+      return;
+    }
+
+    const viewportWidth = this.viewport.clientWidth || 0;
+    const viewportHeight = this.viewport.clientHeight || 0;
+    if (viewportWidth <= 0 || viewportHeight <= 0) {
+      this.applyTransform();
+      return;
+    }
+
+    const laneCenter = this.getLaneCenterPoint(laneId);
+    this.pan.x =
+      viewportWidth * 0.5 - (laneCenter.x - this.getCurrentBoardOffsetX()) * this.scale;
+    this.pan.y = viewportHeight * 0.5 - laneCenter.y * this.scale;
+    this.applyTransform();
+  }
+
   resetCategoryView() {
     this.scale = DEFAULT_VISUAL_SCALE;
     this.applyTransform();
     requestAnimationFrame(() => {
-      this.centerGridOnViewport({ scale: DEFAULT_VISUAL_SCALE });
+      this.centerLaneOnViewport(RARITY_LANES[0]?.id || 'common', {
+        scale: DEFAULT_VISUAL_SCALE,
+      });
     });
   }
 
@@ -3026,6 +3177,7 @@ export class CritterUnlockMap {
             id: critter.id,
             name: critter.name,
             rarity: critter.rarity || 'common',
+            phase: this.getCritterPhase(critter.id),
             level: getRequirementLevel(critter),
             x: Number.isFinite(point.x)
               ? this.translateWorldXToLayout(point.x, exportBoardWidth)
@@ -3350,7 +3502,7 @@ export class CritterUnlockMap {
 
     this.renderLinkPointHandles();
     this.updateLinkPaths();
-
-    this.setActiveCritter(null);
+    this.setActiveCritter(this.nodeButtons.has(this.activeCritterId) ? this.activeCritterId : null);
+    this.refreshPhaseVisibility();
   }
 }

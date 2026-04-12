@@ -1,4 +1,5 @@
 import { PASSIVE_IDS, applyPassiveAbilityToCritter } from '../passives/catalog.js';
+import { normalizeCritter } from './schema.js';
 
 const PASSIVE_DOUBLE_JUMP = 'Double Jump (Player gets an extra jump in the air for no stamina cost.)';
 const PASSIVE_HEALTH_REGEN = 'Health Regeneration (+1 health per second).';
@@ -102,11 +103,13 @@ const createArthropodCritter = ({
   imagePath = createArthropodImagePath(name),
   stats = createPendingBirdOrInsectStats(),
   passiveId = '',
+  phase = 4,
 }) => ({
   id,
   name,
   category: 'anthropods',
   rarity,
+  phase,
   unlock: createStarterUnlock(),
   modelPath: '',
   imagePath,
@@ -1828,4 +1831,6 @@ const critterCatalog = [
   ...insectCritters,
 ];
 
-export const critters = critterCatalog.map((critter) => applyPassiveAbilityToCritter(critter));
+export const critters = critterCatalog.map((critter) =>
+  normalizeCritter(applyPassiveAbilityToCritter(critter))
+);
