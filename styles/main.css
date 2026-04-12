@@ -540,6 +540,66 @@ body::after {
   box-shadow: none;
 }
 
+.phase-filter-pill {
+  display: inline-flex;
+  align-items: stretch;
+  min-width: min(100%, 420px);
+  border-radius: 999px;
+  border: 1px solid rgba(210, 243, 220, 0.34);
+  background: rgba(7, 22, 15, 0.78);
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(210, 243, 220, 0.05);
+}
+
+.phase-filter-pill__button {
+  flex: 1 1 0;
+  min-width: 0;
+  border: 0;
+  border-right: 1px solid rgba(210, 243, 220, 0.16);
+  padding: 0.44rem 0.72rem;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-family: var(--font-display);
+  font-size: 0.64rem;
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.phase-filter-pill__button:last-child {
+  border-right: 0;
+}
+
+.phase-filter-pill__button:hover,
+.phase-filter-pill__button:focus-visible {
+  background: rgba(44, 92, 61, 0.58);
+  color: var(--color-text-primary);
+  outline: none;
+}
+
+.phase-filter-pill__button.is-active {
+  background:
+    linear-gradient(180deg, rgba(171, 255, 129, 0.48), rgba(75, 171, 112, 0.5)),
+    rgba(17, 45, 30, 0.92);
+  color: var(--color-text-primary);
+  box-shadow:
+    inset 0 0 0 1px rgba(240, 255, 150, 0.24),
+    inset 0 10px 18px rgba(243, 255, 171, 0.12);
+}
+
+.phase-filter-pill__button.is-current {
+  background:
+    linear-gradient(135deg, rgba(255, 238, 108, 0.92), rgba(255, 149, 88, 0.9) 52%, rgba(104, 238, 183, 0.82)),
+    rgba(27, 53, 36, 0.96);
+  color: #132315;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.28);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.34),
+    0 0 18px rgba(255, 214, 88, 0.42),
+    inset 0 10px 18px rgba(255, 255, 255, 0.12);
+}
+
 .weapon-cards {
   display: flex;
   flex-direction: column;
@@ -1279,6 +1339,25 @@ dl dt {
 .unlock-style-menu__hex-input[data-valid='false'] {
   border-color: rgba(255, 133, 133, 0.75);
   box-shadow: 0 0 0 1px rgba(255, 133, 133, 0.18);
+}
+
+.unlock-style-menu__select {
+  width: 100%;
+  min-width: 0;
+  padding: 0.56rem 0.7rem;
+  border: 1px solid rgba(210, 243, 220, 0.3);
+  border-radius: 10px;
+  background: rgba(5, 18, 12, 0.76);
+  color: var(--color-text-primary);
+  font: inherit;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.unlock-style-menu__select:focus {
+  outline: none;
+  border-color: rgba(159, 217, 127, 0.82);
+  box-shadow: 0 0 0 2px rgba(159, 217, 127, 0.16);
 }
 
 .unlock-style-menu__toggle {

@@ -1,4 +1,13 @@
 import { weaponsMapDefaultLayout } from '../../data/weaponsMapDefaultLayout.js';
+import {
+  DEFAULT_PHASE_FILTER,
+  getPhaseOptionValue,
+  isPhaseVisibleForFilter,
+  normalizePhaseFilter,
+  normalizePhaseValue,
+  PHASE_OPTIONS,
+  PHASE_UNASSIGNED,
+} from '../../utils/phaseUtils.js';
 
 const MAP_WIDTH = 1700;
 const DEFAULT_PAN = { x: 38, y: 30 };
@@ -47,6 +56,7 @@ export class WeaponUnlockMap {
     this.groupsLayer = null;
     this.lanesLayer = null;
     this.nodesLayer = null;
+    this.styleMenu = null;
 
     this.activeCategoryId = null;
     this.activeWeaponId = null;
@@ -56,6 +66,10 @@ export class WeaponUnlockMap {
     this.currentPositions = new Map();
     this.customPositionsByCategory = new Map();
     this.groupMetrics = new Map();
+    this.linkRecords = [];
+    this.alienNodeRecords = new Map();
+    this.dismissStyleMenu = null;
+    this.activePhaseFilter = DEFAULT_PHASE_FILTER;
 
     this.pan = { ...DEFAULT_PAN };
     this.scale = DEFAULT_VISUAL_SCALE;
@@ -78,6 +92,7 @@ export class WeaponUnlockMap {
           <div class="unlock-map__lanes" data-role="map-lanes"></div>
           <div class="unlock-map__nodes" data-role="map-nodes"></div>
         </div>
+        <div class="unlock-style-menu" data-role="style-menu" hidden></div>
       </div>
     `;
 
@@ -88,6 +103,7 @@ export class WeaponUnlockMap {
     this.groupsLayer = null;
     this.lanesLayer = this.root.querySelector('[data-role="map-lanes"]');
     this.nodesLayer = this.root.querySelector('[data-role="map-nodes"]');
+    this.styleMenu = this.root.querySelector('[data-role="style-menu"]');
 
     this.board.style.width = `${this.getBoardWidth()}px`;
     this.board.style.height = `${this.getBoardHeight()}px`;
@@ -97,6 +113,7 @@ export class WeaponUnlockMap {
 
     this.bindPanning();
     this.bindWheelNavigation();
+    this.bindContextMenuGuard();
     this.applyTransform();
 
     const initialCategory = defaultCategoryId || this.categories[0] || 'primary';
@@ -145,6 +162,10 @@ export class WeaponUnlockMap {
 
     const onPointerDown = (event) => {
       if (event.button !== 0 || !this.panningEnabled) {
+        return;
+      }
+
+      if (event.target.closest('.unlock-style-menu')) {
         return;
       }
 
@@ -199,6 +220,10 @@ export class WeaponUnlockMap {
     this.viewport.addEventListener(
       'wheel',
       (event) => {
+        if (event.target.closest('.unlock-style-menu')) {
+          return;
+        }
+
         if (event.ctrlKey || event.metaKey) {
           event.preventDefault();
           const rect = this.viewport.getBoundingClientRect();
@@ -234,11 +259,26 @@ export class WeaponUnlockMap {
     );
   }
 
+  bindContextMenuGuard() {
+    if (!this.viewport) {
+      return;
+    }
+
+    this.viewport.addEventListener(
+      'contextmenu',
+      (event) => {
+        event.preventDefault();
+      },
+      { capture: true }
+    );
+  }
+
   setCategory(categoryId) {
     if (!categoryId) {
       return;
     }
 
+    this.hideStyleMenu();
     this.activeCategoryId = categoryId;
     this.activeWeaponId = null;
     this.activeAlienNodeId = null;
@@ -257,6 +297,192 @@ export class WeaponUnlockMap {
     this.activeAlienNodeId = alienNodeId || null;
     this.activeWeaponId = null;
     this.applyActiveNodeState();
+  }
+
+  hideStyleMenu() {
+    if (this.dismissStyleMenu) {
+      this.dismissStyleMenu();
+      this.dismissStyleMenu = null;
+    }
+    if (this.styleMenu) {
+      this.styleMenu.hidden = true;
+      this.styleMenu.innerHTML = '';
+    }
+  }
+
+  positionStyleMenu(clientX, clientY) {
+    if (!this.styleMenu || !this.viewport) {
+      return;
+    }
+
+    const viewportRect = this.viewport.getBoundingClientRect();
+    const offsetX = clientX - viewportRect.left;
+    const offsetY = clientY - viewportRect.top;
+    const menuWidth = this.styleMenu.offsetWidth || 262;
+    const menuHeight = this.styleMenu.offsetHeight || 196;
+    this.styleMenu.style.left = `${Math.max(8, Math.min(offsetX + 8, viewportRect.width - menuWidth - 8))}px`;
+    this.styleMenu.style.top = `${Math.max(8, Math.min(offsetY + 8, viewportRect.height - menuHeight - 8))}px`;
+  }
+
+  bindStyleMenuDismiss() {
+    const onPointerDown = (event) => {
+      if (!this.styleMenu || this.styleMenu.hidden) {
+        return;
+      }
+
+      if (event.target === this.styleMenu || this.styleMenu.contains(event.target)) {
+        return;
+      }
+
+      this.hideStyleMenu();
+    };
+
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        this.hideStyleMenu();
+      }
+    };
+
+    document.addEventListener('pointerdown', onPointerDown);
+    document.addEventListener('keydown', onKeyDown);
+    this.dismissStyleMenu = () => {
+      document.removeEventListener('pointerdown', onPointerDown);
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }
+
+  getWeaponPhase(weaponId) {
+    return normalizePhaseValue(this.weaponById.get(weaponId)?.phase);
+  }
+
+  setWeaponPhase(
+    weaponId,
+    phase,
+    { refresh = true, emitIfSelectionHidden = false } = {}
+  ) {
+    const weapon = this.weaponById.get(weaponId);
+    if (!weapon) {
+      return PHASE_UNASSIGNED;
+    }
+
+    weapon.phase = normalizePhaseValue(phase);
+    if (refresh) {
+      this.refreshPhaseVisibility({ emitIfSelectionHidden });
+    }
+
+    return weapon.phase;
+  }
+
+  isWeaponVisibleForCurrentPhase(weaponId) {
+    return isPhaseVisibleForFilter(this.getWeaponPhase(weaponId), this.activePhaseFilter);
+  }
+
+  isAlienNodeVisibleForCurrentPhase(alienNodeId) {
+    const record = this.alienNodeRecords.get(alienNodeId);
+    if (!record) {
+      return false;
+    }
+
+    return record.targets.some((target) => this.isWeaponVisibleForCurrentPhase(target.weaponId));
+  }
+
+  setPhaseFilter(filterPhase, { emitIfSelectionHidden = true } = {}) {
+    this.hideStyleMenu();
+    this.activePhaseFilter = normalizePhaseFilter(filterPhase);
+    this.refreshPhaseVisibility({ emitIfSelectionHidden });
+    return this.activePhaseFilter;
+  }
+
+  refreshPhaseVisibility({ emitIfSelectionHidden = false } = {}) {
+    let activeWeaponVisible = !this.activeWeaponId;
+    let activeAlienVisible = !this.activeAlienNodeId;
+
+    this.nodeButtons.forEach((button, weaponId) => {
+      const isVisible = this.isWeaponVisibleForCurrentPhase(weaponId);
+      button.hidden = !isVisible;
+      button.classList.toggle('is-phase-hidden', !isVisible);
+      button.style.display = isVisible ? '' : 'none';
+      if (weaponId === this.activeWeaponId && isVisible) {
+        activeWeaponVisible = true;
+      }
+    });
+
+    this.alienNodeButtons.forEach((button, alienNodeId) => {
+      const isVisible = this.isAlienNodeVisibleForCurrentPhase(alienNodeId);
+      button.hidden = !isVisible;
+      button.classList.toggle('is-phase-hidden', !isVisible);
+      button.style.display = isVisible ? '' : 'none';
+      if (alienNodeId === this.activeAlienNodeId && isVisible) {
+        activeAlienVisible = true;
+      }
+    });
+
+    this.linkRecords.forEach((record) => {
+      const sourceVisible = record.sourceAlienNodeId
+        ? this.isAlienNodeVisibleForCurrentPhase(record.sourceAlienNodeId)
+        : this.isWeaponVisibleForCurrentPhase(record.sourceWeaponId);
+      const targetVisible = this.isWeaponVisibleForCurrentPhase(record.targetWeaponId);
+      if (record.path) {
+        record.path.hidden = !(sourceVisible && targetVisible);
+        record.path.style.display = sourceVisible && targetVisible ? '' : 'none';
+      }
+    });
+
+    if (!activeWeaponVisible && this.activeWeaponId) {
+      this.setActiveWeapon(null);
+      if (emitIfSelectionHidden) {
+        this.bus?.emit?.('weapon-map:selected', null);
+      }
+    }
+
+    if (!activeAlienVisible && this.activeAlienNodeId) {
+      this.setActiveAlienNode(null);
+      if (emitIfSelectionHidden) {
+        this.bus?.emit?.('weapon-map:alien-selected', null);
+      }
+    }
+  }
+
+  showWeaponPhaseMenu({ weapon, clientX, clientY }) {
+    if (!this.styleMenu || !weapon) {
+      return;
+    }
+
+    this.hideStyleMenu();
+    this.bindStyleMenuDismiss();
+
+    const currentPhase = this.getWeaponPhase(weapon.id);
+    this.styleMenu.hidden = false;
+    this.styleMenu.innerHTML = `
+      <p class="unlock-style-menu__title">Edit ${weapon.name}</p>
+      <label class="unlock-style-menu__field">
+        <span>Phase</span>
+        <select data-role="weapon-phase" class="unlock-style-menu__select">
+          ${PHASE_OPTIONS.map(
+            (option) => `
+              <option value="${getPhaseOptionValue(option.value)}" ${
+                normalizePhaseValue(option.value) === currentPhase ? 'selected' : ''
+              }>
+                ${option.label}
+              </option>
+            `
+          ).join('')}
+        </select>
+      </label>
+    `;
+
+    this.positionStyleMenu(clientX, clientY);
+
+    const phaseInput = this.styleMenu.querySelector('[data-role="weapon-phase"]');
+    phaseInput?.addEventListener('change', () => {
+      this.setWeaponPhase(weapon.id, phaseInput.value, {
+        refresh: true,
+        emitIfSelectionHidden: true,
+      });
+      if (!this.isWeaponVisibleForCurrentPhase(weapon.id)) {
+        this.hideStyleMenu();
+      }
+    });
   }
 
   applyActiveNodeState() {
@@ -477,6 +703,7 @@ export class WeaponUnlockMap {
           ...entry,
           x: point.x,
           y: point.y,
+          phase: this.getWeaponPhase(entry.id),
           requirements,
         };
       });
@@ -535,6 +762,7 @@ export class WeaponUnlockMap {
     }
 
     this.linksLayer.innerHTML = '';
+    this.linkRecords = [];
     this.getWeaponsForCategory().forEach((entry) => {
       const target = nodePositions.get(entry.id);
       const requirements = Array.isArray(entry.requirements) ? entry.requirements : [];
@@ -574,6 +802,14 @@ export class WeaponUnlockMap {
         path.setAttribute('class', 'unlock-link');
         path.setAttribute('d', pathData);
         this.linksLayer.appendChild(path);
+        this.linkRecords.push({
+          path,
+          targetWeaponId: entry.id,
+          sourceWeaponId: this.isAlienRequirement(requirement) ? null : requirement.weaponId,
+          sourceAlienNodeId: this.isAlienRequirement(requirement)
+            ? this.getAlienNodeKey(entry.group, requirement)
+            : null,
+        });
       });
     });
   }
@@ -879,6 +1115,7 @@ export class WeaponUnlockMap {
     }
 
     this.renderRequirementLinks(this.currentPositions);
+    this.refreshPhaseVisibility();
   }
 
   bindNodeDrag(node, weaponId, groupId) {
@@ -963,6 +1200,7 @@ export class WeaponUnlockMap {
       return;
     }
 
+    this.hideStyleMenu();
     this.linksLayer.innerHTML = '';
     this.lanesLayer.innerHTML = '';
     this.nodesLayer.innerHTML = '';
@@ -970,6 +1208,8 @@ export class WeaponUnlockMap {
     this.alienNodeButtons.clear();
     this.currentPositions.clear();
     this.groupMetrics.clear();
+    this.linkRecords = [];
+    this.alienNodeRecords = new Map();
 
     const categoryLayout = this.getCategoryLayout();
     if (!categoryLayout) {
@@ -989,6 +1229,7 @@ export class WeaponUnlockMap {
       categoryLayout,
       this.customPositionsByCategory.get(this.activeCategoryId)
     );
+    this.alienNodeRecords = alienNodeMap;
 
     groups.forEach((group) => {
       const laneWeapons = this.getWeaponsForCategory()
@@ -1132,6 +1373,22 @@ export class WeaponUnlockMap {
           this.setActiveWeapon(nextId);
           this.bus?.emit?.('weapon-map:selected', nextId);
         });
+        const openWeaponMenu = (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          this.showWeaponPhaseMenu({
+            weapon: this.weaponById.get(entry.id) || entry,
+            clientX: event.clientX,
+            clientY: event.clientY,
+          });
+        };
+        node.addEventListener('contextmenu', openWeaponMenu);
+        node.addEventListener('auxclick', (event) => {
+          if (event.button !== 2) {
+            return;
+          }
+          openWeaponMenu(event);
+        });
 
         this.nodesLayer.appendChild(node);
         this.nodeButtons.set(entry.id, node);
@@ -1140,6 +1397,7 @@ export class WeaponUnlockMap {
 
     this.renderRequirementLinks(this.currentPositions);
     this.applyActiveNodeState();
+    this.refreshPhaseVisibility();
 
     if (!groups.length) {
       const fallbackLane = document.createElement('div');

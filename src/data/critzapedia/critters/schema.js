@@ -1,3 +1,5 @@
+import { PHASE_UNASSIGNED, normalizePhaseValue } from '../../../utils/phaseUtils.js';
+
 export const createEmptyCritter = () => ({
   id: '',
   name: '',
@@ -27,6 +29,7 @@ export const createEmptyCritter = () => ({
   tags: [],
   lore: '',
   notes: '',
+  phase: PHASE_UNASSIGNED,
 });
 
 export const normalizeCritter = (critter) => ({
@@ -44,4 +47,5 @@ export const normalizeCritter = (critter) => ({
   abilities: Array.isArray(critter.abilities) ? critter.abilities : [],
   animations: Array.isArray(critter.animations) ? critter.animations : [],
   tags: Array.isArray(critter.tags) ? critter.tags : [],
+  phase: normalizePhaseValue(critter?.phase),
 });
