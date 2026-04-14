@@ -10,10 +10,12 @@ import { CritterUnlockMap } from '../hud/components/CritterUnlockMap.js';
 import { WeaponUnlockMap } from '../hud/components/WeaponUnlockMap.js';
 import { ViewportOverlay } from '../hud/components/ViewportOverlay.js';
 import { NavButtonList } from '../hud/components/NavButtonList.js';
+import { CatalogListView } from '../hud/components/CatalogListView.js';
 import { MinigameRunner } from '../hud/components/MinigameRunner.js';
 import { MinigameCritterQuest } from '../hud/components/MinigameCritterQuest.js';
 import { MinigameKatanaMouse } from '../hud/components/MinigameKatanaMouse.js';
 import { weaponsMapDefaultLayout } from '../data/weaponsMapDefaultLayout.js';
+import { medalsAchievementsCatalog } from '../data/medalsAchievementsCatalog.js';
 import { DEFAULT_PHASE_FILTER, normalizePhaseFilter, PHASE_OPTIONS } from '../utils/phaseUtils.js';
 
 const RARITY_ORDER = {
@@ -35,16 +37,20 @@ export class WeaponDisplayApp {
     this.viewportOverlay = null;
     this.mapsList = null;
     this.modesList = null;
+    this.medalsAchievementsList = null;
     this.cosmeticsList = null;
     this.minigamesList = null;
     this.brainstormingList = null;
+    this.catalogListView = null;
     this.minigameRunner = null;
     this.minigameQuest = null;
     this.minigameKatana = null;
     this.shellElement = null;
     this.navElement = null;
+    this.centerMapPanel = null;
     this.mapCopyButton = null;
     this.mapZoomBadge = null;
+    this.phaseFilterPillElement = null;
     this.centerMapTitle = null;
     this.centerMapHost = null;
     this.leftWindowToggleButton = null;
@@ -105,6 +111,10 @@ export class WeaponDisplayApp {
     this.activeCritter = null;
     this.activeCenterMapType = 'critters';
     this.mountedCenterMapType = null;
+    this.lastMapCenterType = 'critters';
+    this.activeCatalogSectionId = null;
+    this.activeCatalogItemId = null;
+    this.catalogSections = medalsAchievementsCatalog;
   }
 
   init() {
@@ -112,8 +122,10 @@ export class WeaponDisplayApp {
     this.shellElement = layout.shellElement;
     this.stageElement = layout.stageElement;
     this.navElement = layout.navElement;
+    this.centerMapPanel = layout.centerMapPanelElement;
     this.mapCopyButton = layout.mapCopyButtonElement;
     this.mapZoomBadge = layout.mapZoomElement;
+    this.phaseFilterPillElement = layout.phaseFilterPillElement;
     this.centerMapTitle = layout.centerMapTitleElement;
     this.centerMapHost = layout.centerUnlockMapElement;
     this.leftWindowToggleButton = layout.leftWindowToggleButtonElement;
@@ -170,6 +182,10 @@ export class WeaponDisplayApp {
       bus: this.eventBus,
       zoomElement: this.mapZoomBadge,
     });
+    this.catalogListView = new CatalogListView({
+      element: layout.centerUnlockMapElement,
+      onSelect: (item) => this.handleCatalogItemSelection(item),
+    });
     this.setActivePhaseFilter(this.activePhaseFilter, { syncButtons: true });
     this.sceneManager.setCritterImagePreviewLayout(
       this.critterUnlockMap.getCritterImagePreviewStateMap()
@@ -207,6 +223,7 @@ export class WeaponDisplayApp {
           return;
         }
         this.unmountMinigames();
+        this.restoreMapCenterView();
         this.clearLibrarySelections('maps');
         this.syncLeftWindowSelection('maps');
         this.hudController.showLibraryInfo({
@@ -229,6 +246,7 @@ export class WeaponDisplayApp {
           return;
         }
         this.unmountMinigames();
+        this.restoreMapCenterView();
         this.clearLibrarySelections('modes');
         this.syncLeftWindowSelection('modes');
         this.hudController.showLibraryInfo({
@@ -239,6 +257,27 @@ export class WeaponDisplayApp {
       },
     });
     this.modesList.render();
+
+    this.medalsAchievementsList = new NavButtonList({
+      element: layout.medalsAchievementsListElement,
+      items: this.librarySections.medalsAchievements,
+      emptyMessage: 'Medals and achievements are on deck.',
+      onSelect: (item) => {
+        if (!item) {
+          this.activeCatalogItemId = null;
+          this.catalogListView?.setActive(null);
+          this.hudController.showLibraryInfo({
+            title: 'Medals & Achievments',
+            description: 'Select Medals or Achievements to browse the full list in the center window.',
+            footer: 'Career progress catalog',
+          });
+          return;
+        }
+
+        this.showCatalogSection(item.id);
+      },
+    });
+    this.medalsAchievementsList.render();
 
     this.cosmeticsList = new NavButtonList({
       element: layout.cosmeticsListElement,
@@ -251,6 +290,7 @@ export class WeaponDisplayApp {
           return;
         }
         this.unmountMinigames();
+        this.restoreMapCenterView();
         this.clearLibrarySelections('cosmetics');
         this.syncLeftWindowSelection('cosmetics');
         this.hudController.showLibraryInfo({
@@ -272,6 +312,7 @@ export class WeaponDisplayApp {
           this.hudController.clearInfo();
           return;
         }
+        this.restoreMapCenterView();
         this.clearLibrarySelections('minigames');
         this.syncLeftWindowSelection('minigames');
         if (item.id === 'run') {
@@ -325,6 +366,7 @@ export class WeaponDisplayApp {
           return;
         }
         this.unmountMinigames();
+        this.restoreMapCenterView();
         this.clearLibrarySelections('brainstorming');
         this.syncLeftWindowSelection('brainstorming');
         this.hudController.showLibraryInfo({
@@ -375,6 +417,12 @@ export class WeaponDisplayApp {
               <div data-component="modes-list"></div>
             </div>
           </details>
+          <details class="nav-section nav-section--medals-achievements">
+            <summary class="nav-section__summary">Medals &amp; Achievments</summary>
+            <div class="nav-section__content">
+              <div data-component="medals-achievements-list"></div>
+            </div>
+          </details>
           <details class="nav-section nav-section--cosmetics">
             <summary class="nav-section__summary">Cosmetics</summary>
             <div class="nav-section__content">
@@ -394,7 +442,7 @@ export class WeaponDisplayApp {
             </div>
           </details>
         </nav>
-        <section class="panel hud-panel hud-map" data-component="critter-map-panel">
+        <section class="panel hud-panel hud-map" data-component="center-map-panel">
           <div class="panel-header">
             <span data-role="center-map-title">Critter Unlock Map</span>
             <div class="panel-header__actions">
@@ -479,8 +527,12 @@ export class WeaponDisplayApp {
       rarityBadge: this.root.querySelector('[data-role="rarity-badge"]'),
       detailFooter: this.root.querySelector('[data-role="detail-footer"]'),
       centerMapTitleElement: this.root.querySelector('[data-role="center-map-title"]'),
+      centerMapPanelElement: this.root.querySelector('[data-component="center-map-panel"]'),
       mapsListElement: this.root.querySelector('[data-component="maps-list"]'),
       modesListElement: this.root.querySelector('[data-component="modes-list"]'),
+      medalsAchievementsListElement: this.root.querySelector(
+        '[data-component="medals-achievements-list"]'
+      ),
       cosmeticsListElement: this.root.querySelector('[data-component="cosmetics-list"]'),
       minigamesListElement: this.root.querySelector('[data-component="minigames-list"]'),
       brainstormingListElement: this.root.querySelector('[data-component="brainstorming-list"]'),
@@ -488,6 +540,7 @@ export class WeaponDisplayApp {
       leftWindowToggleButtonElement: this.root.querySelector('[data-action="toggle-left-window"]'),
       rightWindowToggleButtonElement: this.root.querySelector('[data-action="toggle-right-window"]'),
       mapZoomElement: this.root.querySelector('[data-role="map-zoom-header"]'),
+      phaseFilterPillElement: this.root.querySelector('[data-role="phase-filter-pill"]'),
       phaseFilterButtons: Array.from(
         this.root.querySelectorAll('[data-action="set-phase-filter"]')
       ),
@@ -780,6 +833,7 @@ export class WeaponDisplayApp {
     const lists = [
       ['maps', this.mapsList],
       ['modes', this.modesList],
+      ['medals-achievements', this.medalsAchievementsList],
       ['cosmetics', this.cosmeticsList],
       ['minigames', this.minigamesList],
       ['brainstorming', this.brainstormingList],
@@ -958,11 +1012,29 @@ export class WeaponDisplayApp {
   }
 
   getActiveMapController() {
-    return this.activeCenterMapType === 'weapons' ? this.weaponUnlockMap : this.critterUnlockMap;
+    if (this.activeCenterMapType === 'weapons') {
+      return this.weaponUnlockMap;
+    }
+
+    if (this.activeCenterMapType === 'critters') {
+      return this.critterUnlockMap;
+    }
+
+    return null;
   }
 
   mountCenterMap(mapType) {
     if (!this.centerMapHost) {
+      return;
+    }
+
+    if (mapType === 'catalog') {
+      this.catalogListView.element = this.centerMapHost;
+      this.catalogListView.render(
+        this.activeCatalogSectionId ? this.catalogSections[this.activeCatalogSectionId] : null
+      );
+      this.catalogListView.setActive(this.activeCatalogItemId);
+      this.mountedCenterMapType = 'catalog';
       return;
     }
 
@@ -980,15 +1052,109 @@ export class WeaponDisplayApp {
     this.mountedCenterMapType = 'critters';
   }
 
-  setCenterMapType(mapType) {
-    this.activeCenterMapType = mapType === 'weapons' ? 'weapons' : 'critters';
-    if (this.mountedCenterMapType !== this.activeCenterMapType) {
+  setCenterMapType(mapType, { force = false } = {}) {
+    this.activeCenterMapType =
+      mapType === 'weapons' ? 'weapons' : mapType === 'catalog' ? 'catalog' : 'critters';
+
+    if (this.activeCenterMapType !== 'catalog') {
+      this.lastMapCenterType = this.activeCenterMapType;
+    }
+
+    if (force || this.mountedCenterMapType !== this.activeCenterMapType) {
       this.mountCenterMap(this.activeCenterMapType);
     }
+
+    this.syncCenterPanelChrome();
+
     if (this.centerMapTitle) {
       this.centerMapTitle.textContent =
-        this.activeCenterMapType === 'weapons' ? 'Weapon Unlock Map' : 'Critter Unlock Map';
+        this.activeCenterMapType === 'weapons'
+          ? 'Weapon Unlock Map'
+          : this.activeCenterMapType === 'catalog'
+            ? this.catalogSections[this.activeCatalogSectionId]?.title || 'Catalog'
+            : 'Critter Unlock Map';
     }
+  }
+
+  syncCenterPanelChrome() {
+    const isCatalogView = this.activeCenterMapType === 'catalog';
+
+    this.centerMapPanel?.classList.toggle('hud-map--catalog', isCatalogView);
+
+    if (this.mapZoomBadge) {
+      this.mapZoomBadge.hidden = isCatalogView;
+    }
+
+    if (this.phaseFilterPillElement) {
+      this.phaseFilterPillElement.hidden = isCatalogView;
+    }
+
+    if (this.mapCopyButton) {
+      this.mapCopyButton.hidden = isCatalogView;
+    }
+  }
+
+  clearSceneSelection() {
+    this.activeWeapon = null;
+    this.activeCritter = null;
+    this.activeAnimationId = null;
+    this.critterUnlockMap?.setActiveCritter(null);
+    this.weaponUnlockMap?.setActiveWeapon(null);
+    this.weaponUnlockMap?.setActiveAlienNode(null);
+    this.sceneManager?.disposeCurrentModel?.();
+    this.setStageActive(false);
+  }
+
+  restoreMapCenterView() {
+    if (this.activeCenterMapType === 'catalog') {
+      this.setCenterMapType(this.lastMapCenterType || 'critters', { force: true });
+    }
+  }
+
+  showCatalogSection(sectionId) {
+    const section = this.catalogSections[sectionId];
+    if (!section) {
+      return;
+    }
+
+    this.unmountMinigames();
+    this.clearSceneSelection();
+    this.clearLibrarySelections('medals-achievements');
+    this.syncLeftWindowSelection('medals-achievements');
+
+    this.activeCatalogSectionId = sectionId;
+    const selectedItem =
+      section.items.find((item) => item.id === this.activeCatalogItemId) || section.items[0] || null;
+    this.activeCatalogItemId = selectedItem?.id || null;
+
+    this.setCenterMapType('catalog', { force: true });
+
+    if (selectedItem) {
+      this.handleCatalogItemSelection(selectedItem);
+      return;
+    }
+
+    this.hudController.showLibraryInfo({
+      title: section.title,
+      description: section.description || 'Catalog entries are coming soon.',
+      footer: section.detailFooter || 'Catalog',
+    });
+  }
+
+  handleCatalogItemSelection(item) {
+    const section = this.catalogSections[this.activeCatalogSectionId];
+    if (!item || !section) {
+      this.hudController.clearInfo();
+      return;
+    }
+
+    this.activeCatalogItemId = item.id;
+    this.catalogListView?.setActive(item.id);
+    this.hudController.showLibraryInfo({
+      title: item.label,
+      description: item.description || 'Info coming soon.',
+      footer: item.footer || section.detailFooter || section.title,
+    });
   }
 
   setStageActive(isActive) {

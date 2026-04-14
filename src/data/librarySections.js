@@ -12,6 +12,10 @@ export const librarySections = {
     { id: 'apex', label: 'Apex' },
     { id: 'blitz', label: 'Blitz' },
   ],
+  medalsAchievements: [
+    { id: 'medals', label: 'Medals' },
+    { id: 'achievements', label: 'Achievements' },
+  ],
   cosmetics: [
     { id: 'hats', label: 'Hats' },
     { id: 'hair', label: 'Hair' },
