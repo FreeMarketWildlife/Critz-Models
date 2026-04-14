@@ -74,6 +74,7 @@ const createMammalCritter = ({
   imagePath = createMammalImagePath(name),
   stats = createPlaceholderCritterStats(),
   passiveId = '',
+  phase,
 }) => ({
   id,
   name,
@@ -82,6 +83,7 @@ const createMammalCritter = ({
   unlock,
   modelPath: '',
   imagePath,
+  ...(phase !== undefined ? { phase } : {}),
   ...(passiveId ? { passiveId } : {}),
   stats,
 });
@@ -1608,13 +1610,20 @@ const critterCatalog = [
     unlock: createLevelUnlock('vole', 'Vole', 5),
   }),
   createMammalCritter({
+    id: 'groundhog',
+    name: 'Groundhog',
+    rarity: 'uncommon',
+    phase: 2,
+    unlock: createRequirementsUnlock([
+      { critterId: 'rat', level: 10 },
+      { critterId: 'squirrel', level: 5 },
+    ]),
+  }),
+  createMammalCritter({
     id: 'hedgehog',
     name: 'Hedgehog',
     rarity: 'uncommon',
-    unlock: createRequirementsUnlock([
-      { critterId: 'mouse', level: 15 },
-      { critterId: 'vole', level: 10 },
-    ]),
+    unlock: createLevelUnlock('chipmunk', 'Chipmunk', 15),
     stats: {
       health: 75,
       speed: 125,
@@ -1657,7 +1666,7 @@ const critterCatalog = [
     id: 'weasel',
     name: 'Weasel',
     rarity: 'uncommon',
-    unlock: createLevelUnlock('rabbit', 'Rabbit', 5),
+    unlock: createLevelUnlock('rabbit', 'Rabbit', 10),
   }),
   createMammalCritter({
     id: 'flying-squirrel',
@@ -1679,8 +1688,8 @@ const critterCatalog = [
     name: 'Bat',
     rarity: 'uncommon',
     unlock: createRequirementsUnlock([
-      { critterId: 'flying-squirrel', level: 10 },
-      { critterId: 'sugar-glider', level: 5 },
+      { critterId: 'flying-squirrel', level: 15 },
+      { critterId: 'rat', level: 10 },
     ]),
   }),
   createMammalCritter({
@@ -1696,7 +1705,7 @@ const critterCatalog = [
     id: 'armadillo',
     name: 'Armadillo',
     rarity: 'uncommon',
-    unlock: createLevelUnlock('mole', 'Mole', 20),
+    unlock: createLevelUnlock('hedgehog', 'Hedgehog', 15),
   }),
   createMammalCritter({
     id: 'prairie-dog',

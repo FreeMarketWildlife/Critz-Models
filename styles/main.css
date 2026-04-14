@@ -697,12 +697,184 @@ dl dt {
   height: 100%;
 }
 
+.hud-map--catalog .detail-scroll--map {
+  overflow: hidden;
+}
+
 .unlock-map {
   display: flex;
   flex-direction: column;
   gap: 0;
   min-height: 0;
   height: 100%;
+}
+
+.catalog-board {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-height: 0;
+  height: 100%;
+  padding: 0.25rem 0;
+}
+
+.catalog-board__header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0 0.1rem;
+}
+
+.catalog-board__eyebrow {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--color-water);
+}
+
+.catalog-board__heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.catalog-board__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.34rem 0.78rem;
+  border-radius: 999px;
+  border: 1px solid rgba(210, 243, 220, 0.2);
+  background: rgba(7, 21, 15, 0.64);
+  color: var(--color-highlight);
+  font-family: var(--font-display);
+  font-size: 0.66rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.catalog-board__empty {
+  margin: 0;
+  padding: 1.1rem 1.15rem;
+  border: 1px dashed rgba(210, 243, 220, 0.18);
+  border-radius: 18px;
+  color: var(--color-text-secondary);
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.catalog-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  border: 1px solid rgba(210, 243, 220, 0.18);
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, rgba(5, 14, 10, 0.94), rgba(7, 17, 13, 0.88)),
+    radial-gradient(circle at 15% 0%, rgba(107, 182, 207, 0.16), transparent 44%);
+  box-shadow:
+    inset 0 0 0 1px rgba(210, 243, 220, 0.04),
+    0 18px 36px rgba(0, 0, 0, 0.28);
+  padding: 0.35rem;
+}
+
+.catalog-row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  grid-template-areas:
+    'index content'
+    '. tag';
+  align-items: start;
+  gap: 0.95rem;
+  padding: 0.95rem 1rem;
+  border: 0;
+  border-radius: 18px;
+  background: transparent;
+  color: var(--color-text-primary);
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.catalog-row + .catalog-row {
+  margin-top: 0.25rem;
+}
+
+.catalog-row:hover,
+.catalog-row:focus-visible {
+  background: rgba(24, 58, 43, 0.88);
+  transform: translateY(-1px);
+  box-shadow: inset 0 0 0 1px rgba(159, 217, 127, 0.22);
+  outline: none;
+}
+
+.catalog-row.active {
+  background:
+    linear-gradient(135deg, rgba(171, 255, 129, 0.14), rgba(107, 182, 207, 0.16)),
+    rgba(21, 52, 39, 0.96);
+  box-shadow:
+    inset 0 0 0 1px rgba(240, 255, 150, 0.26),
+    0 14px 24px rgba(0, 0, 0, 0.18);
+}
+
+.catalog-row__index {
+  grid-area: index;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  border-radius: 14px;
+  border: 1px solid rgba(210, 243, 220, 0.12);
+  background: rgba(10, 27, 19, 0.85);
+  font-family: var(--font-display);
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  color: var(--color-highlight);
+}
+
+.catalog-row__content {
+  grid-area: content;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.catalog-row__title {
+  font-family: var(--font-display);
+  font-size: 0.94rem;
+  letter-spacing: 0.08em;
+  color: var(--color-text-primary);
+}
+
+.catalog-row__description {
+  color: var(--color-text-secondary);
+  font-size: 0.84rem;
+  line-height: 1.55;
+}
+
+.catalog-row__tag {
+  grid-area: tag;
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.34rem 0.72rem;
+  border-radius: 999px;
+  border: 1px solid rgba(210, 243, 220, 0.14);
+  background: rgba(9, 24, 18, 0.82);
+  font-family: var(--font-display);
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(243, 248, 240, 0.76);
+  white-space: nowrap;
 }
 
 .unlock-map__zoom {

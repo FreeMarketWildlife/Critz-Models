@@ -1,8 +1,8 @@
 export const critterMapDefaultLayout = {
-  "generatedAt": "2026-04-12T06:24:38.643Z",
+  "generatedAt": "2026-04-14T03:10:58.350Z",
   "board": {
     "width": 2390,
-    "height": 4073.4285714285716,
+    "height": 4073,
     "nodeWidth": 176,
     "nodeHeight": 84,
     "gridColumnsPerRarity": 9,
@@ -13,7 +13,7 @@ export const critterMapDefaultLayout = {
       "label": "Reptiles",
       "lanes": {
         "common": {
-          "rows": 9,
+          "rows": 6,
           "columns": 9
         },
         "uncommon": {
@@ -63,7 +63,7 @@ export const critterMapDefaultLayout = {
           "phase": 3,
           "level": 15,
           "x": 200,
-          "y": 1858,
+          "y": 1579,
           "imageView": null,
           "style": {
             "textScale": 100,
@@ -90,7 +90,7 @@ export const critterMapDefaultLayout = {
           "phase": 2,
           "level": 5,
           "x": 200,
-          "y": 1378,
+          "y": 1099,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -166,7 +166,7 @@ export const critterMapDefaultLayout = {
           "phase": 2,
           "level": 20,
           "x": 1470,
-          "y": 1471,
+          "y": 1192,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -204,7 +204,7 @@ export const critterMapDefaultLayout = {
           "phase": 2,
           "level": 10,
           "x": 1651,
-          "y": 2138,
+          "y": 1859,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -246,7 +246,7 @@ export const critterMapDefaultLayout = {
           "phase": 2,
           "level": 10,
           "x": 1651,
-          "y": 1565,
+          "y": 1286,
           "imageView": null,
           "style": {
             "textScale": 100,
@@ -273,7 +273,7 @@ export const critterMapDefaultLayout = {
           "phase": 2,
           "level": 20,
           "x": 1832,
-          "y": 1098,
+          "y": 819,
           "imageView": null,
           "style": {
             "textScale": 100,
@@ -304,7 +304,7 @@ export const critterMapDefaultLayout = {
           "phase": 2,
           "level": 100,
           "x": 926,
-          "y": 1858,
+          "y": 1579,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -342,7 +342,7 @@ export const critterMapDefaultLayout = {
           "phase": 2,
           "level": 15,
           "x": 1832,
-          "y": 2231,
+          "y": 1952,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -384,7 +384,7 @@ export const critterMapDefaultLayout = {
           "phase": 2,
           "level": 50,
           "x": 1651,
-          "y": 3003,
+          "y": 2724,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -430,7 +430,7 @@ export const critterMapDefaultLayout = {
           "phase": 2,
           "level": 15,
           "x": 1107,
-          "y": 1284,
+          "y": 1005,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -468,7 +468,7 @@ export const critterMapDefaultLayout = {
           "phase": 3,
           "level": 50,
           "x": 382,
-          "y": 2430,
+          "y": 2151,
           "imageView": null,
           "style": {
             "textScale": 100,
@@ -499,7 +499,7 @@ export const critterMapDefaultLayout = {
           "phase": 2,
           "level": 15,
           "x": 1832,
-          "y": 1762,
+          "y": 1483,
           "imageView": null,
           "style": {
             "textScale": 100,
@@ -564,7 +564,7 @@ export const critterMapDefaultLayout = {
           "phase": 3,
           "level": 50,
           "x": 563,
-          "y": 3003,
+          "y": 2724,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -606,7 +606,7 @@ export const critterMapDefaultLayout = {
           "phase": 2,
           "level": 15,
           "x": 1470,
-          "y": 1764,
+          "y": 1485,
           "imageView": null,
           "style": {
             "textScale": 100,
@@ -633,7 +633,7 @@ export const critterMapDefaultLayout = {
           "phase": 2,
           "level": 15,
           "x": 2014,
-          "y": 1951,
+          "y": 1672,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -671,7 +671,7 @@ export const critterMapDefaultLayout = {
           "phase": 4,
           "level": 50,
           "x": 1288,
-          "y": 1858,
+          "y": 1579,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -736,7 +736,7 @@ export const critterMapDefaultLayout = {
           "phase": 3,
           "level": 15,
           "x": 200,
-          "y": 1096,
+          "y": 817,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -774,7 +774,7 @@ export const critterMapDefaultLayout = {
           "phase": 3,
           "level": 25,
           "x": 563,
-          "y": 2617,
+          "y": 2338,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -816,7 +816,7 @@ export const critterMapDefaultLayout = {
           "phase": 2,
           "level": 15,
           "x": 926,
-          "y": 2138,
+          "y": 1859,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -854,7 +854,7 @@ export const critterMapDefaultLayout = {
           "phase": 2,
           "level": 30,
           "x": 1832,
-          "y": 2711,
+          "y": 2432,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -923,7 +923,7 @@ export const critterMapDefaultLayout = {
           "phase": 2,
           "level": 15,
           "x": 382,
-          "y": 2044,
+          "y": 1765,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -965,7 +965,7 @@ export const critterMapDefaultLayout = {
           "phase": 2,
           "level": 15,
           "x": 563,
-          "y": 1378,
+          "y": 1099,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -1003,7 +1003,7 @@ export const critterMapDefaultLayout = {
           "phase": 2,
           "level": 15,
           "x": 744,
-          "y": 1762,
+          "y": 1483,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -1045,7 +1045,7 @@ export const critterMapDefaultLayout = {
           "phase": 2,
           "level": 10,
           "x": 382,
-          "y": 1565,
+          "y": 1286,
           "imageView": null,
           "style": {
             "textScale": 100,
@@ -1152,7 +1152,7 @@ export const critterMapDefaultLayout = {
           "phase": 2,
           "level": 15,
           "x": 1288,
-          "y": 2138,
+          "y": 1859,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -1228,7 +1228,7 @@ export const critterMapDefaultLayout = {
           "phase": 2,
           "level": 30,
           "x": 1107,
-          "y": 2430,
+          "y": 2151,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -1266,7 +1266,7 @@ export const critterMapDefaultLayout = {
           "phase": 3,
           "level": 100,
           "x": 1107,
-          "y": 3377,
+          "y": 3098,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -1304,7 +1304,7 @@ export const critterMapDefaultLayout = {
       "label": "Amphians",
       "lanes": {
         "common": {
-          "rows": 7,
+          "rows": 6,
           "columns": 9
         },
         "uncommon": {
@@ -1354,7 +1354,7 @@ export const critterMapDefaultLayout = {
           "phase": 2,
           "level": 20,
           "x": 1470,
-          "y": 911,
+          "y": 818,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -1392,7 +1392,7 @@ export const critterMapDefaultLayout = {
           "phase": 2,
           "level": 30,
           "x": 744,
-          "y": 1484,
+          "y": 1391,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -1434,7 +1434,7 @@ export const critterMapDefaultLayout = {
           "phase": 2,
           "level": 30,
           "x": 1107,
-          "y": 1577,
+          "y": 1484,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -1471,7 +1471,7 @@ export const critterMapDefaultLayout = {
           "rarity": "common",
           "phase": 1,
           "level": 15,
-          "x": 1470,
+          "x": 1288,
           "y": 338,
           "imageView": {
             "position": {
@@ -1510,7 +1510,7 @@ export const critterMapDefaultLayout = {
           "phase": 3,
           "level": 100,
           "x": 1651,
-          "y": 2152,
+          "y": 2059,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -1552,7 +1552,7 @@ export const critterMapDefaultLayout = {
           "phase": 2,
           "level": 25,
           "x": 744,
-          "y": 2245,
+          "y": 2152,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -1594,7 +1594,7 @@ export const critterMapDefaultLayout = {
           "phase": 2,
           "level": 10,
           "x": 1832,
-          "y": 1098,
+          "y": 1005,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -1632,7 +1632,7 @@ export const critterMapDefaultLayout = {
           "phase": 2,
           "level": 25,
           "x": 1832,
-          "y": 2820,
+          "y": 2727,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -1670,7 +1670,7 @@ export const critterMapDefaultLayout = {
           "phase": 2,
           "level": 25,
           "x": 1107,
-          "y": 2152,
+          "y": 2059,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -1712,7 +1712,7 @@ export const critterMapDefaultLayout = {
           "phase": 2,
           "level": 15,
           "x": 1107,
-          "y": 911,
+          "y": 818,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -1750,7 +1750,7 @@ export const critterMapDefaultLayout = {
           "phase": 2,
           "level": 100,
           "x": 1832,
-          "y": 2338,
+          "y": 2245,
           "imageView": null,
           "style": {
             "textScale": 100,
@@ -1777,7 +1777,7 @@ export const critterMapDefaultLayout = {
           "phase": 3,
           "level": 30,
           "x": 382,
-          "y": 1764,
+          "y": 1671,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -1819,7 +1819,7 @@ export const critterMapDefaultLayout = {
           "phase": 2,
           "level": 100,
           "x": 1651,
-          "y": 2633,
+          "y": 2540,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -1857,7 +1857,7 @@ export const critterMapDefaultLayout = {
           "phase": 3,
           "level": 50,
           "x": 563,
-          "y": 2632,
+          "y": 2539,
           "imageView": null,
           "style": {
             "textScale": 100,
@@ -1888,7 +1888,7 @@ export const critterMapDefaultLayout = {
           "phase": 3,
           "level": 20,
           "x": 1288,
-          "y": 2725,
+          "y": 2632,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -1957,7 +1957,7 @@ export const critterMapDefaultLayout = {
           "phase": 2,
           "level": 15,
           "x": 926,
-          "y": 1858,
+          "y": 1765,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -1999,7 +1999,7 @@ export const critterMapDefaultLayout = {
           "phase": 3,
           "level": 20,
           "x": 200,
-          "y": 1191,
+          "y": 1098,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -2036,7 +2036,7 @@ export const critterMapDefaultLayout = {
           "rarity": "common",
           "phase": 1,
           "level": 5,
-          "x": 744,
+          "x": 926,
           "y": 338,
           "imageView": {
             "position": {
@@ -2075,7 +2075,7 @@ export const critterMapDefaultLayout = {
           "phase": 2,
           "level": 20,
           "x": 563,
-          "y": 1284,
+          "y": 1191,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -2113,7 +2113,7 @@ export const critterMapDefaultLayout = {
           "phase": 2,
           "level": 25,
           "x": 1288,
-          "y": 1764,
+          "y": 1671,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -2189,11 +2189,11 @@ export const critterMapDefaultLayout = {
       "label": "Mammals",
       "lanes": {
         "common": {
-          "rows": 8,
-          "columns": 11
+          "rows": 5,
+          "columns": 9
         },
         "uncommon": {
-          "rows": 7,
+          "rows": 5,
           "columns": 9
         },
         "rare": {
@@ -2248,9 +2248,9 @@ export const critterMapDefaultLayout = {
           "name": "Armadillo",
           "rarity": "uncommon",
           "phase": 2,
-          "level": 20,
-          "x": 1288,
-          "y": 1564,
+          "level": 15,
+          "x": 382,
+          "y": 1004,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -2276,8 +2276,8 @@ export const critterMapDefaultLayout = {
           },
           "requirements": [
             {
-              "critterId": "mole",
-              "level": 20
+              "critterId": "hedgehog",
+              "level": 15
             }
           ]
         },
@@ -2288,7 +2288,7 @@ export const critterMapDefaultLayout = {
           "phase": 4,
           "level": 15,
           "x": 744,
-          "y": 2325,
+          "y": 1860,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -2326,7 +2326,7 @@ export const critterMapDefaultLayout = {
           "phase": 3,
           "level": 10,
           "x": 926,
-          "y": 2044,
+          "y": 1579,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -2362,9 +2362,9 @@ export const critterMapDefaultLayout = {
           "name": "Bat",
           "rarity": "uncommon",
           "phase": 2,
-          "level": 10,
-          "x": 382,
-          "y": 1284,
+          "level": 15,
+          "x": 1651,
+          "y": 1004,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -2391,11 +2391,11 @@ export const critterMapDefaultLayout = {
           "requirements": [
             {
               "critterId": "flying-squirrel",
-              "level": 10
+              "level": 15
             },
             {
-              "critterId": "sugar-glider",
-              "level": 5
+              "critterId": "rat",
+              "level": 10
             }
           ]
         },
@@ -2441,10 +2441,10 @@ export const critterMapDefaultLayout = {
           "id": "colugo",
           "name": "Colugo",
           "rarity": "rare",
-          "phase": 2,
+          "phase": 3,
           "level": 20,
           "x": 382,
-          "y": 1764,
+          "y": 1299,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -2482,7 +2482,7 @@ export const critterMapDefaultLayout = {
           "phase": 3,
           "level": 20,
           "x": 1470,
-          "y": 2325,
+          "y": 1860,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -2520,7 +2520,7 @@ export const critterMapDefaultLayout = {
           "phase": 4,
           "level": 30,
           "x": 926,
-          "y": 2991,
+          "y": 2526,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -2558,7 +2558,7 @@ export const critterMapDefaultLayout = {
           "phase": 3,
           "level": 15,
           "x": 563,
-          "y": 2044,
+          "y": 1579,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -2596,7 +2596,7 @@ export const critterMapDefaultLayout = {
           "phase": 3,
           "level": 15,
           "x": 382,
-          "y": 2231,
+          "y": 1766,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -2633,8 +2633,8 @@ export const critterMapDefaultLayout = {
           "rarity": "uncommon",
           "phase": 2,
           "level": 25,
-          "x": 563,
-          "y": 1004,
+          "x": 1107,
+          "y": 817,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -2672,7 +2672,7 @@ export const critterMapDefaultLayout = {
           "phase": 4,
           "level": 30,
           "x": 1470,
-          "y": 3085,
+          "y": 2620,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -2707,7 +2707,7 @@ export const critterMapDefaultLayout = {
           "id": "gopher",
           "name": "Gopher",
           "rarity": "common",
-          "phase": 2,
+          "phase": 3,
           "level": 5,
           "x": 2014,
           "y": 805,
@@ -2731,13 +2731,55 @@ export const critterMapDefaultLayout = {
           ]
         },
         {
+          "id": "groundhog",
+          "name": "Groundhog",
+          "rarity": "uncommon",
+          "phase": 2,
+          "level": 10,
+          "x": 1470,
+          "y": 817,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
+          "style": {
+            "textScale": 100,
+            "hue": 25,
+            "saturation": 62,
+            "lightness": 58,
+            "glow": false,
+            "inputHue": null,
+            "inputSaturation": null,
+            "inputLightness": null,
+            "inputWidth": 7
+          },
+          "requirements": [
+            {
+              "critterId": "rat",
+              "level": 10
+            },
+            {
+              "critterId": "squirrel",
+              "level": 5
+            }
+          ]
+        },
+        {
           "id": "hedgehog",
           "name": "Hedgehog",
           "rarity": "uncommon",
           "phase": 2,
           "level": 15,
-          "x": 1288,
-          "y": 1004,
+          "x": 563,
+          "y": 724,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -2763,12 +2805,8 @@ export const critterMapDefaultLayout = {
           },
           "requirements": [
             {
-              "critterId": "mouse",
+              "critterId": "chipmunk",
               "level": 15
-            },
-            {
-              "critterId": "vole",
-              "level": 10
             }
           ]
         },
@@ -2779,7 +2817,7 @@ export const critterMapDefaultLayout = {
           "phase": 4,
           "level": 30,
           "x": 1288,
-          "y": 2524,
+          "y": 2059,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -2817,7 +2855,7 @@ export const critterMapDefaultLayout = {
           "phase": 3,
           "level": 10,
           "x": 1288,
-          "y": 1858,
+          "y": 1393,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -2852,10 +2890,10 @@ export const critterMapDefaultLayout = {
           "id": "lemur",
           "name": "Lemur",
           "rarity": "rare",
-          "phase": 2,
+          "phase": 5,
           "level": 20,
           "x": 1832,
-          "y": 1764,
+          "y": 1299,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -2893,7 +2931,7 @@ export const critterMapDefaultLayout = {
           "phase": 3,
           "level": 50,
           "x": 1288,
-          "y": 2991,
+          "y": 2526,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -2928,10 +2966,10 @@ export const critterMapDefaultLayout = {
           "id": "mole",
           "name": "Mole",
           "rarity": "uncommon",
-          "phase": 2,
+          "phase": 3,
           "level": 25,
           "x": 1832,
-          "y": 1098,
+          "y": 819,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -2970,10 +3008,10 @@ export const critterMapDefaultLayout = {
           "id": "mouse-lemur",
           "name": "Mouse Lemur",
           "rarity": "rare",
-          "phase": 2,
+          "phase": 3,
           "level": 20,
           "x": 1651,
-          "y": 1951,
+          "y": 1298,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -3011,7 +3049,7 @@ export const critterMapDefaultLayout = {
           "phase": 4,
           "level": 50,
           "x": 1832,
-          "y": 2991,
+          "y": 2526,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -3046,10 +3084,10 @@ export const critterMapDefaultLayout = {
           "id": "opossum",
           "name": "Opossum",
           "rarity": "uncommon",
-          "phase": 2,
+          "phase": 3,
           "level": 10,
           "x": 1107,
-          "y": 1378,
+          "y": 1099,
           "imageView": null,
           "style": {
             "textScale": 100,
@@ -3073,10 +3111,10 @@ export const critterMapDefaultLayout = {
           "id": "pangolin",
           "name": "Pangolin",
           "rarity": "rare",
-          "phase": 2,
+          "phase": 3,
           "level": 20,
           "x": 1470,
-          "y": 1764,
+          "y": 1299,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -3114,7 +3152,7 @@ export const critterMapDefaultLayout = {
           "phase": 4,
           "level": 50,
           "x": 563,
-          "y": 2524,
+          "y": 2059,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -3149,10 +3187,10 @@ export const critterMapDefaultLayout = {
           "id": "porcupine",
           "name": "Porcupine",
           "rarity": "uncommon",
-          "phase": 2,
+          "phase": 3,
           "level": 15,
           "x": 1470,
-          "y": 1471,
+          "y": 1192,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -3187,10 +3225,10 @@ export const critterMapDefaultLayout = {
           "id": "prairie-dog",
           "name": "Prairie Dog",
           "rarity": "rare",
-          "phase": 2,
+          "phase": 3,
           "level": 15,
           "x": 2014,
-          "y": 1858,
+          "y": 1393,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -3227,7 +3265,7 @@ export const critterMapDefaultLayout = {
           "rarity": "common",
           "phase": 1,
           "level": 10,
-          "x": 744,
+          "x": 926,
           "y": 524,
           "imageView": {
             "position": {
@@ -3267,7 +3305,18 @@ export const critterMapDefaultLayout = {
           "level": 20,
           "x": 1832,
           "y": 338,
-          "imageView": null,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": {
             "textScale": 100,
             "hue": 12,
@@ -3293,7 +3342,7 @@ export const critterMapDefaultLayout = {
           "phase": 4,
           "level": 30,
           "x": 1651,
-          "y": 2898,
+          "y": 2433,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -3330,7 +3379,7 @@ export const critterMapDefaultLayout = {
           "rarity": "common",
           "phase": 1,
           "level": 5,
-          "x": 1470,
+          "x": 1288,
           "y": 524,
           "imageView": {
             "position": {
@@ -3366,10 +3415,10 @@ export const critterMapDefaultLayout = {
           "id": "star-nosed-mole",
           "name": "Star-Nosed Mole",
           "rarity": "rare",
-          "phase": 2,
+          "phase": 3,
           "level": 25,
-          "x": 2014,
-          "y": 2325,
+          "x": 1832,
+          "y": 1391,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -3407,7 +3456,7 @@ export const critterMapDefaultLayout = {
           "phase": 3,
           "level": 30,
           "x": 563,
-          "y": 2991,
+          "y": 2526,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -3442,10 +3491,10 @@ export const critterMapDefaultLayout = {
           "id": "sugar-glider",
           "name": "Sugar Glider",
           "rarity": "rare",
-          "phase": 2,
+          "phase": 3,
           "level": 15,
           "x": 200,
-          "y": 1951,
+          "y": 1486,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -3484,7 +3533,7 @@ export const critterMapDefaultLayout = {
           "id": "vole",
           "name": "Vole",
           "rarity": "common",
-          "phase": 2,
+          "phase": 3,
           "level": 15,
           "x": 1651,
           "y": 524,
@@ -3525,7 +3574,7 @@ export const critterMapDefaultLayout = {
           "phase": 3,
           "level": 15,
           "x": 1107,
-          "y": 2231,
+          "y": 1766,
           "imageView": {
             "position": {
               "x": 2.5728,
@@ -3565,10 +3614,21 @@ export const critterMapDefaultLayout = {
           "name": "Weasel",
           "rarity": "uncommon",
           "phase": 2,
-          "level": 5,
+          "level": 10,
           "x": 744,
-          "y": 1378,
-          "imageView": null,
+          "y": 1004,
+          "imageView": {
+            "position": {
+              "x": 2.5728,
+              "y": 1.7152,
+              "z": 5.7174
+            },
+            "target": {
+              "x": 0,
+              "y": 0,
+              "z": 0
+            }
+          },
           "style": {
             "textScale": 100,
             "hue": 67,
@@ -3583,7 +3643,7 @@ export const critterMapDefaultLayout = {
           "requirements": [
             {
               "critterId": "rabbit",
-              "level": 5
+              "level": 10
             }
           ]
         },
@@ -3594,7 +3654,7 @@ export const critterMapDefaultLayout = {
           "phase": 4,
           "level": 50,
           "x": 1107,
-          "y": 2804,
+          "y": 2339,
           "imageView": {
             "position": {
               "x": 2.5728,
