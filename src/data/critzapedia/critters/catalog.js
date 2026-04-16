@@ -909,7 +909,7 @@ const critterCatalog = [
   createReptileCritter({
     id: 'red-eared-slider',
     name: 'Red-Eared Slider',
-    rarity: 'common',
+    rarity: 'uncommon',
     unlock: createLevelUnlock('turtle', 'Turtle', 5),
   }),
   createReptileCritter({
@@ -927,7 +927,7 @@ const critterCatalog = [
   createReptileCritter({
     id: 'painted-turtle',
     name: 'Painted Turtle',
-    rarity: 'common',
+    rarity: 'uncommon',
     unlock: createLevelUnlock('red-eared-slider', 'Red-Eared Slider', 10),
   }),
   createReptileCritter({
@@ -957,7 +957,7 @@ const critterCatalog = [
   createReptileCritter({
     id: 'tokay-gecko',
     name: 'Tokay Gecko',
-    rarity: 'common',
+    rarity: 'uncommon',
     unlock: createLevelUnlock('gecko', 'Gecko', 15),
   }),
   createReptileCritter({
@@ -1260,6 +1260,26 @@ const critterCatalog = [
     },
   },
   {
+    id: 'marbled-salamander',
+    name: 'Marbled Salamander',
+    category: 'amphibians',
+    rarity: 'uncommon',
+    unlock: {
+      type: 'level',
+      critterId: 'salamander',
+      level: 15,
+      text: 'Reach Level 15 with Salamander.',
+    },
+    modelPath: '',
+    imagePath: 'assets/images/Critters/Amphibians/Image_Marbled Salamander.png',
+    stats: {
+      health: 100,
+      speed: 95,
+      stamina: 100,
+      bonus: PASSIVE_HEALTH_REGEN,
+    },
+  },
+  {
     id: 'rough-skinned-newt',
     name: 'Rough Skinned Newt',
     category: 'amphibians',
@@ -1322,13 +1342,12 @@ const critterCatalog = [
     id: 'poison-dart-frog',
     name: 'Poison Dart Frog',
     category: 'amphibians',
-    rarity: 'rare',
+    rarity: 'uncommon',
     unlock: {
-      type: 'requirements',
-      requirements: [
-        { critterId: 'rough-skinned-newt', level: 15 },
-        { critterId: 'glass-frog', level: 10 },
-      ],
+      type: 'level',
+      critterId: 'frog',
+      level: 30,
+      text: 'Reach Level 30 with Frog.',
     },
     modelPath: '',
     stats: {
@@ -1346,15 +1365,35 @@ const critterCatalog = [
     unlock: {
       type: 'requirements',
       requirements: [
-        { critterId: 'salamander', level: 30 },
-        { critterId: 'slender-salamander', level: 10 },
+        { critterId: 'slender-salamander', level: 15 },
+        { critterId: 'marbled-salamander', level: 15 },
       ],
-      text: 'Reach Level 30 with Salamander and Level 10 with Slender Salamander.',
+      text: 'Reach Level 15 with Slender Salamander and Level 15 with Marbled Salamander.',
     },
     modelPath: '',
     stats: {
       health: 90,
       speed: 100,
+      stamina: 100,
+      bonus: PASSIVE_HEALTH_REGEN,
+    },
+  },
+  {
+    id: 'olm',
+    name: 'Olm',
+    category: 'amphibians',
+    rarity: 'rare',
+    unlock: {
+      type: 'level',
+      critterId: 'axolotl',
+      level: 30,
+      text: 'Reach Level 30 with Axolotl.',
+    },
+    modelPath: '',
+    imagePath: 'assets/images/Critters/Amphibians/Image_Olm.png',
+    stats: {
+      health: 90,
+      speed: 95,
       stamina: 100,
       bonus: PASSIVE_HEALTH_REGEN,
     },
