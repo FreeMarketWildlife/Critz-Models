@@ -15,19 +15,24 @@ Main responsibilities:
 
 Use these names exactly:
 
-- Left Window: navigation column with `Critters`, `Weapons & Tools`, `Maps`, `Game Modes`, `Cosmetics`, `Minigames`, and `Brainstorming`
+- Left Window: navigation column with `Critters`, `Weapons & Tools`, `Maps`, `Game Modes`, `Cosmetics`, and `Brainstorming`
 - Center Window: one active map or content surface
 - Right Window: the 3D viewport and the info panel below it
+
+Current visibility note:
+
+- `Minigames` is hidden from the Left Window for now and should not be displayed until it is intentionally re-enabled later.
 
 ## UI State Rules
 
 1. The Left Window is the only top-level navigation state.
 2. Only one Left Window option may be visually active at a time.
-3. The active Left Window option must match the content currently shown in the Center Window.
-4. The Center Window must show exactly one active surface at a time.
-5. The Right Window must reflect the current Center Window selection.
-6. If the Center Window has no selected node/item, the Right Window should show guide or placeholder content for the active Left Window option.
-7. A Center Window selection is secondary state. It should update the Right Window, not create a second active Left Window selection.
+3. Clicking something in the Left Window must update the Center Window first. Left Window actions should not skip the Center Window and write directly into the Right Window.
+4. The active Left Window option must match the content currently shown in the Center Window.
+5. The Center Window must show exactly one active surface at a time.
+6. The Right Window must reflect the current Center Window selection.
+7. If the Center Window has no selected node/item, the Right Window should show guide or placeholder content for the active Center Window surface.
+8. A Center Window selection is secondary state. It should update the Right Window, not create a second active Left Window selection.
 
 Default startup state:
 
@@ -40,6 +45,7 @@ Default startup state:
 Do:
 
 - keep Left Window selection singular
+- make Left Window actions replace the Center Window content surface
 - keep Center Window limited to one visible surface
 - keep Right Window synchronized with the active Center Window surface
 - clear stale highlights when switching sections
@@ -47,6 +53,7 @@ Do:
 Do not:
 
 - show multiple Center Window maps at the same time
+- let Left Window clicks bypass the Center Window and update the Right Window directly
 - leave both critter and weapon categories highlighted at the same time
 - let the Right Window show stale info from a previous Center Window surface
 - mix content data and layout data
@@ -99,6 +106,11 @@ Weapon maps should follow the same overall interaction model as critter maps:
 - selecting a weapon category in the Left Window should replace the Center Window surface
 - the active weapon map should occupy the full Center Window
 - selecting a weapon node in the Center Window should update the Right Window
+
+Library reading views should follow the same high-level rule:
+
+- selecting a Left Window library entry such as a brainstorming note should open that content in the Center Window
+- the Right Window should remain reserved for things selected inside the Center Window, not for the original Left Window click itself
 
 ### Alien Nodes
 

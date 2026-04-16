@@ -43,6 +43,7 @@ const NODE_FONT_MIN = 9;
 const NODE_FONT_MAX = 54;
 const NODE_TEXT_HORIZONTAL_PADDING = 30;
 const NODE_TEXT_VERTICAL_PADDING = 18;
+const LAYOUT_DRAFT_STORAGE_KEY = 'critz:critter-unlock-map:draft';
 
 const RARITY_LANES = [
   { id: 'common', label: 'Common' },
@@ -287,6 +288,7 @@ export class CritterUnlockMap {
     this.activePhaseFilter = DEFAULT_PHASE_FILTER;
 
     this.loadDefaultLayout(critterMapDefaultLayout);
+    this.loadPersistedDraft();
   }
 
   loadDefaultLayout(layoutSource = {}) {
@@ -371,7 +373,10 @@ export class CritterUnlockMap {
             }
 
             if ('phase' in (critter || {})) {
-              this.setCritterPhase(critterId, critter.phase, { refresh: false });
+              this.setCritterPhase(critterId, critter.phase, {
+                refresh: false,
+                persistDraft: false,
+              });
             }
           });
         }
@@ -488,6 +493,50 @@ export class CritterUnlockMap {
       }
     });
     return snapshot;
+  }
+
+  getStorage() {
+    if (typeof window === 'undefined' || !window.localStorage) {
+      return null;
+    }
+
+    return window.localStorage;
+  }
+
+  loadPersistedDraft() {
+    const storage = this.getStorage();
+    if (!storage) {
+      return;
+    }
+
+    try {
+      const raw = storage.getItem(LAYOUT_DRAFT_STORAGE_KEY);
+      if (!raw) {
+        return;
+      }
+
+      const parsed = JSON.parse(raw);
+      this.loadDefaultLayout(parsed);
+    } catch (error) {
+      console.warn('Unable to restore critter layout draft.', error);
+      storage.removeItem(LAYOUT_DRAFT_STORAGE_KEY);
+    }
+  }
+
+  persistDraft() {
+    const storage = this.getStorage();
+    if (!storage) {
+      return false;
+    }
+
+    try {
+      const payload = this.buildLayoutSnapshotPayload();
+      storage.setItem(LAYOUT_DRAFT_STORAGE_KEY, JSON.stringify(payload));
+      return true;
+    } catch (error) {
+      console.warn('Unable to persist critter layout draft.', error);
+      return false;
+    }
   }
 
   getBoardOffsetX(boardWidth = this.getCurrentBoardWidth()) {
@@ -867,6 +916,7 @@ export class CritterUnlockMap {
     const categoryStyles = this.ensureCategoryNodeStyles(categoryId);
     const existing = categoryStyles.get(critterId) || null;
     categoryStyles.set(critterId, this.normalizeNodeStyle(nextStyle, existing));
+    this.persistDraft();
   }
 
   setLinkStyle(categoryId, linkKey, nextStyle) {
@@ -877,6 +927,7 @@ export class CritterUnlockMap {
     const categoryStyles = this.ensureCategoryLinkStyles(categoryId);
     const existing = categoryStyles.get(linkKey) || null;
     categoryStyles.set(linkKey, this.normalizeLinkStyle(nextStyle, existing));
+    this.persistDraft();
   }
 
   removeNodeStyle(categoryId, critterId) {
@@ -889,6 +940,7 @@ export class CritterUnlockMap {
     if (!categoryStyles.size) {
       this.nodeStylesByCategory.delete(categoryId);
     }
+    this.persistDraft();
   }
 
   removeLinkStyle(categoryId, linkKey) {
@@ -901,6 +953,7 @@ export class CritterUnlockMap {
     if (!categoryStyles.size) {
       this.linkStylesByCategory.delete(categoryId);
     }
+    this.persistDraft();
   }
 
   applyNodeVisualStyle(critterId) {
@@ -1462,7 +1515,7 @@ export class CritterUnlockMap {
   setCritterPhase(
     critterId,
     phase,
-    { refresh = true, emitIfSelectionHidden = false } = {}
+    { refresh = true, emitIfSelectionHidden = false, persistDraft = true } = {}
   ) {
     const critter = this.critterById.get(critterId);
     if (!critter) {
@@ -1472,6 +1525,9 @@ export class CritterUnlockMap {
     critter.phase = normalizePhaseValue(phase);
     if (refresh) {
       this.refreshPhaseVisibility({ emitIfSelectionHidden });
+    }
+    if (persistDraft) {
+      this.persistDraft();
     }
 
     return critter.phase;
@@ -2366,6 +2422,7 @@ export class CritterUnlockMap {
     }
 
     const persistOverride = options.persistOverride !== false;
+    const shouldPersistDraft = options.persistDraft !== false;
     this.currentPositions.set(critterId, point);
 
     const node = this.nodeButtons.get(critterId);
@@ -2380,6 +2437,9 @@ export class CritterUnlockMap {
     }
 
     this.updateLinkPaths();
+    if (shouldPersistDraft && persistOverride && this.activeCategoryId) {
+      this.persistDraft();
+    }
     return point;
   }
 
@@ -2497,6 +2557,7 @@ export class CritterUnlockMap {
       this.renderCategoryMap();
       this.applyTransform();
     }
+    this.persistDraft();
   }
 
   adjustLaneColumns(categoryId, laneId, delta) {
@@ -2526,6 +2587,7 @@ export class CritterUnlockMap {
       this.renderCategoryMap();
       this.applyTransform();
     }
+    this.persistDraft();
   }
 
   buildLinkPathFromWaypoints(waypoints = []) {
@@ -2641,6 +2703,7 @@ export class CritterUnlockMap {
       }
       element.classList.remove('is-dragging-point');
       dragState = null;
+      this.persistDraft();
       event.preventDefault();
       event.stopPropagation();
     };
@@ -2697,6 +2760,7 @@ export class CritterUnlockMap {
 
     this.renderLinkPointHandles();
     this.updateLinkPaths();
+    this.persistDraft();
   }
 
   removeLinkPoint(linkKey, pointId) {
@@ -2713,6 +2777,7 @@ export class CritterUnlockMap {
     points.splice(pointIndex, 1);
     this.renderLinkPointHandles();
     this.updateLinkPaths();
+    this.persistDraft();
   }
 
   getLinkWaypoints(record) {
@@ -2951,6 +3016,7 @@ export class CritterUnlockMap {
 
       this.updateNodePosition(critterId, nextX, nextY, laneId, {
         constrainToLane: nodeDragState.constrainToLane,
+        persistDraft: false,
       });
       event.preventDefault();
       event.stopPropagation();
@@ -2972,6 +3038,7 @@ export class CritterUnlockMap {
         requestAnimationFrame(() => {
           suppressNextClick = false;
         });
+        this.persistDraft();
         event.preventDefault();
         event.stopPropagation();
       }
@@ -3121,8 +3188,9 @@ export class CritterUnlockMap {
     };
   }
 
-  async copyLayoutSnapshot(options = {}) {
+  buildLayoutSnapshotPayload(options = {}) {
     const previewStates = options?.previewStates ?? null;
+    const includeGeneratedAt = options?.includeGeneratedAt !== false;
     const categoryIds = this.getAllCategoryIds();
     const categoryLayouts = categoryIds.map((categoryId) => ({
       categoryId,
@@ -3137,7 +3205,6 @@ export class CritterUnlockMap {
       ...categoryLayouts.map((entry) => entry.boardHeight || MAP_HEIGHT)
     );
     const payload = {
-      generatedAt: new Date().toISOString(),
       board: {
         width: exportBoardWidth,
         height: exportBoardHeight,
@@ -3242,6 +3309,16 @@ export class CritterUnlockMap {
         }),
       };
     });
+
+    if (includeGeneratedAt) {
+      payload.generatedAt = new Date().toISOString();
+    }
+
+    return payload;
+  }
+
+  async copyLayoutSnapshot(options = {}) {
+    const payload = this.buildLayoutSnapshotPayload(options);
 
     const text = `export const critterMapDefaultLayout = ${JSON.stringify(payload, null, 2)};\n`;
     await this.copyTextToClipboard(text);

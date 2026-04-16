@@ -11,6 +11,7 @@ import { WeaponUnlockMap } from '../hud/components/WeaponUnlockMap.js';
 import { ViewportOverlay } from '../hud/components/ViewportOverlay.js';
 import { NavButtonList } from '../hud/components/NavButtonList.js';
 import { CatalogListView } from '../hud/components/CatalogListView.js';
+import { LibraryContentView } from '../hud/components/LibraryContentView.js';
 import { MinigameRunner } from '../hud/components/MinigameRunner.js';
 import { MinigameCritterQuest } from '../hud/components/MinigameCritterQuest.js';
 import { MinigameKatanaMouse } from '../hud/components/MinigameKatanaMouse.js';
@@ -42,6 +43,7 @@ export class WeaponDisplayApp {
     this.minigamesList = null;
     this.brainstormingList = null;
     this.catalogListView = null;
+    this.libraryContentView = null;
     this.minigameRunner = null;
     this.minigameQuest = null;
     this.minigameKatana = null;
@@ -114,6 +116,7 @@ export class WeaponDisplayApp {
     this.lastMapCenterType = 'critters';
     this.activeCatalogSectionId = null;
     this.activeCatalogItemId = null;
+    this.activeCenterContentItem = null;
     this.catalogSections = medalsAchievementsCatalog;
   }
 
@@ -186,6 +189,10 @@ export class WeaponDisplayApp {
       element: layout.centerUnlockMapElement,
       onSelect: (item) => this.handleCatalogItemSelection(item),
     });
+    this.libraryContentView = new LibraryContentView({
+      element: layout.centerUnlockMapElement,
+      onSelect: (payload) => this.handleCenterContentSelection(payload),
+    });
     this.setActivePhaseFilter(this.activePhaseFilter, { syncButtons: true });
     this.sceneManager.setCritterImagePreviewLayout(
       this.critterUnlockMap.getCritterImagePreviewStateMap()
@@ -216,22 +223,7 @@ export class WeaponDisplayApp {
       element: layout.mapsListElement,
       items: this.librarySections.maps,
       emptyMessage: 'Map catalog entries are on deck.',
-      onSelect: (item) => {
-        if (!item) {
-          this.unmountMinigames();
-          this.hudController.clearInfo();
-          return;
-        }
-        this.unmountMinigames();
-        this.restoreMapCenterView();
-        this.clearLibrarySelections('maps');
-        this.syncLeftWindowSelection('maps');
-        this.hudController.showLibraryInfo({
-          title: item.title || item.label,
-          description: item.description || 'Info coming soon.',
-          footer: item.footer || 'Map info coming soon',
-        });
-      },
+      onSelect: (item) => this.showLibraryContentItem(item, { sectionKey: 'maps' }),
     });
     this.mapsList.render();
 
@@ -239,22 +231,7 @@ export class WeaponDisplayApp {
       element: layout.modesListElement,
       items: this.librarySections.gameModes,
       emptyMessage: 'Game mode catalog entries are on deck.',
-      onSelect: (item) => {
-        if (!item) {
-          this.unmountMinigames();
-          this.hudController.clearInfo();
-          return;
-        }
-        this.unmountMinigames();
-        this.restoreMapCenterView();
-        this.clearLibrarySelections('modes');
-        this.syncLeftWindowSelection('modes');
-        this.hudController.showLibraryInfo({
-          title: item.title || item.label,
-          description: item.description || 'Info coming soon.',
-          footer: item.footer || 'Game mode info coming soon',
-        });
-      },
+      onSelect: (item) => this.showLibraryContentItem(item, { sectionKey: 'modes' }),
     });
     this.modesList.render();
 
@@ -283,22 +260,7 @@ export class WeaponDisplayApp {
       element: layout.cosmeticsListElement,
       items: this.librarySections.cosmetics,
       emptyMessage: 'Cosmetics catalog entries are on deck.',
-      onSelect: (item) => {
-        if (!item) {
-          this.unmountMinigames();
-          this.hudController.clearInfo();
-          return;
-        }
-        this.unmountMinigames();
-        this.restoreMapCenterView();
-        this.clearLibrarySelections('cosmetics');
-        this.syncLeftWindowSelection('cosmetics');
-        this.hudController.showLibraryInfo({
-          title: item.title || item.label,
-          description: item.description || 'Cosmetic info coming soon.',
-          footer: item.footer || 'Cosmetic info coming soon',
-        });
-      },
+      onSelect: (item) => this.showLibraryContentItem(item, { sectionKey: 'cosmetics' }),
     });
     this.cosmeticsList.render();
 
@@ -359,22 +321,7 @@ export class WeaponDisplayApp {
       element: layout.brainstormingListElement,
       items: this.librarySections.brainstorming,
       emptyMessage: 'Brainstorming notes are on deck.',
-      onSelect: (item) => {
-        if (!item) {
-          this.unmountMinigames();
-          this.hudController.clearInfo();
-          return;
-        }
-        this.unmountMinigames();
-        this.restoreMapCenterView();
-        this.clearLibrarySelections('brainstorming');
-        this.syncLeftWindowSelection('brainstorming');
-        this.hudController.showLibraryInfo({
-          title: item.title || item.label,
-          description: item.description || 'Brainstorming note coming soon.',
-          footer: item.footer || 'Brainstorming',
-        });
-      },
+      onSelect: (item) => this.showLibraryContentItem(item, { sectionKey: 'brainstorming' }),
     });
     this.brainstormingList.render();
 
@@ -427,12 +374,6 @@ export class WeaponDisplayApp {
             <summary class="nav-section__summary">Cosmetics</summary>
             <div class="nav-section__content">
               <div data-component="cosmetics-list"></div>
-            </div>
-          </details>
-          <details class="nav-section nav-section--minigames">
-            <summary class="nav-section__summary">Minigames</summary>
-            <div class="nav-section__content">
-              <div data-component="minigames-list"></div>
             </div>
           </details>
           <details class="nav-section nav-section--brainstorming">
@@ -1028,6 +969,13 @@ export class WeaponDisplayApp {
       return;
     }
 
+    if (mapType === 'content') {
+      this.libraryContentView.element = this.centerMapHost;
+      this.libraryContentView.render(this.activeCenterContentItem);
+      this.mountedCenterMapType = 'content';
+      return;
+    }
+
     if (mapType === 'catalog') {
       this.catalogListView.element = this.centerMapHost;
       this.catalogListView.render(
@@ -1054,9 +1002,15 @@ export class WeaponDisplayApp {
 
   setCenterMapType(mapType, { force = false } = {}) {
     this.activeCenterMapType =
-      mapType === 'weapons' ? 'weapons' : mapType === 'catalog' ? 'catalog' : 'critters';
+      mapType === 'weapons'
+        ? 'weapons'
+        : mapType === 'catalog'
+          ? 'catalog'
+          : mapType === 'content'
+            ? 'content'
+            : 'critters';
 
-    if (this.activeCenterMapType !== 'catalog') {
+    if (this.activeCenterMapType === 'critters' || this.activeCenterMapType === 'weapons') {
       this.lastMapCenterType = this.activeCenterMapType;
     }
 
@@ -1072,25 +1026,29 @@ export class WeaponDisplayApp {
           ? 'Weapon Unlock Map'
           : this.activeCenterMapType === 'catalog'
             ? this.catalogSections[this.activeCatalogSectionId]?.title || 'Catalog'
+            : this.activeCenterMapType === 'content'
+              ? this.activeCenterContentItem?.title || this.activeCenterContentItem?.label || 'Library'
             : 'Critter Unlock Map';
     }
   }
 
   syncCenterPanelChrome() {
     const isCatalogView = this.activeCenterMapType === 'catalog';
+    const isContentView = this.activeCenterMapType === 'content';
 
     this.centerMapPanel?.classList.toggle('hud-map--catalog', isCatalogView);
+    this.centerMapPanel?.classList.toggle('hud-map--content', isContentView);
 
     if (this.mapZoomBadge) {
-      this.mapZoomBadge.hidden = isCatalogView;
+      this.mapZoomBadge.hidden = isCatalogView || isContentView;
     }
 
     if (this.phaseFilterPillElement) {
-      this.phaseFilterPillElement.hidden = isCatalogView;
+      this.phaseFilterPillElement.hidden = isCatalogView || isContentView;
     }
 
     if (this.mapCopyButton) {
-      this.mapCopyButton.hidden = isCatalogView;
+      this.mapCopyButton.hidden = isCatalogView || isContentView;
     }
   }
 
@@ -1106,9 +1064,67 @@ export class WeaponDisplayApp {
   }
 
   restoreMapCenterView() {
-    if (this.activeCenterMapType === 'catalog') {
+    if (this.activeCenterMapType === 'catalog' || this.activeCenterMapType === 'content') {
+      this.activeCenterContentItem = null;
       this.setCenterMapType(this.lastMapCenterType || 'critters', { force: true });
     }
+  }
+
+  showCurrentMapGuide() {
+    if (this.lastMapCenterType === 'weapons') {
+      this.syncLeftWindowSelection('weapons');
+      this.hudController.showWeaponCategoryGuide({
+        categoryLabel: this.getWeaponCategoryLabel(this.activeCategory),
+        weaponCount: this.getWeaponsByCategory(this.activeCategory).length,
+      });
+      return;
+    }
+
+    this.syncLeftWindowSelection('critters');
+    this.hudController.showCritterCategoryGuide({
+      categoryLabel: this.getCritterCategoryLabel(this.activeCritterCategory),
+      critterCount: this.getCrittersByCategory(this.activeCritterCategory).length,
+    });
+  }
+
+  showLibraryContentItem(item, { sectionKey } = {}) {
+    this.unmountMinigames();
+
+    if (!item) {
+      this.restoreMapCenterView();
+      this.showCurrentMapGuide();
+      return;
+    }
+
+    this.clearSceneSelection();
+    this.clearLibrarySelections(sectionKey);
+    this.syncLeftWindowSelection(sectionKey);
+    this.activeCatalogSectionId = null;
+    this.activeCatalogItemId = null;
+    this.activeCenterContentItem = item;
+    this.setCenterMapType('content', { force: true });
+    if (item.viewType === 'timeline') {
+      this.hudController.showLibraryInfo({
+        title: item.title || item.label || 'Roadmap',
+        description: 'Select a milestone box in the center window to see its details here.',
+        footer: 'Right Window follows center roadmap selections',
+      });
+      return;
+    }
+
+    this.hudController.showLibraryInfo({
+      title: 'Info',
+      description: 'This section is being displayed in the center window.',
+      footer: 'Right Window follows center selections',
+    });
+  }
+
+  handleCenterContentSelection(payload) {
+    if (!payload || payload.type !== 'timeline-milestone' || !payload.info) {
+      return;
+    }
+
+    this.hudController.showLibraryInfo(payload.info);
   }
 
   showCatalogSection(sectionId) {
@@ -1122,6 +1138,7 @@ export class WeaponDisplayApp {
     this.clearLibrarySelections('medals-achievements');
     this.syncLeftWindowSelection('medals-achievements');
 
+    this.activeCenterContentItem = null;
     this.activeCatalogSectionId = sectionId;
     const selectedItem =
       section.items.find((item) => item.id === this.activeCatalogItemId) || section.items[0] || null;
