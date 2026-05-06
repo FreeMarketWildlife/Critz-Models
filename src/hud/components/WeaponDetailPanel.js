@@ -400,10 +400,7 @@ export class WeaponDetailPanel {
   renderPlaceholder({ title, description, footer }) {
     this.clearCustomState();
     if (this.contentElement) {
-      this.contentElement.innerHTML = `
-        <h3>${title}</h3>
-        <p class="description">${description}</p>
-      `;
+      this.contentElement.innerHTML = `<h3>${title}</h3>${description ? `<p class="description">${description}</p>` : ''}`;
     }
 
     if (this.rarityBadge) {
@@ -412,7 +409,7 @@ export class WeaponDetailPanel {
     }
 
     if (this.footerElement) {
-      this.footerElement.textContent = footer || 'Info coming soon';
+      this.footerElement.textContent = footer ?? 'Info coming soon';
     }
 
     this.panelElement.classList.remove('is-empty');

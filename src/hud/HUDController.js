@@ -140,6 +140,19 @@ export class HUDController {
     this.weaponDetailPanel.render(weapon);
   }
 
+  showCosmeticGuide({ slotTitle, slotDescription }) {
+    this.activeWeaponId = null;
+    this.weaponCategoryMenu?.setActiveWeapon(null);
+
+    this.weaponDetailPanel.renderPlaceholder({
+      title: slotTitle || 'Cosmetics',
+      description:
+        slotDescription ||
+        'This slot structure is still here, but the temporary cosmetic items were removed.',
+      footer: 'Cosmetics structure only',
+    });
+  }
+
   showCritterCategoryGuide({ categoryLabel, critterCount }) {
     this.activeWeaponId = null;
     this.weaponCategoryMenu?.setActiveWeapon(null);

@@ -74,6 +74,49 @@ export const librarySections = {
         'Finishers are stylized takedown or victory animations that turn key eliminations into memorable character moments with extra flair.',
     },
   ],
+  design: [
+    {
+      id: 'main-menu',
+      label: 'Main Menu',
+      title: 'Main Menu',
+      footer: 'Design · Main Menu Prototype',
+      description:
+        'Interactive main menu simulation for the center window. Hover a route to pull in the firefly guide, click a route to preview its green confirm state, and leave the Design section to reset the prototype back to its default presentation.',
+      viewType: 'main-menu-sim',
+      options: [
+        {
+          id: 'singleplayer',
+          label: 'Singleplayer',
+        },
+        {
+          id: 'multiplayer',
+          label: 'Multiplayer',
+        },
+        {
+          id: 'options',
+          label: 'Options',
+        },
+        {
+          id: 'profile',
+          label: 'Profile',
+        },
+      ],
+      defaultProfileMenuId: 'avatar',
+      profileMenuOptions: [
+        { id: 'avatar', label: 'Avatar' },
+        { id: 'career', label: 'Career' },
+        { id: 'cosmetics', label: 'Cosmetics' },
+        { id: 'loadouts', label: 'Loadouts' },
+      ],
+      defaultProfileId: 'phil',
+      profiles: [
+        { id: 'arpit', label: 'Arpit' },
+        { id: 'balaji', label: 'Balaji' },
+        { id: 'fabian', label: 'Fabian' },
+        { id: 'phil', label: 'Phil' },
+      ],
+    },
+  ],
   minigames: [
     { id: 'run', label: 'RUN!' },
     { id: 'critter-quest', label: 'Critter Quest' },

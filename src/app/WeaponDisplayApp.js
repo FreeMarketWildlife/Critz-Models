@@ -12,11 +12,14 @@ import { ViewportOverlay } from '../hud/components/ViewportOverlay.js';
 import { NavButtonList } from '../hud/components/NavButtonList.js';
 import { CatalogListView } from '../hud/components/CatalogListView.js';
 import { LibraryContentView } from '../hud/components/LibraryContentView.js';
+import { CosmeticsCatalogView } from '../hud/components/CosmeticsCatalogView.js';
+import { DesignShowcaseView } from '../hud/components/DesignShowcaseView.js';
 import { MinigameRunner } from '../hud/components/MinigameRunner.js';
 import { MinigameCritterQuest } from '../hud/components/MinigameCritterQuest.js';
 import { MinigameKatanaMouse } from '../hud/components/MinigameKatanaMouse.js';
 import { weaponsMapDefaultLayout } from '../data/weaponsMapDefaultLayout.js';
 import { medalsAchievementsCatalog } from '../data/medalsAchievementsCatalog.js';
+import { cosmeticSlots } from '../data/cosmeticsCatalog.js';
 import { DEFAULT_PHASE_FILTER, normalizePhaseFilter, PHASE_OPTIONS } from '../utils/phaseUtils.js';
 
 const RARITY_ORDER = {
@@ -40,10 +43,13 @@ export class WeaponDisplayApp {
     this.modesList = null;
     this.medalsAchievementsList = null;
     this.cosmeticsList = null;
+    this.designList = null;
     this.minigamesList = null;
     this.brainstormingList = null;
     this.catalogListView = null;
     this.libraryContentView = null;
+    this.cosmeticsCatalogView = null;
+    this.designShowcaseView = null;
     this.minigameRunner = null;
     this.minigameQuest = null;
     this.minigameKatana = null;
@@ -117,7 +123,11 @@ export class WeaponDisplayApp {
     this.activeCatalogSectionId = null;
     this.activeCatalogItemId = null;
     this.activeCenterContentItem = null;
+    this.activeDesignItemId = null;
     this.catalogSections = medalsAchievementsCatalog;
+
+    this.cosmeticSlots = cosmeticSlots;
+    this.activeCosmeticSlotId = this.cosmeticSlots[0]?.id ?? null;
   }
 
   init() {
@@ -193,6 +203,15 @@ export class WeaponDisplayApp {
       element: layout.centerUnlockMapElement,
       onSelect: (payload) => this.handleCenterContentSelection(payload),
     });
+    this.cosmeticsCatalogView = new CosmeticsCatalogView({
+      element: layout.centerUnlockMapElement,
+      slots: this.cosmeticSlots,
+      onSelect: (payload) => this.handleCosmeticViewSelection(payload),
+    });
+    this.designShowcaseView = new DesignShowcaseView({
+      element: layout.centerUnlockMapElement,
+      onSelect: (payload) => this.handleDesignViewSelection(payload),
+    });
     this.setActivePhaseFilter(this.activePhaseFilter, { syncButtons: true });
     this.sceneManager.setCritterImagePreviewLayout(
       this.critterUnlockMap.getCritterImagePreviewStateMap()
@@ -258,11 +277,19 @@ export class WeaponDisplayApp {
 
     this.cosmeticsList = new NavButtonList({
       element: layout.cosmeticsListElement,
-      items: this.librarySections.cosmetics,
+      items: this.cosmeticSlots,
       emptyMessage: 'Cosmetics catalog entries are on deck.',
-      onSelect: (item) => this.showLibraryContentItem(item, { sectionKey: 'cosmetics' }),
+      onSelect: (item) => this.showCosmeticsSlot(item),
     });
     this.cosmeticsList.render();
+
+    this.designList = new NavButtonList({
+      element: layout.designListElement,
+      items: this.librarySections.design,
+      emptyMessage: 'Design simulations are on deck.',
+      onSelect: (item) => this.showDesignItem(item),
+    });
+    this.designList.render();
 
     this.minigamesList = new NavButtonList({
       element: layout.minigamesListElement,
@@ -376,6 +403,12 @@ export class WeaponDisplayApp {
               <div data-component="cosmetics-list"></div>
             </div>
           </details>
+          <details class="nav-section nav-section--design">
+            <summary class="nav-section__summary">Design</summary>
+            <div class="nav-section__content">
+              <div data-component="design-list"></div>
+            </div>
+          </details>
           <details class="nav-section nav-section--brainstorming">
             <summary class="nav-section__summary">Brainstorming</summary>
             <div class="nav-section__content">
@@ -475,6 +508,7 @@ export class WeaponDisplayApp {
         '[data-component="medals-achievements-list"]'
       ),
       cosmeticsListElement: this.root.querySelector('[data-component="cosmetics-list"]'),
+      designListElement: this.root.querySelector('[data-component="design-list"]'),
       minigamesListElement: this.root.querySelector('[data-component="minigames-list"]'),
       brainstormingListElement: this.root.querySelector('[data-component="brainstorming-list"]'),
       mapCopyButtonElement: this.root.querySelector('[data-action="copy-map-layout"]'),
@@ -776,6 +810,7 @@ export class WeaponDisplayApp {
       ['modes', this.modesList],
       ['medals-achievements', this.medalsAchievementsList],
       ['cosmetics', this.cosmeticsList],
+      ['design', this.designList],
       ['minigames', this.minigamesList],
       ['brainstorming', this.brainstormingList],
     ];
@@ -923,6 +958,14 @@ export class WeaponDisplayApp {
     return critter.defaultAnimationId || critter.animations?.[0]?.id || null;
   }
 
+  getCosmeticSlot(slotId) {
+    return this.cosmeticSlots.find((slot) => slot.id === slotId) || null;
+  }
+
+  getDesignItem(itemId) {
+    return this.librarySections.design?.find((item) => item.id === itemId) || null;
+  }
+
   clearActiveCritter({ showGuide = true } = {}) {
     this.activeCritter = null;
     this.activeAnimationId = null;
@@ -986,6 +1029,22 @@ export class WeaponDisplayApp {
       return;
     }
 
+    if (mapType === 'cosmetics') {
+      this.cosmeticsCatalogView.element = this.centerMapHost;
+      this.cosmeticsCatalogView.render({
+        activeSlotId: this.activeCosmeticSlotId,
+      });
+      this.mountedCenterMapType = 'cosmetics';
+      return;
+    }
+
+    if (mapType === 'design') {
+      this.designShowcaseView.element = this.centerMapHost;
+      this.designShowcaseView.render(this.getDesignItem(this.activeDesignItemId));
+      this.mountedCenterMapType = 'design';
+      return;
+    }
+
     if (mapType === 'weapons') {
       this.weaponUnlockMap.element = this.centerMapHost;
       this.weaponUnlockMap.render(this.activeCategory);
@@ -1001,14 +1060,19 @@ export class WeaponDisplayApp {
   }
 
   setCenterMapType(mapType, { force = false } = {}) {
-    this.activeCenterMapType =
-      mapType === 'weapons'
-        ? 'weapons'
-        : mapType === 'catalog'
-          ? 'catalog'
-          : mapType === 'content'
-            ? 'content'
-            : 'critters';
+    if (mapType === 'weapons') {
+      this.activeCenterMapType = 'weapons';
+    } else if (mapType === 'catalog') {
+      this.activeCenterMapType = 'catalog';
+    } else if (mapType === 'cosmetics') {
+      this.activeCenterMapType = 'cosmetics';
+    } else if (mapType === 'design') {
+      this.activeCenterMapType = 'design';
+    } else if (mapType === 'content') {
+      this.activeCenterMapType = 'content';
+    } else {
+      this.activeCenterMapType = 'critters';
+    }
 
     if (this.activeCenterMapType === 'critters' || this.activeCenterMapType === 'weapons') {
       this.lastMapCenterType = this.activeCenterMapType;
@@ -1021,34 +1085,47 @@ export class WeaponDisplayApp {
     this.syncCenterPanelChrome();
 
     if (this.centerMapTitle) {
-      this.centerMapTitle.textContent =
-        this.activeCenterMapType === 'weapons'
-          ? 'Weapon Unlock Map'
-          : this.activeCenterMapType === 'catalog'
-            ? this.catalogSections[this.activeCatalogSectionId]?.title || 'Catalog'
-            : this.activeCenterMapType === 'content'
-              ? this.activeCenterContentItem?.title || this.activeCenterContentItem?.label || 'Library'
-            : 'Critter Unlock Map';
+      if (this.activeCenterMapType === 'weapons') {
+        this.centerMapTitle.textContent = 'Weapon Unlock Map';
+      } else if (this.activeCenterMapType === 'catalog') {
+        this.centerMapTitle.textContent =
+          this.catalogSections[this.activeCatalogSectionId]?.title || 'Catalog';
+      } else if (this.activeCenterMapType === 'cosmetics') {
+        this.centerMapTitle.textContent =
+          this.getCosmeticSlot(this.activeCosmeticSlotId)?.title || 'Cosmetics';
+      } else if (this.activeCenterMapType === 'design') {
+        this.centerMapTitle.textContent =
+          this.getDesignItem(this.activeDesignItemId)?.title || 'Design';
+      } else if (this.activeCenterMapType === 'content') {
+        this.centerMapTitle.textContent =
+          this.activeCenterContentItem?.title || this.activeCenterContentItem?.label || 'Library';
+      } else {
+        this.centerMapTitle.textContent = 'Critter Unlock Map';
+      }
     }
   }
 
   syncCenterPanelChrome() {
     const isCatalogView = this.activeCenterMapType === 'catalog';
     const isContentView = this.activeCenterMapType === 'content';
+    const isCosmeticsView = this.activeCenterMapType === 'cosmetics';
+    const isDesignView = this.activeCenterMapType === 'design';
 
     this.centerMapPanel?.classList.toggle('hud-map--catalog', isCatalogView);
     this.centerMapPanel?.classList.toggle('hud-map--content', isContentView);
+    this.centerMapPanel?.classList.toggle('hud-map--cosmetics', isCosmeticsView);
+    this.centerMapPanel?.classList.toggle('hud-map--design', isDesignView);
 
     if (this.mapZoomBadge) {
-      this.mapZoomBadge.hidden = isCatalogView || isContentView;
+      this.mapZoomBadge.hidden = isCatalogView || isContentView || isCosmeticsView || isDesignView;
     }
 
     if (this.phaseFilterPillElement) {
-      this.phaseFilterPillElement.hidden = isCatalogView || isContentView;
+      this.phaseFilterPillElement.hidden = isCatalogView || isContentView || isCosmeticsView || isDesignView;
     }
 
     if (this.mapCopyButton) {
-      this.mapCopyButton.hidden = isCatalogView || isContentView;
+      this.mapCopyButton.hidden = isCatalogView || isContentView || isCosmeticsView || isDesignView;
     }
   }
 
@@ -1061,12 +1138,124 @@ export class WeaponDisplayApp {
     this.weaponUnlockMap?.setActiveAlienNode(null);
     this.sceneManager?.disposeCurrentModel?.();
     this.setStageActive(false);
+    this.eventBus.emit('viewport:critter-cleared');
   }
 
   restoreMapCenterView() {
-    if (this.activeCenterMapType === 'catalog' || this.activeCenterMapType === 'content') {
+    if (
+      this.activeCenterMapType === 'catalog' ||
+      this.activeCenterMapType === 'content' ||
+      this.activeCenterMapType === 'cosmetics' ||
+      this.activeCenterMapType === 'design'
+    ) {
       this.activeCenterContentItem = null;
       this.setCenterMapType(this.lastMapCenterType || 'critters', { force: true });
+    }
+  }
+
+  refreshCosmeticsView() {
+    if (this.mountedCenterMapType === 'cosmetics' || this.activeCenterMapType === 'cosmetics') {
+      this.cosmeticsCatalogView?.render({
+        activeSlotId: this.activeCosmeticSlotId,
+      });
+    }
+  }
+
+  showActiveCosmeticInfo() {
+    const slot = this.getCosmeticSlot(this.activeCosmeticSlotId);
+
+    this.hudController.showCosmeticGuide({
+      slotTitle: slot?.title || slot?.label || 'Cosmetics',
+      slotDescription:
+        slot?.description ||
+        'The category structure is still here, but the placeholder individual cosmetics were removed.',
+    });
+  }
+
+  showCosmeticsSlot(item) {
+    this.unmountMinigames();
+
+    if (!item) {
+      this.clearSceneSelection();
+      this.restoreMapCenterView();
+      this.showCurrentMapGuide();
+      return;
+    }
+
+    this.clearSceneSelection();
+    this.clearLibrarySelections('cosmetics');
+    this.syncLeftWindowSelection('cosmetics');
+    this.activeCatalogSectionId = null;
+    this.activeCatalogItemId = null;
+    this.activeCenterContentItem = null;
+    this.activeCosmeticSlotId = item.id;
+    this.setCenterMapType('cosmetics', { force: true });
+    this.refreshCosmeticsView();
+    this.showActiveCosmeticInfo();
+  }
+
+  handleCosmeticViewSelection(payload) {
+    if (!payload?.type) {
+      return;
+    }
+
+    if (payload.type === 'slot') {
+      if (!payload.slotId) {
+        return;
+      }
+
+      this.activeCosmeticSlotId = payload.slotId;
+      this.cosmeticsList?.setActive(payload.slotId);
+      this.setCenterMapType('cosmetics', { force: true });
+      this.refreshCosmeticsView();
+      this.showActiveCosmeticInfo();
+    }
+  }
+
+  showActiveDesignInfo() {
+    const item = this.getDesignItem(this.activeDesignItemId);
+
+    if (!item) {
+      this.hudController.clearInfo();
+      return;
+    }
+
+    this.hudController.showLibraryInfo({
+      title: item.title || item.label || 'Design',
+      description: '',
+      footer: '',
+    });
+  }
+
+  showDesignItem(item) {
+    this.unmountMinigames();
+
+    if (!item) {
+      this.activeDesignItemId = null;
+      this.clearSceneSelection();
+      this.restoreMapCenterView();
+      this.showCurrentMapGuide();
+      return;
+    }
+
+    this.clearSceneSelection();
+    this.clearLibrarySelections('design');
+    this.syncLeftWindowSelection('design');
+    this.activeCatalogSectionId = null;
+    this.activeCatalogItemId = null;
+    this.activeCenterContentItem = null;
+    this.activeDesignItemId = item.id;
+    this.setCenterMapType('design', { force: true });
+    this.showActiveDesignInfo();
+  }
+
+  handleDesignViewSelection(payload) {
+    if (!payload?.type) {
+      return;
+    }
+
+    if (payload.type === 'design-action') {
+      this.showActiveDesignInfo();
     }
   }
 
